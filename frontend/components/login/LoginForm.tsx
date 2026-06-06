@@ -38,7 +38,7 @@ export function LoginForm() {
   }
 
   return (
-    <div className="flex h-full bg-pure-white">
+    <div className="flex min-h-dvh flex-col bg-pure-white lg:h-full lg:min-h-0 lg:flex-row">
       <motion.div
         className="relative hidden h-full w-1/2 lg:block"
         initial="hidden"
@@ -57,15 +57,15 @@ export function LoginForm() {
       </motion.div>
 
       <motion.div
-        className="relative flex h-full w-full flex-col px-6 py-6 lg:w-1/2 lg:px-12 xl:px-16"
+        className="relative flex w-full flex-col px-4 py-5 sm:px-6 sm:py-6 lg:h-full lg:w-1/2 lg:px-12 xl:px-16"
         initial="hidden"
         animate="visible"
         variants={slideInRight}
         transition={{ ...transition, duration: 0.8, delay: 0.1 }}
       >
-        <div className="flex flex-1 flex-col items-center justify-center">
+        <div className="flex flex-1 flex-col items-center justify-center py-4 sm:py-0">
           <motion.div
-            className="w-full max-w-xl rounded-[2rem] border border-deep-teal/10 bg-pure-white p-8 shadow-xl shadow-deep-teal/5 md:p-10"
+            className="w-full max-w-xl rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-xl shadow-deep-teal/5 sm:rounded-[2rem] sm:p-8 md:p-10"
             variants={scaleIn}
             transition={{ ...transition, delay: 0.2 }}
           >
@@ -83,7 +83,7 @@ export function LoginForm() {
                 Sign in
               </motion.span>
               <motion.h2
-                className="mt-3 font-serif text-3xl font-light tracking-[-0.02em] text-deep-teal"
+                className="mt-3 font-serif text-2xl font-light tracking-[-0.02em] text-deep-teal sm:text-3xl"
                 variants={fadeInUp}
                 transition={transition}
               >
@@ -149,13 +149,13 @@ export function LoginForm() {
                 <legend className="mb-3 block text-sm font-medium text-deep-teal">
                   Role
                 </legend>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2 sm:gap-2">
                   {ROLES.map(({ value, label }) => {
                     const isSelected = role === value;
                     return (
                       <label
                         key={value}
-                        className={`flex cursor-pointer items-center justify-center rounded-xl border px-3 py-3 text-sm font-medium transition-all ${
+                        className={`flex min-h-11 cursor-pointer items-center justify-center rounded-xl border px-2 py-2.5 text-xs font-medium transition-all sm:px-3 sm:py-3 sm:text-sm ${
                           isSelected
                             ? "border-pacific-teal bg-pacific-teal/10 text-deep-teal ring-2 ring-pacific-teal/25"
                             : "border-deep-teal/15 text-deep-teal/70 hover:border-deep-teal/25 hover:bg-deep-teal/[0.03]"

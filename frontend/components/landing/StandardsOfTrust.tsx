@@ -43,29 +43,29 @@ const metrics = [
 
 export function StandardsOfTrust() {
   return (
-    <section id="standards" className="bg-slate-50 py-20 lg:py-24">
-      <div className="mx-auto max-w-[1400px] px-8 md:px-12 lg:px-20 xl:px-28">
+    <section id="standards" className="bg-slate-50 py-14 sm:py-20 lg:py-24">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-8 md:px-12 lg:px-20 xl:px-28">
         <motion.div
-          className="mb-16 text-center"
+          className="mb-10 text-center sm:mb-16"
           initial="hidden"
           whileInView="visible"
           viewport={viewport}
           variants={fadeInUp}
           transition={transition}
         >
-          <span className="font-mono text-xs uppercase tracking-[0.3em] text-pacific-teal">
+          <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-pacific-teal sm:text-xs sm:tracking-[0.3em]">
             Standards of Trust
           </span>
-          <h2 className="mt-3 font-serif text-5xl font-light leading-[1.05] tracking-[-0.03em] text-deep-teal md:text-6xl lg:text-7xl">
+          <h2 className="mt-3 font-serif text-3xl font-light leading-[1.08] tracking-[-0.03em] text-deep-teal sm:text-5xl md:text-6xl lg:text-7xl">
             Proven by standard.
             <br />
             Backed by data.
           </h2>
         </motion.div>
 
-        <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+        <div className="grid gap-8 sm:gap-12 lg:grid-cols-2 lg:items-center">
           <motion.div
-            className="relative aspect-[4/5] w-full overflow-hidden rounded-[2.5rem] shadow-2xl"
+            className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl shadow-2xl sm:rounded-[2.5rem]"
             initial="hidden"
             whileInView="visible"
             viewport={viewport}
@@ -82,7 +82,7 @@ export function StandardsOfTrust() {
           </motion.div>
 
           <motion.div
-            className="grid gap-8 md:grid-cols-2"
+            className="grid gap-4 sm:grid-cols-2 sm:gap-8"
             initial="hidden"
             whileInView="visible"
             viewport={viewport}
@@ -91,18 +91,18 @@ export function StandardsOfTrust() {
             {metrics.map((metric) => (
               <motion.div
                 key={metric.label}
-                className={`group rounded-[2.5rem] border border-deep-teal/5 ${metric.bg} p-10 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]`}
+                className={`group rounded-2xl border border-deep-teal/5 ${metric.bg} p-6 transition-all duration-500 sm:rounded-[2.5rem] sm:p-10 sm:hover:-translate-y-2 sm:hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]`}
                 variants={fadeInUp}
                 transition={transition}
               >
-                <div className="font-serif text-5xl font-light leading-none tracking-[-0.04em] text-deep-teal">
+                <div className="font-serif text-4xl font-light leading-none tracking-[-0.04em] text-deep-teal sm:text-5xl">
                   {metric.value}
                 </div>
-                <div className="mt-6 h-px w-16 bg-deep-teal/20" />
-                <h3 className="mt-6 font-serif text-2xl font-light text-deep-teal">
+                <div className="mt-4 h-px w-12 bg-deep-teal/20 sm:mt-6 sm:w-16" />
+                <h3 className="mt-4 font-serif text-xl font-light text-deep-teal sm:mt-6 sm:text-2xl">
                   {metric.label}
                 </h3>
-                <p className="mt-4 text-base leading-relaxed text-deep-teal/75">
+                <p className="mt-3 text-sm leading-relaxed text-deep-teal/75 sm:mt-4 sm:text-base">
                   {metric.description}
                 </p>
               </motion.div>

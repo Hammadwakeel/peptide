@@ -44,20 +44,20 @@ const cards = [
 
 export function SeamlessIntegration() {
   return (
-    <section className="bg-pure-white py-24 lg:py-32">
-      <div className="mx-auto w-full max-w-[1400px] px-0">
+    <section className="bg-pure-white py-14 sm:py-24 lg:py-32">
+      <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-0">
         <motion.div
-          className="mb-20 px-4 lg:px-0"
+          className="mb-10 sm:mb-20 lg:px-0"
           initial="hidden"
           whileInView="visible"
           viewport={viewport}
           variants={fadeInUp}
           transition={transition}
         >
-          <span className="font-mono text-xs uppercase tracking-[0.3em] text-pacific-teal">
+          <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-pacific-teal sm:text-xs sm:tracking-[0.3em]">
             Seamless Integration
           </span>
-          <h2 className="mt-4 font-serif text-5xl font-light text-deep-teal md:text-7xl">
+          <h2 className="mt-3 font-serif text-3xl font-light leading-[1.08] text-deep-teal sm:mt-4 sm:text-5xl md:text-7xl">
             Integration that respects
             <br />
             your workflow.
@@ -65,30 +65,45 @@ export function SeamlessIntegration() {
         </motion.div>
 
         <motion.div
-          className="grid gap-6 px-4 md:grid-cols-2 lg:grid-cols-3 lg:px-0"
+          className="relative mb-4 aspect-[4/5] w-full overflow-hidden rounded-2xl shadow-2xl sm:mb-6 sm:aspect-[16/10] lg:hidden"
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewport}
+          variants={scaleIn}
+          transition={transition}
+        >
+          <Image
+            src="/brand/product-mobile-dashboard.png"
+            alt="Dashboard"
+            fill
+            sizes="100vw"
+            className="object-cover"
+          />
+        </motion.div>
+
+        <motion.div
+          className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3"
           initial="hidden"
           whileInView="visible"
           viewport={viewport}
           variants={staggerContainer}
         >
           <motion.div
-            className={`rounded-[2rem] ${cards[0].bg} p-8`}
+            className={`rounded-2xl ${cards[0].bg} p-6 sm:rounded-[2rem] sm:p-8`}
             variants={fadeInUp}
             transition={transition}
           >
-            <div className="max-w-[90%]">
-              <Database className="h-8 w-8 text-deep-teal" />
-              <h3 className="mt-6 font-serif text-2xl text-deep-teal">
-                {cards[0].title}
-              </h3>
-              <p className="mt-3 text-sm leading-7 text-deep-teal/70">
-                {cards[0].description}
-              </p>
-            </div>
+            <Database className="h-7 w-7 text-deep-teal sm:h-8 sm:w-8" />
+            <h3 className="mt-4 font-serif text-xl text-deep-teal sm:mt-6 sm:text-2xl">
+              {cards[0].title}
+            </h3>
+            <p className="mt-2 text-sm leading-7 text-deep-teal/70 sm:mt-3">
+              {cards[0].description}
+            </p>
           </motion.div>
 
           <motion.div
-            className="relative row-span-2 hidden overflow-hidden rounded-[2rem] shadow-2xl lg:block"
+            className="relative row-span-2 hidden min-h-[520px] overflow-hidden rounded-[2rem] shadow-2xl lg:block"
             variants={scaleIn}
             transition={transition}
           >
@@ -102,51 +117,45 @@ export function SeamlessIntegration() {
           </motion.div>
 
           <motion.div
-            className={`rounded-[2rem] ${cards[1].bg} p-8`}
+            className={`rounded-2xl ${cards[1].bg} p-6 sm:rounded-[2rem] sm:p-8`}
             variants={fadeInUp}
             transition={transition}
           >
-            <div className="max-w-[90%]">
-              <LayoutDashboard className="h-8 w-8 text-deep-teal" />
-              <h3 className="mt-6 font-serif text-2xl text-deep-teal">
-                {cards[1].title}
-              </h3>
-              <p className="mt-3 text-sm leading-7 text-deep-teal/70">
-                {cards[1].description}
-              </p>
-            </div>
+            <LayoutDashboard className="h-7 w-7 text-deep-teal sm:h-8 sm:w-8" />
+            <h3 className="mt-4 font-serif text-xl text-deep-teal sm:mt-6 sm:text-2xl">
+              {cards[1].title}
+            </h3>
+            <p className="mt-2 text-sm leading-7 text-deep-teal/70 sm:mt-3">
+              {cards[1].description}
+            </p>
           </motion.div>
 
           <motion.div
-            className={`rounded-[2rem] ${cards[2].bg} p-8`}
+            className={`rounded-2xl ${cards[2].bg} p-6 sm:rounded-[2rem] sm:p-8`}
             variants={fadeInUp}
             transition={transition}
           >
-            <div className="max-w-[90%]">
-              <Bell className="h-8 w-8 text-deep-teal" />
-              <h3 className="mt-6 font-serif text-2xl text-deep-teal">
-                {cards[2].title}
-              </h3>
-              <p className="mt-3 text-sm leading-7 text-deep-teal/70">
-                {cards[2].description}
-              </p>
-            </div>
+            <Bell className="h-7 w-7 text-deep-teal sm:h-8 sm:w-8" />
+            <h3 className="mt-4 font-serif text-xl text-deep-teal sm:mt-6 sm:text-2xl">
+              {cards[2].title}
+            </h3>
+            <p className="mt-2 text-sm leading-7 text-deep-teal/70 sm:mt-3">
+              {cards[2].description}
+            </p>
           </motion.div>
 
           <motion.div
-            className={`rounded-[2rem] ${cards[3].bg} p-8`}
+            className={`rounded-2xl ${cards[3].bg} p-6 sm:rounded-[2rem] sm:p-8 md:col-span-2 lg:col-span-1`}
             variants={fadeInUp}
             transition={transition}
           >
-            <div className="max-w-[90%]">
-              <Workflow className="h-8 w-8 text-deep-teal" />
-              <h3 className="mt-6 font-serif text-2xl text-deep-teal">
-                {cards[3].title}
-              </h3>
-              <p className="mt-3 text-sm leading-7 text-deep-teal/70">
-                {cards[3].description}
-              </p>
-            </div>
+            <Workflow className="h-7 w-7 text-deep-teal sm:h-8 sm:w-8" />
+            <h3 className="mt-4 font-serif text-xl text-deep-teal sm:mt-6 sm:text-2xl">
+              {cards[3].title}
+            </h3>
+            <p className="mt-2 text-sm leading-7 text-deep-teal/70 sm:mt-3">
+              {cards[3].description}
+            </p>
           </motion.div>
         </motion.div>
       </div>

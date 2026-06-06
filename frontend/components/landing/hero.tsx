@@ -32,27 +32,27 @@ function ArrowRightIcon({ className }: { className?: string }) {
 
 export function Hero() {
   return (
-    <section className="flex min-h-[calc(100vh-80px)] items-start bg-pure-white pt-0 pb-8 font-sans text-deep-teal">
-      <div className="w-full px-4 md:px-6 lg:px-8">
-        <div className="grid w-full items-center gap-8 lg:grid-cols-12">
+    <section className="flex min-h-0 items-start bg-pure-white pb-8 pt-4 font-sans text-deep-teal sm:min-h-[calc(100vh-80px)] sm:pt-0">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        <div className="grid w-full items-center gap-6 sm:gap-8 lg:grid-cols-12">
           <motion.div
-            className="flex flex-col gap-6 lg:col-span-6"
+            className="flex flex-col gap-4 sm:gap-6 lg:col-span-6"
             initial="hidden"
             animate="visible"
             variants={staggerContainer}
           >
             <motion.div
-              className="rounded-[2rem] bg-pacific-teal p-12 shadow-xl lg:p-16"
+              className="rounded-2xl bg-pacific-teal p-6 shadow-xl sm:rounded-[2rem] sm:p-10 lg:p-16"
               variants={fadeInUp}
               transition={transition}
             >
-              <h1 className="font-serif text-4xl font-light leading-[1.1] tracking-[-0.02em] text-pure-white lg:text-5xl xl:text-[3.5rem]">
+              <h1 className="font-serif text-3xl font-light leading-[1.1] tracking-[-0.02em] text-pure-white sm:text-4xl lg:text-5xl xl:text-[3.5rem]">
                 The molecule arrives verified.
                 <br />
                 Or it doesn&apos;t arrive.
               </h1>
 
-              <p className="mt-8 max-w-2xl text-lg leading-relaxed text-pure-white/90">
+              <p className="mt-5 max-w-2xl text-base leading-relaxed text-pure-white/90 sm:mt-8 sm:text-lg">
                 For pharmacies and practitioners who need unconditional trust,
                 Frontier Biomed verifies purity at every bond, domestic by
                 design.
@@ -62,25 +62,25 @@ export function Hero() {
             <motion.div variants={fadeInUp} transition={transition}>
               <Link
                 href="/login"
-                className="group flex w-full items-center justify-between rounded-[2rem] bg-deep-teal px-10 py-8 shadow-lg transition-transform hover:scale-[1.01] hover:bg-deep-teal/95"
+                className="group flex w-full items-center justify-between rounded-2xl bg-deep-teal px-6 py-5 shadow-lg transition-transform active:scale-[0.99] sm:rounded-[2rem] sm:px-10 sm:py-8 sm:hover:scale-[1.01] sm:hover:bg-deep-teal/95"
               >
-                <span className="text-xl font-medium text-pure-white lg:text-2xl">
+                <span className="text-lg font-medium text-pure-white sm:text-xl lg:text-2xl">
                   Partner Portal
                 </span>
 
-                <ArrowRightIcon className="h-8 w-8 text-pure-white transition-transform group-hover:translate-x-2" />
+                <ArrowRightIcon className="h-6 w-6 text-pure-white transition-transform group-hover:translate-x-2 sm:h-8 sm:w-8" />
               </Link>
             </motion.div>
           </motion.div>
 
           <motion.div
-            className="flex justify-center lg:col-span-6"
+            className="flex w-full justify-center lg:col-span-6"
             initial="hidden"
             animate="visible"
             variants={scaleIn}
             transition={{ ...transition, delay: 0.2 }}
           >
-            <div className="relative h-[600px] w-[400px] overflow-hidden rounded-[2rem] border-4 border-deep-teal bg-deep-teal shadow-2xl">
+            <div className="relative aspect-[2/3] w-full max-w-[400px] overflow-hidden rounded-2xl border-4 border-deep-teal bg-deep-teal shadow-2xl sm:rounded-[2rem] sm:aspect-auto sm:h-[min(600px,70vh)] sm:min-h-[360px]">
               <video
                 className="h-full w-full object-cover"
                 autoPlay

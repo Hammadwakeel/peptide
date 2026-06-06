@@ -34,29 +34,29 @@ export function Footer() {
       viewport={viewport}
       variants={staggerContainer}
     >
-      <div className="mx-auto max-w-[1400px] px-8 md:px-12 lg:px-20">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-8 md:px-12 lg:px-20">
         <motion.div
-          className="grid gap-12 border-b border-deep-teal/10 py-16 lg:grid-cols-12 lg:gap-16 lg:py-20"
+          className="grid gap-10 border-b border-deep-teal/10 py-12 sm:gap-12 sm:py-16 lg:grid-cols-12 lg:gap-16 lg:py-20"
           variants={staggerContainer}
         >
           <motion.div className="lg:col-span-5" variants={fadeInUp} transition={transition}>
             <Link href="/" aria-label="Frontier Biomed">
               <FrontierLogo variant="light" />
             </Link>
-            <p className="mt-6 max-w-sm font-serif text-2xl font-light leading-snug tracking-[-0.02em] text-deep-teal">
+            <p className="mt-5 max-w-sm font-serif text-xl font-light leading-snug tracking-[-0.02em] text-deep-teal sm:mt-6 sm:text-2xl">
               The foundational supply layer of the peptide economy.
             </p>
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-deep-teal/60">
+            <p className="mt-3 max-w-sm text-sm leading-relaxed text-deep-teal/60 sm:mt-4">
               Verified purity at every bond. Domestic by design — built for
               practitioners, pharmacies, and clinical teams.
             </p>
           </motion.div>
 
           <motion.div className="lg:col-span-3" variants={fadeInUp} transition={transition}>
-            <p className="font-mono text-xs uppercase tracking-[0.35em] text-pacific-teal">
+            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-pacific-teal sm:text-xs sm:tracking-[0.35em]">
               Explore
             </p>
-            <ul className="mt-6 space-y-3">
+            <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 sm:mt-6 sm:block sm:space-y-3">
               {navLinks.map(({ href, label }) => (
                 <li key={label}>
                   <Link
@@ -71,20 +71,20 @@ export function Footer() {
           </motion.div>
 
           <motion.div className="lg:col-span-4" variants={fadeInUp} transition={transition}>
-            <p className="font-mono text-xs uppercase tracking-[0.35em] text-pacific-teal">
+            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-pacific-teal sm:text-xs sm:tracking-[0.35em]">
               Partner Access
             </p>
-            <p className="mt-6 text-sm leading-relaxed text-deep-teal/60">
+            <p className="mt-4 text-sm leading-relaxed text-deep-teal/60 sm:mt-6">
               Join the network of verified suppliers and clinical partners.
             </p>
             <Link
               href="/login"
-              className="mt-6 inline-flex rounded-full bg-deep-teal px-6 py-3 text-sm font-medium text-pure-white transition-colors hover:bg-pacific-teal"
+              className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-deep-teal px-6 py-3 text-sm font-medium text-pure-white transition-colors hover:bg-pacific-teal sm:mt-6 sm:w-auto"
             >
               Partner Portal
             </Link>
 
-            <ul className="mt-10 flex flex-wrap gap-x-6 gap-y-2">
+            <ul className="mt-8 flex flex-wrap gap-x-4 gap-y-2 sm:mt-10 sm:gap-x-6">
               {legalLinks.map(({ href, label }) => (
                 <li key={label}>
                   <Link
@@ -100,12 +100,12 @@ export function Footer() {
         </motion.div>
 
         <motion.div
-          className="flex flex-col gap-4 py-8 text-xs text-deep-teal/45 sm:flex-row sm:items-center sm:justify-between"
+          className="flex flex-col gap-3 py-6 text-xs text-deep-teal/45 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:py-8"
           variants={fadeInUp}
           transition={{ ...transition, delay: 0.2 }}
         >
           <p>© {year} Frontier Biomed. All rights reserved.</p>
-          <p className="font-mono uppercase tracking-[0.2em]">
+          <p className="font-mono text-[10px] uppercase tracking-[0.12em] sm:text-xs sm:tracking-[0.2em]">
             Molecular certainty, unconditionally.
           </p>
         </motion.div>

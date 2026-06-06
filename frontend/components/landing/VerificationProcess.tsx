@@ -34,11 +34,8 @@ const steps = [
 
 export function VerificationProcess() {
   return (
-    <section
-      id="verification"
-      className="bg-pure-white py-20 lg:py-24"
-    >
-      <div className="mx-auto max-w-[1400px] px-8 md:px-12 lg:px-20 xl:px-28">
+    <section id="verification" className="bg-pure-white py-14 sm:py-20 lg:py-24">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-8 md:px-12 lg:px-20 xl:px-28">
         <motion.div
           className="max-w-5xl"
           initial="hidden"
@@ -47,10 +44,10 @@ export function VerificationProcess() {
           variants={fadeInUp}
           transition={transition}
         >
-          <span className="inline-block rounded-full bg-[#E6F0EE] px-4 py-1.5 font-mono text-xs uppercase tracking-[0.2em] text-[#1C6384]">
+          <span className="inline-block rounded-full bg-[#E6F0EE] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[#1C6384] sm:px-4 sm:text-xs sm:tracking-[0.2em]">
             Verification Process
           </span>
-          <h2 className="mt-6 font-serif text-5xl font-light leading-[1.05] tracking-[-0.03em] text-deep-teal md:text-6xl lg:text-7xl">
+          <h2 className="mt-4 font-serif text-3xl font-light leading-[1.08] tracking-[-0.03em] text-deep-teal sm:mt-6 sm:text-5xl md:text-6xl lg:text-7xl">
             Precision-engineered
             <br />
             verification.
@@ -58,7 +55,7 @@ export function VerificationProcess() {
         </motion.div>
 
         <motion.div
-          className="mt-16 grid gap-8 md:grid-cols-3"
+          className="mt-10 grid gap-4 sm:mt-16 sm:gap-8 md:grid-cols-3"
           initial="hidden"
           whileInView="visible"
           viewport={viewport}
@@ -67,19 +64,19 @@ export function VerificationProcess() {
           {steps.map((step) => (
             <motion.div
               key={step.number}
-              className={`flex flex-col rounded-[2rem] ${step.bg} p-10 transition-all duration-300 hover:shadow-lg`}
+              className={`flex flex-col rounded-2xl ${step.bg} p-6 transition-all duration-300 sm:rounded-[2rem] sm:p-10 sm:hover:shadow-lg`}
               variants={fadeInUp}
               transition={transition}
             >
-              <div className="self-end font-mono text-xl text-[#1C6384]/60">
+              <div className="self-end font-mono text-lg text-[#1C6384]/60 sm:text-xl">
                 {step.number}
               </div>
 
-              <div className="mt-6 flex flex-grow flex-col">
-                <h3 className="font-serif text-3xl font-light text-deep-teal">
+              <div className="mt-4 flex flex-grow flex-col sm:mt-6">
+                <h3 className="font-serif text-2xl font-light text-deep-teal sm:text-3xl">
                   {step.title}
                 </h3>
-                <p className="mt-4 text-base leading-7 text-deep-teal/70">
+                <p className="mt-3 text-sm leading-7 text-deep-teal/70 sm:mt-4 sm:text-base">
                   {step.description}
                 </p>
               </div>

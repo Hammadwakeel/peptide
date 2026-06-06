@@ -26,15 +26,23 @@ export const metadata = {
   description: "The foundational supply layer of the peptide economy.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${inter.variable} ${fraunces.variable} ${jetbrains.variable} font-sans antialiased bg-deep-teal`}
+        suppressHydrationWarning
       >
         <SmoothScroll>{children}</SmoothScroll>
       </body>

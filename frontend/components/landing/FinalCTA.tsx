@@ -12,7 +12,7 @@ import {
 function ArrowRightIcon() {
   return (
     <svg
-      className="h-6 w-6"
+      className="h-5 w-5 sm:h-6 sm:w-6"
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
@@ -30,8 +30,8 @@ function ArrowRightIcon() {
 
 export function FinalCTA() {
   return (
-    <section className="bg-pure-white py-32 lg:py-40">
-      <div className="mx-auto max-w-[1400px] px-8 md:px-12 lg:px-20">
+    <section className="bg-pure-white py-16 sm:py-32 lg:py-40">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-8 md:px-12 lg:px-20">
         <motion.div
           className="text-center"
           initial="hidden"
@@ -40,7 +40,7 @@ export function FinalCTA() {
           variants={staggerContainer}
         >
           <motion.span
-            className="font-mono text-xs uppercase tracking-[0.35em] text-pacific-teal"
+            className="font-mono text-[10px] uppercase tracking-[0.22em] text-pacific-teal sm:text-xs sm:tracking-[0.35em]"
             variants={fadeInUp}
             transition={transition}
           >
@@ -48,7 +48,7 @@ export function FinalCTA() {
           </motion.span>
 
           <motion.h2
-            className="mx-auto mt-6 max-w-5xl font-serif text-5xl font-light leading-[1.02] tracking-[-0.04em] text-deep-teal md:text-6xl lg:text-8xl"
+            className="mx-auto mt-4 max-w-5xl font-serif text-3xl font-light leading-[1.05] tracking-[-0.04em] text-deep-teal sm:mt-6 sm:text-5xl md:text-6xl lg:text-8xl"
             variants={fadeInUp}
             transition={transition}
           >
@@ -58,7 +58,7 @@ export function FinalCTA() {
           </motion.h2>
 
           <motion.p
-            className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-deep-teal/70 lg:text-xl"
+            className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-deep-teal/70 sm:mt-8 sm:text-lg lg:text-xl"
             variants={fadeInUp}
             transition={transition}
           >
@@ -67,13 +67,13 @@ export function FinalCTA() {
           </motion.p>
 
           <motion.div
-            className="mt-12 flex justify-center"
+            className="mt-8 flex justify-center sm:mt-12"
             variants={fadeInUp}
             transition={transition}
           >
             <Link
               href="/login"
-              className="group inline-flex items-center gap-4 rounded-full bg-deep-teal px-8 py-5 text-base font-medium text-pure-white transition-all duration-300 hover:scale-[1.03]"
+              className="group inline-flex w-full max-w-sm items-center justify-center gap-3 rounded-full bg-deep-teal px-6 py-4 text-sm font-medium text-pure-white transition-all duration-300 active:scale-[0.98] sm:w-auto sm:gap-4 sm:px-8 sm:py-5 sm:text-base sm:hover:scale-[1.03]"
             >
               Partner Portal
               <ArrowRightIcon />
