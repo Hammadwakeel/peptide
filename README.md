@@ -32,6 +32,16 @@ Open [http://localhost:3000](http://localhost:3000).
 | `pnpm start`  | Start production server  |
 | `pnpm lint`   | Run ESLint               |
 
+## Deploy on Vercel
+
+This repo is a monorepo. The Next.js app lives in **`frontend/`**.
+
+**Option A (recommended):** In your Vercel project → Settings → General → **Root Directory**, set `frontend`, then redeploy.
+
+**Option B:** Leave Root Directory empty. The root `vercel.json` runs install/build inside `frontend/` automatically.
+
+Use **pnpm** as the package manager (configured via root `packageManager` field).
+
 ## Backend
 
 The `backend/` folder is reserved for the API server. Keep frontend and backend env files separate:
