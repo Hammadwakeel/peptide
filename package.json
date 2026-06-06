@@ -7,6 +7,9 @@
     "dev": "pnpm --dir frontend dev",
     "start": "pnpm --dir frontend start",
     "lint": "pnpm --dir frontend lint",
-    "vercel-build": "pnpm --dir frontend build"
+    "vercel-build": "pnpm --dir frontend build",
+    "push:hasnain": "git push frontier-nexus main",
+    "push:hammad": "git subtree push --prefix=frontend origin main",
+    "push:all": "pnpm push:hasnain && pnpm push:hammad"
   }
 }

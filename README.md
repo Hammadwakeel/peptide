@@ -32,15 +32,34 @@ Open [http://localhost:3000](http://localhost:3000).
 | `pnpm start`  | Start production server  |
 | `pnpm lint`   | Run ESLint               |
 
+## Git remotes
+
+This monorepo pushes to two remotes with different layouts:
+
+| Remote | Repo | What gets pushed |
+| ------ | ---- | ---------------- |
+| `frontier-nexus` | [Frontier-Nexus-Rx](https://github.com/muhammadhasnain100/Frontier-Nexus-Rx) (Hasnain) | Full monorepo: `frontend/` + `backend/` |
+| `origin` | Hammadwakeel/peptide (Hammad) | **Frontend only** (app files at repo root, no `backend/`) |
+
+From the repo root:
+
+```bash
+pnpm push:hasnain   # monorepo → Hasnain
+pnpm push:hammad    # frontend subtree → Hammad
+pnpm push:all       # both
+```
+
+Or run `./scripts/push-remotes.sh`.
+
 ## Deploy on Vercel
 
-This repo is a monorepo. The Next.js app lives in **`frontend/`**.
+### Hasnain (Frontier-Nexus-Rx monorepo)
 
-**Option A (recommended):** In your Vercel project → Settings → General → **Root Directory**, set `frontend`, then redeploy.
+Set **Root Directory** to `frontend` (or use the root `vercel.json` which builds from `frontend/`).
 
-**Option B:** Leave Root Directory empty. The root `vercel.json` runs install/build inside `frontend/` automatically.
+### Hammad (peptide — frontend-only repo)
 
-Use **pnpm** as the package manager (configured via root `packageManager` field).
+Deploy from repo root. Next.js lives at the top level; use **pnpm** as the package manager.
 
 ## Backend
 
