@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, type RefObject } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  type CSSProperties,
+  type RefObject,
+} from "react";
 import { usePinnedScrollProgress } from "@/components/landing/usePinnedScroll";
 
 const FRAME_COUNT = 240;
@@ -11,11 +17,13 @@ const framePath = (i: number) =>
 type HeroScrollSequenceProps = {
   sectionRef: RefObject<HTMLElement | null>;
   className?: string;
+  style?: CSSProperties;
 };
 
 export function HeroScrollSequence({
   sectionRef,
   className,
+  style,
 }: HeroScrollSequenceProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
@@ -42,7 +50,10 @@ export function HeroScrollSequence({
       canvas.height = h;
     }
 
-    // "cover" fit: fill the canvas, cropping overflow.
+    // Transparent letterbox so the frame blends onto whatever sits behind it.
+    ctx.clearRect(0, 0, w, h);
+
+    // "contain" fit: show the full frame, centered.
     const imgRatio = img.naturalWidth / img.naturalHeight;
     const canvasRatio = w / h;
     let dw: number;
@@ -50,18 +61,17 @@ export function HeroScrollSequence({
     let dx: number;
     let dy: number;
     if (canvasRatio > imgRatio) {
-      dw = w;
-      dh = w / imgRatio;
-      dx = 0;
-      dy = (h - dh) / 2;
-    } else {
       dh = h;
       dw = h * imgRatio;
       dx = (w - dw) / 2;
       dy = 0;
+    } else {
+      dw = w;
+      dh = w / imgRatio;
+      dx = 0;
+      dy = (h - dh) / 2;
     }
 
-    ctx.clearRect(0, 0, w, h);
     ctx.drawImage(img, dx, dy, dw, dh);
   }, []);
 
@@ -116,6 +126,7 @@ export function HeroScrollSequence({
     <canvas
       ref={canvasRef}
       className={className}
+      style={style}
       role="img"
       aria-label="Molecular verification animation controlled by scroll"
     />

@@ -41,7 +41,7 @@ export function Hero() {
       className="relative bg-pure-white font-sans text-deep-teal"
       aria-label="Hero"
     >
-      <div className="sticky top-16 flex min-h-[calc(100dvh-4rem)] items-center pb-8 pt-4">
+      <div className="sticky top-16 flex min-h-[calc(100dvh-4rem)] items-center bg-pure-white pb-8 pt-4">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="grid w-full items-center gap-6 sm:gap-8 lg:grid-cols-12">
             <motion.div
@@ -83,16 +83,24 @@ export function Hero() {
             </motion.div>
 
             <motion.div
-              className="flex w-full justify-center lg:col-span-6"
+              className="flex w-full justify-center lg:col-span-6 lg:justify-end"
               initial="hidden"
               animate="visible"
               variants={scaleIn}
               transition={{ ...transition, delay: 0.2 }}
             >
-              <div className="relative aspect-[2/3] w-full max-w-[400px] overflow-hidden rounded-2xl border-4 border-deep-teal bg-deep-teal shadow-2xl sm:rounded-[2rem] sm:aspect-auto sm:h-[min(600px,55vh)] sm:min-h-[320px] lg:h-[min(600px,70vh)]">
+              <div className="relative aspect-[2/3] w-full max-w-[420px] lg:aspect-auto lg:h-[min(680px,72vh)] lg:min-h-[320px] lg:max-w-none">
                 <HeroScrollSequence
                   sectionRef={sectionRef}
                   className="h-full w-full"
+                  style={{
+                    WebkitMaskImage:
+                      "linear-gradient(to right, transparent 0%, #000 18%, #000 82%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%)",
+                    maskImage:
+                      "linear-gradient(to right, transparent 0%, #000 18%, #000 82%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%)",
+                    WebkitMaskComposite: "source-in",
+                    maskComposite: "intersect",
+                  }}
                 />
               </div>
             </motion.div>
