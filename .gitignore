@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Frontier brand manual (local reference only — not for version control)
+Frontier Brand Manual.docx
+Frontier Brand Manual.pdf
+.~ontier Brand Manual.docx
+FRONTIER_CONTEXT_PLAN.md
