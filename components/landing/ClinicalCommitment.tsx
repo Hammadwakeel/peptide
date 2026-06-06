@@ -34,33 +34,73 @@ export function ClinicalCommitment() {
           <div className="lg:col-span-7 grid grid-cols-12 gap-4 h-[600px]">
             {/* 1st Image: Large Portrait */}
             <div className="col-span-4 relative overflow-hidden rounded-3xl">
-              <Image src="/brand/humanised-man-blue-sky-portrait.png" alt="Man Blue Sky" fill className="object-cover" />
+              <Image
+                src="/brand/humanised-man-blue-sky-portrait.png"
+                alt="Man Blue Sky"
+                fill
+                sizes="(max-width: 1024px) 40vw, 25vw"
+                className="object-cover"
+              />
             </div>
 
             {/* Right Column Group */}
             <div className="col-span-8 grid grid-rows-2 gap-4">
               {/* 2nd Image: Top Wide */}
               <div className="row-span-1 relative overflow-hidden rounded-3xl">
-                <Image src="/brand/humanised-woman-phone-lifestyle.png" alt="Phone Lifestyle" fill className="object-cover" />
+                <Image
+                  src="/brand/humanised-woman-phone-lifestyle.png"
+                  alt="Phone Lifestyle"
+                  fill
+                  sizes="(max-width: 1024px) 90vw, 45vw"
+                  className="object-cover"
+                />
               </div>
               
               {/* Bottom Section */}
               <div className="row-span-1 grid grid-cols-6 gap-4">
                 {/* 3rd Image: Left Small */}
                 <div className="col-span-2 relative overflow-hidden rounded-3xl">
-                  <Image src="/brand/humanised-woman-gold-glitter.png" alt="Gold Glitter" fill className="object-cover" />
+                  <Image
+                    src="/brand/humanised-woman-gold-glitter.png"
+                    alt="Gold Glitter"
+                    fill
+                    sizes="(max-width: 1024px) 30vw, 15vw"
+                    className="object-cover"
+                  />
                 </div>
                 
                 {/* 4th, 5th, and 6th Images Group */}
                 <div className="col-span-4 grid grid-rows-2 gap-4">
                   {/* 4th and 5th Side-by-Side */}
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="relative overflow-hidden rounded-3xl"><Image src="/brand/humanised-man-laughing-portrait.png" alt="Laughing Man" fill className="object-cover" /></div>
-                    <div className="relative overflow-hidden rounded-3xl"><Image src="/brand/humanised-woman-braids-laughing.png" alt="Braids Laughing" fill className="object-cover" /></div>
+                    <div className="relative overflow-hidden rounded-3xl">
+                      <Image
+                        src="/brand/humanised-man-laughing-portrait.png"
+                        alt="Laughing Man"
+                        fill
+                        sizes="(max-width: 1024px) 40vw, 12vw"
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="relative overflow-hidden rounded-3xl">
+                      <Image
+                        src="/brand/humanised-woman-braids-laughing.png"
+                        alt="Braids Laughing"
+                        fill
+                        sizes="(max-width: 1024px) 40vw, 12vw"
+                        className="object-cover"
+                      />
+                    </div>
                   </div>
                   {/* 6th Image Underneath */}
                   <div className="relative overflow-hidden rounded-3xl">
-                    <Image src="/brand/humanised-woman-serene-clouds.png" alt="Serene Clouds" fill className="object-cover" />
+                    <Image
+                      src="/brand/humanised-woman-serene-clouds.png"
+                      alt="Serene Clouds"
+                      fill
+                      sizes="(max-width: 1024px) 80vw, 25vw"
+                      className="object-cover"
+                    />
                   </div>
                 </div>
               </div>

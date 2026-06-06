@@ -34,6 +34,7 @@ export function SeamlessIntegration() {
               src="/brand/product-mobile-dashboard.png"
               alt="Dashboard"
               fill
+              sizes="(max-width: 1024px) 0px, 33vw"
               className="object-cover"
             />
           </div>

@@ -34,7 +34,7 @@ export function LoginForm() {
       {/* Left — brand image */}
       <div className="relative hidden h-full w-1/2 lg:block">
         <Image
-          src="/brand/product-vial-2x-blend-hero.png"
+          src="/brand/brand image carrying hands.png"
           alt="Frontier Biomed product"
           fill
           priority
