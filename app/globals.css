@@ -1,26 +1,38 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Aspekta";
+  src: url("/fonts/AspektaVF.woff2") format("woff2");
+  font-weight: 50 1000;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-deep-teal: #011a24;
+  --color-pacific-teal: #0d717b;
+  --color-pure-white: #ffffff;
+  --color-coral-blush: #f7e1d9;
+  --spacing-1f: 32px;
+  --spacing-2f: 64px;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-deep-teal: #011a24;
+  --color-pacific-teal: #0d717b;
+  --color-pure-white: #ffffff;
+  --color-coral-blush: #f7e1d9;
+  --color-background: var(--color-deep-teal);
+  --color-foreground: var(--color-pure-white);
+  --font-sans: "Aspekta", system-ui, sans-serif;
+  --font-display: var(--font-fraunces);
+  --font-mono: var(--font-jetbrains-mono);
+  --spacing-1f: 32px;
+  --spacing-2f: 64px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-deep-teal);
+  color: var(--color-pure-white);
+  font-family: var(--font-sans);
 }
