@@ -6,10 +6,9 @@
 **/.env.*
 !**/.env.example
 
-# GCP service account keys
-database/*.json
-*-service-account*.json
-glowing-arcadia-*.json
+# GCP service account keys only (do not block other .json files)
+database/glowing-arcadia-*.json
+database/*-service-account*.json
 
 # Python
 __pycache__/

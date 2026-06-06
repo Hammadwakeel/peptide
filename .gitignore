@@ -54,11 +54,9 @@ backend/**/.env
 backend/**/.env.*
 !backend/**/.env.example
 
-# GCP / database credentials
-backend/database/*.json
-!backend/database/.env.example
-*-service-account*.json
-glowing-arcadia-*.json
+# GCP service account keys only (do not block package.json, tsconfig.json, etc.)
+backend/database/glowing-arcadia-*.json
+backend/database/*-service-account*.json
 
 # IDE / editor
 .idea/
