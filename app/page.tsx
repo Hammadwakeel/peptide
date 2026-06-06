@@ -4,6 +4,7 @@ import { VerificationProcess } from "@/components/landing/VerificationProcess";
 import { StandardsOfTrust } from "@/components/landing/StandardsOfTrust";
 import { SeamlessIntegration } from "@/components/landing/SeamlessIntegration";
 import { ClinicalCommitment } from "@/components/landing/ClinicalCommitment";
+import { FinalCTA } from "@/components/landing/FinalCTA";
 
 export default function LandingPage() {
   return (
@@ -14,6 +15,7 @@ export default function LandingPage() {
       <StandardsOfTrust />
       <SeamlessIntegration />
       <ClinicalCommitment />
+      <FinalCTA />
     </main>
   );
 }
