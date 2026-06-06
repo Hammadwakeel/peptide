@@ -3,6 +3,7 @@ import { Navbar } from "@/components/Navbar";
 import { VerificationProcess } from "@/components/landing/VerificationProcess";
 import { StandardsOfTrust } from "@/components/landing/StandardsOfTrust";
 import { SeamlessIntegration } from "@/components/landing/SeamlessIntegration";
+import { ClinicalCommitment } from "@/components/landing/ClinicalCommitment";
 
 export default function LandingPage() {
   return (
@@ -12,6 +13,7 @@ export default function LandingPage() {
       <VerificationProcess />
       <StandardsOfTrust />
       <SeamlessIntegration />
+      <ClinicalCommitment />
     </main>
   );
 }
