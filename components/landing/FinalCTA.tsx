@@ -53,12 +53,6 @@ export function FinalCTA() {
             </Link>
           </div>
         </div>
-
-        {/* Bottom Divider */}
-        <div className="mt-24 border-t border-deep-teal/10 pt-8">
-          {/* Empty footer area as requested */}
-        </div>
-
       </div>
     </section>
   );

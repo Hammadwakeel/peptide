@@ -1,26 +1,24 @@
-import Image from "next/image";
 import Link from "next/link";
+import { FrontierLogo } from "@/components/FrontierLogo";
 
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-deep-teal/10 bg-pure-white/95 backdrop-blur-md">
+    // Updated background from bg-pure-white/95 to bg-pure-white/70 for more transparency
+    <header className="sticky top-0 z-50 w-full border-b border-deep-teal/5 bg-pure-white/70 backdrop-blur-lg">
       <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-4 lg:px-12">
         
         {/* Brand */}
-        <Link
-          href="/"
-          className="flex items-center p-2"
-          aria-label="Frontier Biomed"
-        >
-          <Image
-            src="/frontier-logo-isocon.png"
-            alt="Frontier Biomed"
-            width={40}
-            height={40}
-            priority
-            className="h-10 w-10 object-contain"
-          />
+        <Link href="/" aria-label="Frontier Biomed">
+          <FrontierLogo variant="light" priority />
         </Link>
+
+        {/* Navigation Menu */}
+        <nav className="hidden items-center gap-6 md:flex">
+          <Link href="#verification" className="text-sm font-medium text-deep-teal/80 hover:text-deep-teal transition-colors">Process</Link>
+          <Link href="#standards" className="text-sm font-medium text-deep-teal/80 hover:text-deep-teal transition-colors">Standards</Link>
+          <Link href="#commitment" className="text-sm font-medium text-deep-teal/80 hover:text-deep-teal transition-colors">Commitment</Link>
+          <Link href="/integrations" className="text-sm font-medium text-deep-teal/80 hover:text-deep-teal transition-colors">Integrations</Link>
+        </nav>
 
         {/* CTA */}
         <Link
