@@ -1,0 +1,17 @@
+{
+  "name": "@frontier/backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "db:migrate": "python3 database/migrate.py",
+    "db:verify": "python3 database/verify.py",
+    "db:test": "python3 database/test.py",
+    "identity:dev": "cd identity-service && python3 -m uvicorn main:app --host 0.0.0.0 --port 3001 --reload",
+    "identity:seed": "cd identity-service && python3 scripts/seed_test_users.py",
+    "commerce:dev": "cd commerce-service && python3 -m uvicorn main:app --host 0.0.0.0 --port 3002 --reload",
+    "commerce:seed": "cd commerce-service && python3 scripts/seed_sample_products.py"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}
