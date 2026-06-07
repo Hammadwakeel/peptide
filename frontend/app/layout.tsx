@@ -1,6 +1,6 @@
 import "./globals.css";
 import { Inter, Fraunces, JetBrains_Mono } from "next/font/google";
-import { SmoothScroll } from "@/components/SmoothScroll";
+import { AppProviders } from "@/components/providers/AppProviders";
 
 // The Primary Body Font Fallback
 const inter = Inter({
@@ -44,7 +44,7 @@ export default function RootLayout({
         className={`${inter.variable} ${fraunces.variable} ${jetbrains.variable} font-sans antialiased bg-deep-teal`}
         suppressHydrationWarning
       >
-        <SmoothScroll>{children}</SmoothScroll>
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );
