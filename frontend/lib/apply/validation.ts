@@ -7,9 +7,14 @@ const ALLOWED_TYPES = [
   "image/webp",
 ];
 
-export function validateApplicationFile(file: File): string | null {
-  if (!ALLOWED_TYPES.includes(file.type)) {
-    return "File must be PDF, PNG, or JPEG.";
+export function validateApplicationFile(file: File, imagesOnly = false): string | null {
+  const allowedTypes = imagesOnly
+    ? ["image/png", "image/jpeg", "image/jpg", "image/webp"]
+    : ALLOWED_TYPES;
+  if (!allowedTypes.includes(file.type)) {
+    return imagesOnly
+      ? "Logo must be PNG, JPEG, or WebP."
+      : "File must be PDF, PNG, or JPEG.";
   }
   if (file.size > MAX_FILE_BYTES) {
     return "File must be 10 MB or smaller.";
@@ -58,14 +63,24 @@ export function getPasswordStrength(password: string): PasswordStrength {
 export function validatePracticeStep(
   practice: import("@/lib/apply/types").PracticeInfo,
 ): string | null {
-  if (!practice.clinicName.trim()) return "Clinic name is required.";
+  if (practice.clinicName.trim().length < 2) return "Clinic name must be at least 2 characters.";
   if (!practice.npi.trim()) return "NPI number is required.";
   if (!practice.dea.trim()) return "DEA number is required.";
   if (!practice.stateLicense.trim()) return "State license number is required.";
-  if (!practice.businessAddress.trim()) return "Business address is required.";
+  if (!practice.address1.trim()) return "Street address is required.";
+  if (!practice.city.trim()) return "City is required.";
+  if (!practice.state.trim()) return "State is required.";
+  if (!/^\d{5}(-\d{4})?$/.test(practice.zip.trim())) {
+    return "Enter a valid ZIP code.";
+  }
   if (!practice.phone.trim()) return "Phone is required.";
   if (!practice.contactName.trim()) return "Primary contact name is required.";
-  if (!practice.email.includes("@")) return "Enter a valid email address.";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(practice.email.trim())) {
+    return "Enter a valid email address.";
+  }
+  if (practice.password.length < 8) {
+    return "Password must be at least 8 characters.";
+  }
   if (getPasswordStrength(practice.password).score < 2) {
     return "Choose a stronger password.";
   }
@@ -75,12 +90,21 @@ export function validatePracticeStep(
   return null;
 }
 
+const REQUIRED_DOCUMENTS: import("@/lib/apply/types").ApplicationDocumentKey[] = [
+  "deaLicense",
+  "npiCertificate",
+  "stateLicense",
+  "businessRegistration",
+];
+
 export function validateDocumentsStep(
   documents: import("@/lib/apply/types").ApplicationDocuments,
 ): string | null {
-  const missing = Object.entries(documents).filter(([, file]) => !file || file.status !== "complete");
-  if (missing.length > 0) {
-    return "Upload all required documents before continuing.";
+  for (const key of REQUIRED_DOCUMENTS) {
+    const file = documents[key];
+    if (!file || file.status !== "complete" || !file.file) {
+      return "Upload all required documents before continuing.";
+    }
   }
   return null;
 }
@@ -88,14 +112,26 @@ export function validateDocumentsStep(
 export function validateBankingStep(
   banking: import("@/lib/apply/types").BankingInfo,
 ): string | null {
-  if (!banking.plaidConnected) {
-    if (!banking.bankName.trim()) return "Bank name is required.";
-    if (!/^\d{9}$/.test(banking.routingNumber)) {
-      return "Routing number must be 9 digits.";
-    }
-    if (banking.accountNumber.length < 4) {
-      return "Enter a valid account number.";
-    }
+  if (!banking.bankName.trim()) return "Bank name is required.";
+  if (!/^\d{9}$/.test(banking.routingNumber.trim())) {
+    return "Routing number must be 9 digits.";
+  }
+  if (banking.accountNumber.trim().length < 4) {
+    return "Enter a valid account number.";
+  }
+  if (banking.accountType !== "checking" && banking.accountType !== "savings") {
+    return "Select a valid account type.";
   }
   return null;
+}
+
+export function validateApplicationState(
+  state: import("@/lib/apply/types").ApplicationWizardState,
+): string | null {
+  return (
+    validatePracticeStep(state.practice) ??
+    validateDocumentsStep(state.documents) ??
+    validateBankingStep(state.banking) ??
+    (!state.eSignCompleted ? "Complete the e-signature before submitting." : null)
+  );
 }

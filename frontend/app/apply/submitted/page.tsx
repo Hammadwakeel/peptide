@@ -1,4 +1,5 @@
 import dynamic from "next/dynamic";
+import { Suspense } from "react";
 import { LoginPageSkeleton } from "@/components/skeletons/LoginPageSkeleton";
 
 const ApplicationSubmitted = dynamic(
@@ -15,5 +16,9 @@ export const metadata = {
 };
 
 export default function ApplicationSubmittedPage() {
-  return <ApplicationSubmitted />;
+  return (
+    <Suspense fallback={<LoginPageSkeleton />}>
+      <ApplicationSubmitted />
+    </Suspense>
+  );
 }

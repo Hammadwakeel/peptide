@@ -1,17 +1,11 @@
 from fastapi import APIRouter, Depends
 
 from middleware.auth import require_roles
-from schemas.doctor import ClinicApplicationRequest, InvitePatientRequest
+from schemas.doctor import InvitePatientRequest
 from schemas.pagination import PaginationQuery
 from services import doctor_service
 
 router = APIRouter(prefix="/doctor", tags=["doctor"])
-
-
-@router.post("/apply")
-def apply_clinic(body: ClinicApplicationRequest) -> dict:
-    """Clinic / doctor submits registration — optional affiliate_code links referral."""
-    return doctor_service.submit_clinic_application(body)
 
 
 @router.post("/patients/invite")

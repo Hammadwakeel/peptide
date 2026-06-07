@@ -6,21 +6,25 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
 import {
+  isTokenExpired,
   loginWithBackend,
   refreshAuthSession,
   shouldRefreshToken,
 } from "@/lib/auth/api";
+import { REFRESH_INTERVAL_MS } from "@/lib/auth/constants";
 import {
   clearSession,
   getPortalPath,
   persistSession,
+  readRememberMe,
   readSession,
 } from "@/lib/auth/storage";
-import type { AuthSession, LoginCredentials, UserRole } from "@/lib/auth/types";
+import type { AuthSession, LoginCredentials } from "@/lib/auth/types";
 import { toast } from "@/lib/toast";
 
 type AuthContextValue = {
@@ -33,34 +37,94 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+async function resolveSession(): Promise<AuthSession | null> {
+  const current = readSession();
+  if (!current) return null;
+
+  if (isTokenExpired(current.refreshExpiresAt)) {
+    clearSession();
+    return null;
+  }
+
+  if (isTokenExpired(current.expiresAt) || shouldRefreshToken(current.expiresAt)) {
+    const refreshed = await refreshAuthSession(current);
+    persistSession(refreshed, readRememberMe());
+    return refreshed;
+  }
+
+  return current;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [session, setSession] = useState<AuthSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const refreshInFlight = useRef(false);
+
+  const logout = useCallback(() => {
+    clearSession();
+    setSession(null);
+    toast.success("Signed out successfully.");
+    router.push("/login");
+  }, [router]);
+
+  const expireSession = useCallback(() => {
+    clearSession();
+    setSession(null);
+    toast.error("Your session has expired. Please sign in again.");
+    router.push("/login");
+  }, [router]);
+
+  const refreshSession = useCallback(async () => {
+    if (refreshInFlight.current) return;
+    refreshInFlight.current = true;
+
+    try {
+      const nextSession = await resolveSession();
+      setSession(nextSession);
+      if (!nextSession) {
+        expireSession();
+      }
+    } catch {
+      clearSession();
+      setSession(null);
+      expireSession();
+    } finally {
+      refreshInFlight.current = false;
+    }
+  }, [expireSession]);
 
   useEffect(() => {
-    setSession(readSession());
-    setIsLoading(false);
-  }, []);
-
-  useEffect(() => {
-    const interval = window.setInterval(async () => {
-      const current = readSession();
-      if (!current || !shouldRefreshToken(current.expiresAt)) return;
-
-      try {
-        const refreshed = await refreshAuthSession(current);
-        const rememberMe = refreshed.expiresAt - Date.now() > 24 * 60 * 60 * 1000;
-        persistSession(refreshed, rememberMe);
-        setSession(refreshed);
-      } catch {
+    resolveSession()
+      .then((nextSession) => {
+        setSession(nextSession);
+      })
+      .catch(() => {
         clearSession();
         setSession(null);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      const current = readSession();
+      if (!current) return;
+
+      if (isTokenExpired(current.refreshExpiresAt)) {
+        expireSession();
+        return;
       }
-    }, 60_000);
+
+      if (shouldRefreshToken(current.expiresAt) || isTokenExpired(current.expiresAt)) {
+        void refreshSession();
+      }
+    }, REFRESH_INTERVAL_MS);
 
     return () => window.clearInterval(interval);
-  }, []);
+  }, [expireSession, refreshSession]);
 
   const login = useCallback(
     async (credentials: LoginCredentials) => {
@@ -71,13 +135,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     [router],
   );
-
-  const logout = useCallback(() => {
-    clearSession();
-    setSession(null);
-    toast.success("Signed out successfully.");
-    router.push("/login");
-  }, [router]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -101,7 +158,7 @@ export function useAuth() {
   return context;
 }
 
-export function useRequiredRole(requiredRole: UserRole) {
+export function useRequiredRole(requiredRole: AuthSession["role"]) {
   const { session, isLoading } = useAuth();
   return {
     session,

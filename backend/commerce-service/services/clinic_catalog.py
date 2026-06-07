@@ -13,9 +13,15 @@ from repository.clinic_store import (
     remove_from_store,
     update_store_price,
 )
-from repository.products import count_products, get_product_by_id, list_products
+from repository.products import (
+    count_products,
+    get_product_by_id,
+    get_product_by_slug,
+    list_product_images,
+    list_products,
+)
+from schemas.inventory_clinic import AddToStoreRequest, SetRetailPriceRequest, UpdateStorePriceRequest
 from schemas.pagination import PaginationQuery, paginated_response
-from schemas.products import AddToStoreRequest, UpdateStorePriceRequest
 from services.admin_inventory import _fmt_product
 
 
@@ -26,9 +32,13 @@ def _require_clinic(cursor, user: dict) -> dict:
     return clinic
 
 
-def list_master_inventory(
-    user: dict, pagination: PaginationQuery,
-    product_type: str | None = None, category_id: str | None = None, search: str | None = None,
+def list_provider_catalog(
+    user: dict,
+    pagination: PaginationQuery,
+    product_type: str | None = None,
+    category_id: str | None = None,
+    search: str | None = None,
+    stock_status: str | None = None,
 ) -> dict:
     conn = connect()
     cursor = conn.cursor()
@@ -42,7 +52,9 @@ def list_master_inventory(
                              search=search, active_only=True)
         items = []
         for r in rows:
-            item = _fmt_product(r)
+            if stock_status and r.get("stock_status") != stock_status:
+                continue
+            item = _fmt_product(r, admin=True)
             item["in_my_store"] = is_in_store(cursor, str(clinic["id"]), str(r["id"]))
             items.append(item)
         return paginated_response(items, total, pagination.page, pagination.limit, key="products")
@@ -53,9 +65,63 @@ def list_master_inventory(
         conn.close()
 
 
-def list_my_store(
-    user: dict, pagination: PaginationQuery, search: str | None = None,
-) -> dict:
+def get_provider_catalog_product(user: dict, slug: str) -> dict:
+    conn = connect()
+    cursor = conn.cursor()
+    try:
+        clinic = _require_clinic(cursor, user)
+        product = get_product_by_slug(cursor, slug)
+        if not product or not product.get("active", True):
+            raise HTTPException(status_code=404, detail="Product not found")
+
+        images = list_product_images(cursor, str(product["id"]))
+        product["images"] = [{"url": i["image_url"], "is_primary": i["is_primary"]} for i in images]
+        item = _fmt_product(product, admin=True)
+        item["in_my_store"] = is_in_store(cursor, str(clinic["id"]), str(product["id"]))
+        return {"status": True, "product": item}
+    except HTTPException:
+        raise
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def set_retail_price(user: dict, product_id: str, body: SetRetailPriceRequest) -> dict:
+    conn = connect()
+    cursor = conn.cursor()
+    try:
+        clinic = _require_clinic(cursor, user)
+        product = get_product_by_id(cursor, product_id)
+        if not product or not product.get("active", True):
+            raise HTTPException(status_code=404, detail="Product not found")
+
+        store_item = add_to_store(
+            cursor,
+            str(clinic["id"]),
+            product_id,
+            str(product["variant_id"]) if product.get("variant_id") else None,
+            body.retail_price,
+        )
+        conn.commit()
+        return {
+            "status": True,
+            "message": "Retail price saved",
+            "product_id": product_id,
+            "retail_price": float(store_item["retail_price"]),
+            "store_id": str(store_item["id"]),
+        }
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception as exc:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def list_my_store(user: dict, pagination: PaginationQuery, search: str | None = None) -> dict:
     conn = connect()
     cursor = conn.cursor()
     try:
@@ -68,8 +134,8 @@ def list_my_store(
             {
                 "store_id": str(r["store_id"]),
                 "product_id": str(r["product_id"]),
+                "name": r["product_name"],
                 "sku": r["sku"],
-                "product_name": r["product_name"],
                 "description": r.get("description"),
                 "product_type": r.get("product_type"),
                 "category_name": r.get("category_name"),
@@ -78,6 +144,7 @@ def list_my_store(
                 "clinic_cost": float(r["clinic_cost"]) if r.get("clinic_cost") else None,
                 "retail_price": float(r["retail_price"]),
                 "image_url": r.get("image_url"),
+                "is_visible": r.get("active", True),
             }
             for r in rows
         ]

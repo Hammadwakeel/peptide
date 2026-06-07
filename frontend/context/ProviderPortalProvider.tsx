@@ -4,40 +4,45 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
-import { MOCK_PRODUCTS } from "@/lib/products/mock-data";
+import {
+  addToMyStore,
+  listMyStore,
+  removeAllFromStore,
+  removeFromStore,
+  updateStoreProductPrice,
+} from "@/lib/products/api";
+import type { StoreProduct } from "@/lib/products/catalog-types";
 import { getProviderMetrics } from "@/lib/provider/mock-metrics";
 import {
   DEFAULT_STOREFRONT_BRANDING,
   type MetricsDateRange,
-  type MyStoreEntry,
   type ProviderMetrics,
   type StorefrontBranding,
 } from "@/lib/provider/types";
+import { showError } from "@/lib/toast";
 
-function defaultRetailPrice(productId: string): number {
-  const product = MOCK_PRODUCTS.find((item) => item.id === productId);
-  if (!product) return 0;
-  return Math.ceil(product.clinicPrice * 1.35);
-}
-
-const INITIAL_STORE: MyStoreEntry[] = [
-  { productId: "prod-002", retailPrice: 249 },
-];
+type AddStoreItem = { productId: string; retailPrice: number; variantId?: string };
 
 type ProviderPortalContextValue = {
   metricsRange: MetricsDateRange;
   setMetricsRange: (range: MetricsDateRange) => void;
   metrics: ProviderMetrics;
-  myStore: MyStoreEntry[];
+  myStore: StoreProduct[];
+  isStoreLoading: boolean;
+  refreshMyStore: () => Promise<void>;
   isInMyStore: (productId: string) => boolean;
-  addToMyStore: (productIds: string[]) => void;
-  removeFromMyStore: (productId: string) => void;
-  removeAllFromMyStore: () => void;
-  updateRetailPrice: (productId: string, retailPrice: number) => void;
+  getStoreIdForProduct: (productId: string) => string | null;
+  addToMyStore: (items: AddStoreItem[]) => Promise<void>;
+  removeFromMyStore: (storeId: string) => Promise<void>;
+  removeFromMyStoreByProductId: (productId: string) => Promise<void>;
+  removeAllFromMyStore: () => Promise<void>;
+  updateRetailPrice: (storeId: string, retailPrice: number) => Promise<void>;
+  setStoreVisibility: (storeId: string, isVisible: boolean) => Promise<void>;
   branding: StorefrontBranding;
   updateBranding: (patch: Partial<StorefrontBranding>) => void;
 };
@@ -46,44 +51,98 @@ const ProviderPortalContext = createContext<ProviderPortalContextValue | null>(n
 
 export function ProviderPortalProvider({ children }: { children: ReactNode }) {
   const [metricsRange, setMetricsRange] = useState<MetricsDateRange>("30d");
-  const [myStore, setMyStore] = useState<MyStoreEntry[]>(INITIAL_STORE);
+  const [myStore, setMyStore] = useState<StoreProduct[]>([]);
+  const [isStoreLoading, setIsStoreLoading] = useState(true);
   const [branding, setBranding] = useState<StorefrontBranding>(DEFAULT_STOREFRONT_BRANDING);
 
   const metrics = useMemo(() => getProviderMetrics(metricsRange), [metricsRange]);
 
+  const refreshMyStore = useCallback(async () => {
+    setIsStoreLoading(true);
+    try {
+      const response = await listMyStore({ page: 1, limit: 100 });
+      setMyStore(response.products);
+      setBranding((current) => ({
+        ...current,
+        clinicName: response.clinic_name || current.clinicName,
+      }));
+    } catch (error) {
+      showError(error, "Unable to load My Store.");
+      setMyStore([]);
+    } finally {
+      setIsStoreLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshMyStore();
+  }, [refreshMyStore]);
+
   const isInMyStore = useCallback(
-    (productId: string) => myStore.some((entry) => entry.productId === productId),
+    (productId: string) => myStore.some((entry) => entry.product_id === productId),
     [myStore],
   );
 
-  const addToMyStore = useCallback((productIds: string[]) => {
-    setMyStore((current) => {
-      const existing = new Set(current.map((entry) => entry.productId));
-      const additions = productIds
-        .filter((id) => !existing.has(id))
-        .map((productId) => ({
-          productId,
-          retailPrice: defaultRetailPrice(productId),
-        }));
-      return [...current, ...additions];
-    });
-  }, []);
+  const getStoreIdForProduct = useCallback(
+    (productId: string) =>
+      myStore.find((entry) => entry.product_id === productId)?.store_id ?? null,
+    [myStore],
+  );
 
-  const removeFromMyStore = useCallback((productId: string) => {
-    setMyStore((current) => current.filter((entry) => entry.productId !== productId));
-  }, []);
+  const addToMyStoreItems = useCallback(
+    async (items: AddStoreItem[]) => {
+      for (const item of items) {
+        await addToMyStore(item.productId, item.retailPrice, item.variantId);
+      }
+      await refreshMyStore();
+    },
+    [refreshMyStore],
+  );
 
-  const removeAllFromMyStore = useCallback(() => {
-    setMyStore([]);
-  }, []);
+  const removeFromMyStoreItem = useCallback(
+    async (storeId: string) => {
+      await removeFromStore(storeId);
+      await refreshMyStore();
+    },
+    [refreshMyStore],
+  );
 
-  const updateRetailPrice = useCallback((productId: string, retailPrice: number) => {
-    setMyStore((current) =>
-      current.map((entry) =>
-        entry.productId === productId ? { ...entry, retailPrice } : entry,
-      ),
-    );
-  }, []);
+  const removeFromMyStoreByProductId = useCallback(
+    async (productId: string) => {
+      const storeId = myStore.find((entry) => entry.product_id === productId)?.store_id;
+      if (!storeId) {
+        throw new Error("Product is not in My Store.");
+      }
+      await removeFromStore(storeId);
+      await refreshMyStore();
+    },
+    [myStore, refreshMyStore],
+  );
+
+  const removeAllFromMyStoreItems = useCallback(async () => {
+    await removeAllFromStore();
+    await refreshMyStore();
+  }, [refreshMyStore]);
+
+  const updateRetailPriceItem = useCallback(
+    async (storeId: string, retailPrice: number) => {
+      await updateStoreProductPrice(storeId, retailPrice);
+      await refreshMyStore();
+    },
+    [refreshMyStore],
+  );
+
+  const setStoreVisibility = useCallback(
+    async (storeId: string, isVisible: boolean) => {
+      const entry = myStore.find((item) => item.store_id === storeId);
+      if (!entry) {
+        throw new Error("Store product not found.");
+      }
+      await updateStoreProductPrice(storeId, entry.retail_price, isVisible);
+      await refreshMyStore();
+    },
+    [myStore, refreshMyStore],
+  );
 
   const updateBranding = useCallback((patch: Partial<StorefrontBranding>) => {
     setBranding((current) => ({ ...current, ...patch }));
@@ -95,11 +154,16 @@ export function ProviderPortalProvider({ children }: { children: ReactNode }) {
       setMetricsRange,
       metrics,
       myStore,
+      isStoreLoading,
+      refreshMyStore,
       isInMyStore,
-      addToMyStore,
-      removeFromMyStore,
-      removeAllFromMyStore,
-      updateRetailPrice,
+      getStoreIdForProduct,
+      addToMyStore: addToMyStoreItems,
+      removeFromMyStore: removeFromMyStoreItem,
+      removeFromMyStoreByProductId,
+      removeAllFromMyStore: removeAllFromMyStoreItems,
+      updateRetailPrice: updateRetailPriceItem,
+      setStoreVisibility,
       branding,
       updateBranding,
     }),
@@ -107,11 +171,16 @@ export function ProviderPortalProvider({ children }: { children: ReactNode }) {
       metricsRange,
       metrics,
       myStore,
+      isStoreLoading,
+      refreshMyStore,
       isInMyStore,
-      addToMyStore,
-      removeFromMyStore,
-      removeAllFromMyStore,
-      updateRetailPrice,
+      getStoreIdForProduct,
+      addToMyStoreItems,
+      removeFromMyStoreItem,
+      removeFromMyStoreByProductId,
+      removeAllFromMyStoreItems,
+      updateRetailPriceItem,
+      setStoreVisibility,
       branding,
       updateBranding,
     ],
@@ -125,7 +194,7 @@ export function ProviderPortalProvider({ children }: { children: ReactNode }) {
 export function useProviderPortal() {
   const context = useContext(ProviderPortalContext);
   if (!context) {
-    throw new Error("useProviderPortal must be used within ProviderPortalProvider");
+    throw new Error("useProviderPortal must be used within ProviderPortalProvider.");
   }
   return context;
 }

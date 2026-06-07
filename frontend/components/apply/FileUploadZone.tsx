@@ -3,12 +3,14 @@
 import { useCallback, useState } from "react";
 import type { UploadedFileMeta } from "@/lib/apply/types";
 import { validateApplicationFile } from "@/lib/apply/validation";
-import { mockUploadFile } from "@/lib/apply/mock-submit";
 
 type FileUploadZoneProps = {
   id: string;
   label: string;
   description: string;
+  accept?: string;
+  required?: boolean;
+  imagesOnly?: boolean;
   value: UploadedFileMeta | null;
   onChange: (file: UploadedFileMeta | null) => void;
 };
@@ -17,14 +19,17 @@ export function FileUploadZone({
   id,
   label,
   description,
+  accept = ".pdf,.png,.jpg,.jpeg,.webp",
+  required = false,
+  imagesOnly = false,
   value,
   onChange,
 }: FileUploadZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
 
   const processFile = useCallback(
-    async (file: File) => {
-      const error = validateApplicationFile(file);
+    (file: File) => {
+      const error = validateApplicationFile(file, imagesOnly);
       if (error) {
         onChange({
           name: file.name,
@@ -37,22 +42,16 @@ export function FileUploadZone({
         return;
       }
 
-      const meta: UploadedFileMeta = {
+      onChange({
         name: file.name,
         size: file.size,
         type: file.type,
-        progress: 0,
-        status: "uploading",
-      };
-      onChange(meta);
-
-      await mockUploadFile((progress) => {
-        onChange({ ...meta, progress, status: progress >= 100 ? "complete" : "uploading" });
+        progress: 100,
+        status: "complete",
+        file,
       });
-
-      onChange({ ...meta, progress: 100, status: "complete" });
     },
-    [onChange],
+    [imagesOnly, onChange],
   );
 
   function handleDrop(e: React.DragEvent) {
@@ -66,6 +65,7 @@ export function FileUploadZone({
     <div className="space-y-2">
       <label htmlFor={id} className="block text-xs font-medium text-deep-teal">
         {label}
+        {required ? <span className="text-pacific-teal"> *</span> : null}
       </label>
       <p className="text-[11px] text-deep-teal/50">{description}</p>
 
@@ -85,7 +85,7 @@ export function FileUploadZone({
         <input
           id={id}
           type="file"
-          accept=".pdf,.png,.jpg,.jpeg,.webp"
+          accept={accept}
           className="sr-only"
           onChange={(e) => {
             const file = e.target.files?.[0];
@@ -115,19 +115,11 @@ export function FileUploadZone({
               Remove
             </button>
           </div>
-          {value.status === "uploading" ? (
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-deep-teal/10">
-              <div
-                className="h-full rounded-full bg-pacific-teal transition-all"
-                style={{ width: `${value.progress}%` }}
-              />
-            </div>
-          ) : null}
           {value.status === "error" ? (
             <p className="mt-1 text-[11px] text-red-600">{value.error}</p>
           ) : null}
           {value.status === "complete" ? (
-            <p className="mt-1 text-[11px] text-pacific-teal">Upload complete</p>
+            <p className="mt-1 text-[11px] text-pacific-teal">Ready to upload on submit</p>
           ) : null}
         </div>
       ) : null}

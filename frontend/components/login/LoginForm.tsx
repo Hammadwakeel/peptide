@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   AuthCard,
   AuthShell,
@@ -19,17 +19,26 @@ import {
   transition,
 } from "@/components/motion";
 import { useAuth } from "@/context/AuthProvider";
+import { OtpRequiredError } from "@/lib/auth/api";
+import { storePendingLogin } from "@/lib/auth/storage";
 import type { UserRole } from "@/lib/auth/types";
 import { showError, toast } from "@/lib/toast";
 
 export function LoginForm() {
   const { login } = useAuth();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<UserRole>("doctor");
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("verified") === "1") {
+      toast.success("Email verified. You can sign in now.");
+    }
+  }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -42,6 +51,14 @@ export function LoginForm() {
       toast.success("Welcome back.");
     } catch (error) {
       toast.dismiss(toastId);
+
+      if (error instanceof OtpRequiredError) {
+        storePendingLogin({ email, password, role, rememberMe });
+        toast.info("Verify your email to continue.");
+        router.push(`/login/send-otp?email=${encodeURIComponent(error.email)}`);
+        return;
+      }
+
       showError(error, "Unable to sign in.");
     } finally {
       setIsSubmitting(false);

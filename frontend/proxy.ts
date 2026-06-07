@@ -38,8 +38,14 @@ export function proxy(request: NextRequest) {
   const role = request.cookies.get(AUTH_ROLE_COOKIE)?.value as UserRole | undefined;
   const isAuthenticated = Boolean(token && role);
 
-  if (isAuthenticated && pathname === "/login") {
+  const isExactLoginPage = pathname === "/login";
+
+  if (isAuthenticated && isExactLoginPage) {
     return NextResponse.redirect(new URL(portalForRole(role!), request.url));
+  }
+
+  if (!isAuthenticated && (pathname === "/login/send-otp" || pathname === "/login/verify-otp")) {
+    return NextResponse.next();
   }
 
   if (isAuthenticated && pathname === "/patient/login") {

@@ -27,9 +27,15 @@ def find_clinic_by_email(cursor, email: str) -> dict[str, Any] | None:
 def create_clinic_application(cursor, data: dict) -> dict[str, Any]:
     cursor.execute(
         """
-        INSERT INTO clinics (clinic_name, email, phone, npi_number, dea_number, status, affiliate_id)
-        VALUES (%s, %s, %s, %s, %s, 'pending', %s)
-        RETURNING id, clinic_name, email, status::text AS status, created_at
+        INSERT INTO clinics (
+            clinic_name, email, phone, npi_number, dea_number,
+            primary_contact_name, state_license_number,
+            application_status, application_password_hash,
+            status, affiliate_id
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending', %s)
+        RETURNING id, clinic_name, email, status::text AS status,
+                  application_status, created_at
         """,
         (
             data["clinic_name"],
@@ -37,6 +43,10 @@ def create_clinic_application(cursor, data: dict) -> dict[str, Any]:
             data.get("phone"),
             data.get("npi_number"),
             data.get("dea_number"),
+            data.get("primary_contact_name"),
+            data.get("state_license_number"),
+            data.get("application_status", "submitted"),
+            data.get("application_password_hash"),
             data.get("affiliate_id"),
         ),
     )
@@ -59,28 +69,179 @@ def create_clinic_application(cursor, data: dict) -> dict[str, Any]:
     return clinic
 
 
-def count_pending_clinics(cursor) -> int:
-    cursor.execute("SELECT COUNT(*) FROM clinics WHERE status = 'pending'")
+def save_clinic_banking(cursor, clinic_id: str, data: dict) -> None:
+    cursor.execute(
+        """
+        INSERT INTO clinic_banking_details (
+            clinic_id, bank_name, account_type,
+            encrypted_routing, encrypted_account,
+            routing_last4, account_last4
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        ON CONFLICT (clinic_id) DO UPDATE SET
+            bank_name = EXCLUDED.bank_name,
+            account_type = EXCLUDED.account_type,
+            encrypted_routing = EXCLUDED.encrypted_routing,
+            encrypted_account = EXCLUDED.encrypted_account,
+            routing_last4 = EXCLUDED.routing_last4,
+            account_last4 = EXCLUDED.account_last4,
+            updated_at = NOW()
+        """,
+        (
+            clinic_id,
+            data["bank_name"],
+            data["account_type"],
+            data["encrypted_routing"],
+            data["encrypted_account"],
+            data["routing_last4"],
+            data["account_last4"],
+        ),
+    )
+
+
+def update_application_status(
+    cursor,
+    clinic_id: str,
+    application_status: str,
+    *,
+    rejection_reason: str | None = None,
+    admin_note: str | None = None,
+) -> None:
+    cursor.execute(
+        """
+        UPDATE clinics
+        SET application_status = %s,
+            rejection_reason = COALESCE(%s, rejection_reason),
+            admin_note = COALESCE(%s, admin_note),
+            updated_at = NOW()
+        WHERE id = %s
+        """,
+        (application_status, rejection_reason, admin_note, clinic_id),
+    )
+
+
+def get_clinic_documents(cursor, clinic_id: str) -> list[dict[str, Any]]:
+    cursor.execute(
+        """
+        SELECT id, document_type, file_url, status::text AS status, uploaded_at
+        FROM clinic_documents
+        WHERE clinic_id = %s
+        ORDER BY uploaded_at ASC
+        """,
+        (clinic_id,),
+    )
+    return _rows_to_dicts(cursor, cursor.fetchall())
+
+
+def get_clinic_banking_summary(cursor, clinic_id: str) -> dict[str, Any] | None:
+    cursor.execute(
+        """
+        SELECT bank_name, account_type, routing_last4, account_last4
+        FROM clinic_banking_details
+        WHERE clinic_id = %s
+        LIMIT 1
+        """,
+        (clinic_id,),
+    )
+    row = cursor.fetchone()
+    return _row_to_dict(cursor, row) if row else None
+
+
+def get_clinic_branding(cursor, clinic_id: str) -> dict[str, Any] | None:
+    cursor.execute(
+        "SELECT logo_url, theme_color, tagline FROM clinic_branding WHERE clinic_id = %s LIMIT 1",
+        (clinic_id,),
+    )
+    row = cursor.fetchone()
+    return _row_to_dict(cursor, row) if row else None
+
+
+def count_applications(cursor, status_filter: list[str] | None = None) -> int:
+    if status_filter:
+        cursor.execute(
+            "SELECT COUNT(*) FROM clinics WHERE application_status = ANY(%s)",
+            (status_filter,),
+        )
+    else:
+        cursor.execute("SELECT COUNT(*) FROM clinics WHERE application_status IS NOT NULL")
     return cursor.fetchone()[0]
 
 
-def list_pending_clinics(cursor, limit: int, offset: int) -> list[dict[str, Any]]:
+def list_applications(
+    cursor,
+    limit: int,
+    offset: int,
+    status_filter: list[str] | None = None,
+) -> list[dict[str, Any]]:
+    where = ""
+    params: list[Any] = []
+    if status_filter:
+        where = "WHERE c.application_status = ANY(%s)"
+        params.append(status_filter)
+
     cursor.execute(
-        """
+        f"""
         SELECT c.id, c.clinic_name, c.email, c.phone, c.npi_number, c.dea_number,
-               c.status::text AS status, c.created_at, c.affiliate_id,
-               ca.address1, ca.city, ca.state, ca.zip,
-               a.affiliate_code, a.affiliate_type::text AS affiliate_type
+               c.state_license_number, c.primary_contact_name,
+               c.status::text AS status, c.application_status,
+               c.rejection_reason, c.admin_note, c.created_at, c.affiliate_id,
+               ca.address1, ca.address2, ca.city, ca.state, ca.zip, ca.country,
+               a.affiliate_code, a.affiliate_type::text AS affiliate_type,
+               cb.logo_url,
+               cbd.bank_name, cbd.account_type, cbd.routing_last4, cbd.account_last4
         FROM clinics c
         LEFT JOIN clinic_addresses ca ON ca.clinic_id = c.id AND ca.is_primary = TRUE
         LEFT JOIN affiliates a ON a.id = c.affiliate_id
-        WHERE c.status = 'pending'
-        ORDER BY c.created_at ASC
+        LEFT JOIN clinic_branding cb ON cb.clinic_id = c.id
+        LEFT JOIN clinic_banking_details cbd ON cbd.clinic_id = c.id
+        {where}
+        ORDER BY c.created_at DESC
         LIMIT %s OFFSET %s
         """,
-        (limit, offset),
+        [*params, limit, offset],
     )
     return _rows_to_dicts(cursor, cursor.fetchall())
+
+
+def insert_clinic_document(
+    cursor, clinic_id: str, document_type: str, file_url: str,
+) -> dict[str, Any]:
+    cursor.execute(
+        """
+        INSERT INTO clinic_documents (clinic_id, document_type, file_url)
+        VALUES (%s, %s, %s)
+        RETURNING id, document_type, file_url, status::text AS status, uploaded_at
+        """,
+        (clinic_id, document_type, file_url),
+    )
+    return _row_to_dict(cursor, cursor.fetchone())
+
+
+def upsert_clinic_branding_logo(cursor, clinic_id: str, logo_url: str) -> None:
+    cursor.execute(
+        """
+        INSERT INTO clinic_branding (clinic_id, logo_url)
+        VALUES (%s, %s)
+        ON CONFLICT (clinic_id) DO UPDATE SET logo_url = EXCLUDED.logo_url
+        """,
+        (clinic_id, logo_url),
+    )
+
+
+def count_pending_clinics(cursor) -> int:
+    return count_applications(
+        cursor,
+        ["submitted", "docs_signed", "pending_review", "more_info_requested"],
+    )
+
+
+def list_pending_clinics(cursor, limit: int, offset: int) -> list[dict[str, Any]]:
+    return list_applications(
+        cursor,
+        limit,
+        offset,
+        ["submitted", "docs_signed", "pending_review", "more_info_requested"],
+    )
 
 
 def count_all_clinics(cursor) -> int:
@@ -117,15 +278,28 @@ def get_clinic_by_id(cursor, clinic_id: str) -> dict[str, Any] | None:
 
 def approve_clinic(cursor, clinic_id: str) -> None:
     cursor.execute(
-        "UPDATE clinics SET status = 'active', updated_at = NOW() WHERE id = %s",
+        """
+        UPDATE clinics
+        SET status = 'active',
+            application_status = 'approved',
+            updated_at = NOW()
+        WHERE id = %s
+        """,
         (clinic_id,),
     )
 
 
-def reject_clinic(cursor, clinic_id: str) -> None:
+def reject_clinic(cursor, clinic_id: str, rejection_reason: str | None = None) -> None:
     cursor.execute(
-        "UPDATE clinics SET status = 'inactive', updated_at = NOW() WHERE id = %s",
-        (clinic_id,),
+        """
+        UPDATE clinics
+        SET status = 'inactive',
+            application_status = 'rejected',
+            rejection_reason = COALESCE(%s, rejection_reason),
+            updated_at = NOW()
+        WHERE id = %s
+        """,
+        (rejection_reason, clinic_id),
     )
 
 

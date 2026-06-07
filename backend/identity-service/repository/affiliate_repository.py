@@ -193,6 +193,31 @@ def count_clinic_referrals(
     return cursor.fetchone()[0]
 
 
+def count_all_affiliates(cursor) -> int:
+    cursor.execute("SELECT COUNT(*) FROM affiliates")
+    return cursor.fetchone()[0]
+
+
+def list_all_affiliates(cursor, limit: int, offset: int) -> list[dict[str, Any]]:
+    cursor.execute(
+        """
+        SELECT a.id, a.affiliate_code, a.affiliate_type::text AS affiliate_type,
+               a.status::text AS status, a.created_at, u.email,
+               pa.affiliate_code AS parent_affiliate_code,
+               COUNT(ar.id) AS clinic_referral_count
+        FROM affiliates a
+        JOIN users u ON u.id = a.user_id
+        LEFT JOIN affiliates pa ON pa.id = a.parent_affiliate_id
+        LEFT JOIN affiliate_referrals ar ON ar.referring_affiliate_id = a.id
+        GROUP BY a.id, u.email, pa.affiliate_code
+        ORDER BY a.created_at DESC
+        LIMIT %s OFFSET %s
+        """,
+        (limit, offset),
+    )
+    return _rows_to_dicts(cursor, cursor.fetchall())
+
+
 def list_clinic_referrals(
     cursor,
     affiliate: dict,

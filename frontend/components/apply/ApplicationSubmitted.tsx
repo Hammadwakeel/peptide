@@ -1,9 +1,35 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { AuthCard, AuthShell, authLinkClassName } from "@/components/auth/AuthShell";
+import { readApplicationSummary } from "@/lib/apply/storage";
+import type { ClinicApplicationSummary } from "@/lib/apply/types";
 
 export function ApplicationSubmitted() {
+  const searchParams = useSearchParams();
+  const [application, setApplication] = useState<ClinicApplicationSummary | null>(null);
+
+  useEffect(() => {
+    const stored = readApplicationSummary();
+    if (stored) {
+      setApplication(stored);
+      return;
+    }
+
+    const ref = searchParams.get("ref");
+    if (ref) {
+      setApplication({
+        id: ref,
+        clinic_name: "",
+        email: "",
+        primary_contact_name: "",
+        application_status: "pending_review",
+      });
+    }
+  }, [searchParams]);
+
   return (
     <AuthShell background="merch-jacket" compact>
       <AuthCard compact>
@@ -17,8 +43,30 @@ export function ApplicationSubmitted() {
           Application submitted
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-deep-teal/65">
-          Your application is under review. You&apos;ll receive an email within 24–48 hours.
+          Your application is pending admin review. You&apos;ll receive an email once it has been processed.
         </p>
+
+        {application ? (
+          <div className="mt-5 rounded-xl border border-deep-teal/10 bg-deep-teal/[0.03] px-4 py-3 text-sm text-deep-teal/75">
+            {application.clinic_name ? (
+              <p>
+                <span className="font-medium text-deep-teal">Clinic:</span> {application.clinic_name}
+              </p>
+            ) : null}
+            {application.email ? (
+              <p className="mt-1">
+                <span className="font-medium text-deep-teal">Email:</span> {application.email}
+              </p>
+            ) : null}
+            <p className="mt-1">
+              <span className="font-medium text-deep-teal">Reference:</span> {application.id}
+            </p>
+            <p className="mt-1">
+              <span className="font-medium text-deep-teal">Status:</span>{" "}
+              {application.application_status.replaceAll("_", " ")}
+            </p>
+          </div>
+        ) : null}
 
         <p className="mt-6 text-center text-sm text-deep-teal/60">
           <Link href="/login" className={authLinkClassName}>

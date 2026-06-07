@@ -1,79 +1,74 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { MOCK_PRODUCTS } from "@/lib/products/mock-data";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { deleteProduct, listCategories, listProducts } from "@/lib/admin/inventory/api";
 import {
-  PRODUCT_STATUS_LABELS,
   PRODUCT_TYPE_LABELS,
-  type Product,
-  type ProductStatus,
+  STOCK_STATUS_LABELS,
+  type InventoryCategory,
+  type InventoryProduct,
   type ProductType,
-} from "@/lib/products/types";
-import { toast } from "@/lib/toast";
-
-type SortKey = "name" | "sku" | "category" | "type" | "stock" | "status" | "price";
+  type StockStatus,
+} from "@/lib/admin/inventory/types";
+import { showError, toast } from "@/lib/toast";
 
 export function AdminProductList() {
-  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
+  const [products, setProducts] = useState<InventoryProduct[]>([]);
+  const [categories, setCategories] = useState<InventoryCategory[]>([]);
   const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<"all" | ProductType>("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState<"all" | ProductStatus>("all");
-  const [sortKey, setSortKey] = useState<SortKey>("name");
-  const [sortAsc, setSortAsc] = useState(true);
+  const [typeFilter, setTypeFilter] = useState<"" | ProductType>("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [stockFilter, setStockFilter] = useState<"" | StockStatus>("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const categories = useMemo(
-    () => Array.from(new Set(products.map((p) => p.category))),
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [productsResponse, categoriesResponse] = await Promise.all([
+        listProducts({
+          page: 1,
+          limit: 100,
+          search: search.trim() || undefined,
+          product_type: typeFilter || undefined,
+          category_id: categoryFilter || undefined,
+          stock_status: stockFilter || undefined,
+        }),
+        listCategories(),
+      ]);
+      setProducts(productsResponse.products);
+      setCategories(categoriesResponse.categories);
+    } catch (error) {
+      showError(error, "Unable to load products.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [search, typeFilter, categoryFilter, stockFilter]);
+
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
+
+  const sortedProducts = useMemo(
+    () => [...products].sort((a, b) => a.name.localeCompare(b.name)),
     [products],
   );
 
-  const filteredProducts = useMemo(() => {
-    let list = [...products];
-    const q = search.trim().toLowerCase();
-    if (q) {
-      list = list.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.sku.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q),
-      );
-    }
-    if (typeFilter !== "all") list = list.filter((p) => p.type === typeFilter);
-    if (categoryFilter !== "all") list = list.filter((p) => p.category === categoryFilter);
-    if (statusFilter !== "all") list = list.filter((p) => p.status === statusFilter);
+  async function handleDelete(product: InventoryProduct) {
+    if (!window.confirm(`Deactivate ${product.name}?`)) return;
 
-    list.sort((a, b) => {
-      const av = a[sortKey];
-      const bv = b[sortKey];
-      if (typeof av === "number" && typeof bv === "number") {
-        return sortAsc ? av - bv : bv - av;
-      }
-      return sortAsc
-        ? String(av).localeCompare(String(bv))
-        : String(bv).localeCompare(String(av));
-    });
-    return list;
-  }, [products, search, typeFilter, categoryFilter, statusFilter, sortKey, sortAsc]);
-
-  function toggleSort(key: SortKey) {
-    if (sortKey === key) setSortAsc((v) => !v);
-    else {
-      setSortKey(key);
-      setSortAsc(true);
+    setDeletingId(product.id);
+    try {
+      const result = await deleteProduct(product.id);
+      toast.success(result.message);
+      await loadData();
+    } catch (error) {
+      showError(error, "Unable to delete product.");
+    } finally {
+      setDeletingId(null);
     }
   }
-
-  const SortHeader = ({ label, column }: { label: string; column: SortKey }) => (
-    <button
-      type="button"
-      onClick={() => toggleSort(column)}
-      className="inline-flex items-center gap-1 font-medium hover:text-deep-teal"
-    >
-      {label}
-      {sortKey === column ? (sortAsc ? " ↑" : " ↓") : null}
-    </button>
-  );
 
   return (
     <div className="space-y-4">
@@ -94,67 +89,114 @@ export function AdminProductList() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)} className="rounded-lg border border-deep-teal/15 px-3 py-2 text-sm">
-          <option value="all">All types</option>
-          <option value="research">Research</option>
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}
+          className="rounded-lg border border-deep-teal/15 px-3 py-2 text-sm"
+        >
+          <option value="">All types</option>
+          <option value="ruo">Research (RUO)</option>
           <option value="pharmacy">Pharmacy</option>
         </select>
-        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="rounded-lg border border-deep-teal/15 px-3 py-2 text-sm">
-          <option value="all">All categories</option>
-          {categories.map((c) => (
-            <option key={c} value={c}>{c}</option>
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          className="rounded-lg border border-deep-teal/15 px-3 py-2 text-sm"
+        >
+          <option value="">All categories</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
           ))}
         </select>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)} className="rounded-lg border border-deep-teal/15 px-3 py-2 text-sm">
-          <option value="all">All statuses</option>
-          <option value="active">Active</option>
-          <option value="draft">Draft</option>
-          <option value="archived">Archived</option>
+        <select
+          value={stockFilter}
+          onChange={(e) => setStockFilter(e.target.value as typeof stockFilter)}
+          className="rounded-lg border border-deep-teal/15 px-3 py-2 text-sm"
+        >
+          <option value="">All stock levels</option>
+          <option value="in_stock">In stock</option>
+          <option value="low">Low stock</option>
+          <option value="out_of_stock">Out of stock</option>
         </select>
+        <button
+          type="button"
+          onClick={() => void loadData()}
+          className="rounded-lg border border-deep-teal/15 px-3 py-2 text-sm text-deep-teal hover:border-pacific-teal"
+        >
+          Refresh
+        </button>
       </div>
 
       <div className="overflow-x-auto rounded-2xl border border-deep-teal/10 bg-pure-white shadow-sm">
         <table className="min-w-full text-left text-sm">
           <thead className="border-b border-deep-teal/10 bg-deep-teal/[0.02] text-xs uppercase tracking-wide text-deep-teal/45">
             <tr>
-              <th className="px-4 py-3"><SortHeader label="Name" column="name" /></th>
-              <th className="px-4 py-3"><SortHeader label="SKU" column="sku" /></th>
-              <th className="px-4 py-3"><SortHeader label="Category" column="category" /></th>
-              <th className="px-4 py-3"><SortHeader label="Type" column="type" /></th>
-              <th className="px-4 py-3"><SortHeader label="Stock" column="stock" /></th>
-              <th className="px-4 py-3"><SortHeader label="Status" column="status" /></th>
-              <th className="px-4 py-3"><SortHeader label="Price" column="price" /></th>
+              <th className="px-4 py-3">Name</th>
+              <th className="px-4 py-3">SKU</th>
+              <th className="px-4 py-3">Category</th>
+              <th className="px-4 py-3">Type</th>
+              <th className="px-4 py-3">Stock</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Clinic cost</th>
               <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredProducts.map((product) => (
-              <tr key={product.id} className="border-b border-deep-teal/5 last:border-0">
-                <td className="px-4 py-3 font-medium">{product.name}</td>
-                <td className="px-4 py-3 font-mono text-xs">{product.sku}</td>
-                <td className="px-4 py-3">{product.category}</td>
-                <td className="px-4 py-3">{PRODUCT_TYPE_LABELS[product.type]}</td>
-                <td className="px-4 py-3">{product.stock}</td>
-                <td className="px-4 py-3">{PRODUCT_STATUS_LABELS[product.status]}</td>
-                <td className="px-4 py-3">${product.price}</td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap gap-2">
-                    <Link href={`/portal/admin/products/${product.id}/edit`} className="text-xs font-medium text-pacific-teal hover:underline">Edit</Link>
-                    <Link href={`/portal/admin/products/${product.id}/stock`} className="text-xs font-medium text-deep-teal/60 hover:underline">Stock</Link>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setProducts((current) => current.filter((p) => p.id !== product.id));
-                        toast.success(`${product.name} removed from catalog.`);
-                      }}
-                      className="text-xs font-medium text-red-600 hover:underline"
-                    >
-                      Delete
-                    </button>
-                  </div>
+            {isLoading ? (
+              <tr>
+                <td colSpan={8} className="px-4 py-8 text-center text-deep-teal/50">
+                  Loading products…
                 </td>
               </tr>
-            ))}
+            ) : sortedProducts.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="px-4 py-8 text-center text-deep-teal/50">
+                  No products found.
+                </td>
+              </tr>
+            ) : (
+              sortedProducts.map((product) => (
+                <tr key={product.id} className="border-b border-deep-teal/5 last:border-0">
+                  <td className="px-4 py-3 font-medium">{product.name}</td>
+                  <td className="px-4 py-3 font-mono text-xs">{product.sku}</td>
+                  <td className="px-4 py-3">{product.category.name ?? "—"}</td>
+                  <td className="px-4 py-3">{PRODUCT_TYPE_LABELS[product.product_type]}</td>
+                  <td className="px-4 py-3">
+                    {product.stock_count} · {STOCK_STATUS_LABELS[product.stock_status]}
+                  </td>
+                  <td className="px-4 py-3">{product.status}</td>
+                  <td className="px-4 py-3">
+                    {product.clinic_cost != null ? `$${product.clinic_cost.toFixed(2)}` : "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-2">
+                      <Link
+                        href={`/portal/admin/products/${product.id}/edit`}
+                        className="text-xs font-medium text-pacific-teal hover:underline"
+                      >
+                        Edit
+                      </Link>
+                      <Link
+                        href={`/portal/admin/products/${product.id}/stock`}
+                        className="text-xs font-medium text-deep-teal/60 hover:underline"
+                      >
+                        Stock
+                      </Link>
+                      <button
+                        type="button"
+                        disabled={deletingId === product.id}
+                        onClick={() => void handleDelete(product)}
+                        className="text-xs font-medium text-red-600 hover:underline disabled:opacity-50"
+                      >
+                        {deletingId === product.id ? "Deleting…" : "Delete"}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

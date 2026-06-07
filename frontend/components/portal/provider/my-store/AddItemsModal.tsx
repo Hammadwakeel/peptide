@@ -1,65 +1,84 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
-import { MOCK_PRODUCTS } from "@/lib/products/mock-data";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { listCatalog } from "@/lib/products/api";
+import type { CatalogProduct, CatalogProductType } from "@/lib/products/catalog-types";
 import {
-  PRODUCT_TYPE_LABELS,
-  type ProductType,
-} from "@/lib/products/types";
+  CATALOG_PRODUCT_TYPE_LABELS,
+  defaultRetailPrice,
+  getPrimaryImage,
+} from "@/lib/products/catalog-types";
 
 type AddItemsModalProps = {
   open: boolean;
   onClose: () => void;
   excludedIds: Set<string>;
-  onAddSelected: (productIds: string[]) => void;
+  onAddSelected: (items: { productId: string; retailPrice: number }[]) => void;
 };
 
 export function AddItemsModal({ open, onClose, excludedIds, onAddSelected }: AddItemsModalProps) {
   const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<"all" | ProductType>("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [typeFilter, setTypeFilter] = useState<"" | CatalogProductType>("");
+  const [selected, setSelected] = useState<Map<string, number>>(new Map());
+  const [catalog, setCatalog] = useState<CatalogProduct[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const loadCatalog = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await listCatalog({
+        page: 1,
+        limit: 100,
+        search: search.trim() || undefined,
+        product_type: typeFilter || undefined,
+      });
+      setCatalog(response.products.filter((product) => !excludedIds.has(product.id)));
+    } catch {
+      setCatalog([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [search, typeFilter, excludedIds]);
+
+  useEffect(() => {
+    if (!open) return;
+    void loadCatalog();
+  }, [open, loadCatalog]);
 
   const categories = useMemo(
-    () => Array.from(new Set(MOCK_PRODUCTS.map((product) => product.category))).sort(),
-    [],
+    () =>
+      Array.from(
+        new Set(catalog.map((product) => product.category.name).filter(Boolean) as string[]),
+      ).sort(),
+    [catalog],
   );
+  const [categoryFilter, setCategoryFilter] = useState("all");
 
-  const catalog = useMemo(() => {
-    let list = MOCK_PRODUCTS.filter((product) => !excludedIds.has(product.id));
-    const query = search.trim().toLowerCase();
-    if (query) {
-      list = list.filter(
-        (product) =>
-          product.name.toLowerCase().includes(query) ||
-          product.sku.toLowerCase().includes(query) ||
-          product.category.toLowerCase().includes(query),
-      );
-    }
-    if (typeFilter !== "all") {
-      list = list.filter((product) => product.type === typeFilter);
-    }
-    if (categoryFilter !== "all") {
-      list = list.filter((product) => product.category === categoryFilter);
-    }
-    return list;
-  }, [search, typeFilter, categoryFilter, excludedIds]);
+  const filteredCatalog = useMemo(() => {
+    if (categoryFilter === "all") return catalog;
+    return catalog.filter((product) => product.category.name === categoryFilter);
+  }, [catalog, categoryFilter]);
 
   if (!open) return null;
 
-  function toggleSelection(productId: string) {
+  function toggleSelection(product: CatalogProduct) {
     setSelected((current) => {
-      const next = new Set(current);
-      if (next.has(productId)) next.delete(productId);
-      else next.add(productId);
+      const next = new Map(current);
+      if (next.has(product.id)) next.delete(product.id);
+      else next.set(product.id, defaultRetailPrice(product.clinic_cost));
       return next;
     });
   }
 
   function handleAddSelected() {
-    onAddSelected(Array.from(selected));
-    setSelected(new Set());
+    onAddSelected(
+      Array.from(selected.entries()).map(([productId, retailPrice]) => ({
+        productId,
+        retailPrice,
+      })),
+    );
+    setSelected(new Map());
     setSearch("");
     onClose();
   }
@@ -83,7 +102,7 @@ export function AddItemsModal({ open, onClose, excludedIds, onAddSelected }: Add
             Add items to My Store
           </h2>
           <p className="mt-1 text-sm text-deep-teal/55">
-            Select products from the full catalog. Customers will only see retail prices.
+            Select products from the master catalog. Default retail price uses a 35% markup on clinic cost.
           </p>
         </div>
 
@@ -97,12 +116,12 @@ export function AddItemsModal({ open, onClose, excludedIds, onAddSelected }: Add
           />
           <select
             value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value as "all" | ProductType)}
+            onChange={(e) => setTypeFilter(e.target.value as "" | CatalogProductType)}
             className="rounded-xl border border-deep-teal/15 px-3 py-2 text-sm"
           >
-            <option value="all">All types</option>
-            <option value="research">{PRODUCT_TYPE_LABELS.research}</option>
-            <option value="pharmacy">{PRODUCT_TYPE_LABELS.pharmacy}</option>
+            <option value="">All types</option>
+            <option value="ruo">{CATALOG_PRODUCT_TYPE_LABELS.ruo}</option>
+            <option value="pharmacy">{CATALOG_PRODUCT_TYPE_LABELS.pharmacy}</option>
           </select>
           <select
             value={categoryFilter}
@@ -119,34 +138,59 @@ export function AddItemsModal({ open, onClose, excludedIds, onAddSelected }: Add
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-4 sm:px-6">
-          {catalog.length === 0 ? (
+          {isLoading ? (
+            <p className="py-8 text-center text-sm text-deep-teal/50">Loading catalog…</p>
+          ) : filteredCatalog.length === 0 ? (
             <p className="py-8 text-center text-sm text-deep-teal/50">
               No products match your filters.
             </p>
           ) : (
             <ul className="space-y-2">
-              {catalog.map((product) => (
-                <li key={product.id}>
-                  <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-deep-teal/10 p-3 transition-colors hover:bg-deep-teal/[0.02]">
-                    <input
-                      type="checkbox"
-                      checked={selected.has(product.id)}
-                      onChange={() => toggleSelection(product.id)}
-                      className="size-4 shrink-0 rounded border-deep-teal/20 text-pacific-teal"
-                    />
-                    <div className="relative size-12 shrink-0 overflow-hidden rounded-lg">
-                      <Image src={product.images[0]} alt="" fill className="object-cover" sizes="48px" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-deep-teal">{product.name}</p>
-                      <p className="text-xs text-deep-teal/50">
-                        {product.category} · {PRODUCT_TYPE_LABELS[product.type]} · Clinic $
-                        {product.clinicPrice}
-                      </p>
-                    </div>
-                  </label>
-                </li>
-              ))}
+              {filteredCatalog.map((product) => {
+                const imageUrl = getPrimaryImage(product) ?? "/brand/product-vial-2x-blend-hero.png";
+                const isSelected = selected.has(product.id);
+                return (
+                  <li key={product.id}>
+                    <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-deep-teal/10 p-3 transition-colors hover:bg-deep-teal/[0.02]">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleSelection(product)}
+                        className="size-4 shrink-0 rounded border-deep-teal/20 text-pacific-teal"
+                      />
+                      <div className="relative size-12 shrink-0 overflow-hidden rounded-lg">
+                        <Image src={imageUrl} alt="" fill className="object-cover" sizes="48px" unoptimized={imageUrl.startsWith("http")} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-deep-teal">{product.name}</p>
+                        <p className="text-xs text-deep-teal/50">
+                          {product.category.name ?? "Uncategorized"} · {CATALOG_PRODUCT_TYPE_LABELS[product.product_type]} · Clinic $
+                          {product.clinic_cost?.toFixed(2) ?? "—"}
+                        </p>
+                        {isSelected ? (
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="text-xs text-deep-teal/55">Retail $</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={selected.get(product.id) ?? 0}
+                              onChange={(e) =>
+                                setSelected((current) => {
+                                  const next = new Map(current);
+                                  next.set(product.id, Number(e.target.value));
+                                  return next;
+                                })
+                              }
+                              className="w-24 rounded-lg border border-deep-teal/15 px-2 py-1 text-xs"
+                            />
+                          </div>
+                        ) : null}
+                      </div>
+                    </label>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

@@ -7,84 +7,15 @@ from config import FRONTEND_URL, INVITE_EXPIRY_DAYS
 from db import connect
 from email_service import send_patient_invite_email
 from repository import find_user_by_email
-from repository.affiliate_repository import create_clinic_referral, resolve_affiliate_chain
-from repository.clinic_repository import (
-    create_clinic_application,
-    find_affiliate_by_code,
-    find_clinic_by_email,
-    get_doctor_clinic,
-)
+from repository.clinic_repository import get_doctor_clinic
 from repository.patient_repository import (
     count_patients_by_clinic,
     create_patient,
     create_patient_invite,
     list_patients_by_clinic,
 )
-from schemas.doctor import ClinicApplicationRequest, InvitePatientRequest
+from schemas.doctor import InvitePatientRequest
 from schemas.pagination import PaginationQuery, paginated_response
-
-
-def submit_clinic_application(body: ClinicApplicationRequest) -> dict:
-    conn = connect()
-    cursor = conn.cursor()
-    try:
-        if find_user_by_email(cursor, body.email):
-            raise HTTPException(status_code=409, detail="Email already registered")
-
-        if find_clinic_by_email(cursor, body.email):
-            raise HTTPException(status_code=409, detail="Clinic application already submitted")
-
-        affiliate = None
-        if body.affiliate_code:
-            affiliate = find_affiliate_by_code(cursor, body.affiliate_code)
-            if not affiliate:
-                raise HTTPException(status_code=400, detail="Invalid affiliate code")
-
-        clinic = create_clinic_application(cursor, {
-            **body.model_dump(),
-            "affiliate_id": str(affiliate["id"]) if affiliate else None,
-        })
-
-        referral = None
-        if affiliate:
-            referring_id, main_id = resolve_affiliate_chain(cursor, affiliate)
-            referral = create_clinic_referral(
-                cursor,
-                str(clinic["id"]),
-                referring_id,
-                main_id,
-                body.affiliate_code,
-                status="pending",
-            )
-
-        conn.commit()
-        result = {
-            "status": True,
-            "message": "Application submitted. Admin will review your clinic registration.",
-            "clinic": {
-                "id": str(clinic["id"]),
-                "clinic_name": clinic["clinic_name"],
-                "email": clinic["email"],
-                "status": clinic["status"],
-            },
-        }
-        if referral:
-            result["affiliate_referral"] = {
-                "referring_affiliate_id": str(referral["referring_affiliate_id"]),
-                "main_affiliate_id": str(referral["main_affiliate_id"]),
-                "referral_code": referral["referral_code"],
-                "status": referral["status"],
-            }
-        return result
-    except HTTPException:
-        conn.rollback()
-        raise
-    except Exception as exc:
-        conn.rollback()
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def invite_patient(doctor_user: dict, body: InvitePatientRequest) -> dict:

@@ -2,7 +2,8 @@ export type ApplicationDocumentKey =
   | "deaLicense"
   | "npiCertificate"
   | "stateLicense"
-  | "businessRegistration";
+  | "businessRegistration"
+  | "clinicLogo";
 
 export type UploadedFileMeta = {
   name: string;
@@ -11,6 +12,7 @@ export type UploadedFileMeta = {
   progress: number;
   status: "idle" | "uploading" | "complete" | "error";
   error?: string;
+  file?: File;
 };
 
 export type PracticeInfo = {
@@ -18,12 +20,18 @@ export type PracticeInfo = {
   npi: string;
   dea: string;
   stateLicense: string;
-  businessAddress: string;
+  address1: string;
+  address2: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
   phone: string;
   contactName: string;
   email: string;
   password: string;
   confirmPassword: string;
+  affiliateCode: string;
 };
 
 export type ApplicationDocuments = Record<ApplicationDocumentKey, UploadedFileMeta | null>;
@@ -33,7 +41,6 @@ export type BankingInfo = {
   routingNumber: string;
   accountNumber: string;
   accountType: "checking" | "savings";
-  plaidConnected: boolean;
 };
 
 export type ApplicationWizardState = {
@@ -48,12 +55,18 @@ export const INITIAL_PRACTICE: PracticeInfo = {
   npi: "",
   dea: "",
   stateLicense: "",
-  businessAddress: "",
+  address1: "",
+  address2: "",
+  city: "",
+  state: "",
+  zip: "",
+  country: "US",
   phone: "",
   contactName: "",
   email: "",
   password: "",
   confirmPassword: "",
+  affiliateCode: "",
 };
 
 export const INITIAL_DOCUMENTS: ApplicationDocuments = {
@@ -61,6 +74,7 @@ export const INITIAL_DOCUMENTS: ApplicationDocuments = {
   npiCertificate: null,
   stateLicense: null,
   businessRegistration: null,
+  clinicLogo: null,
 };
 
 export const INITIAL_BANKING: BankingInfo = {
@@ -68,7 +82,6 @@ export const INITIAL_BANKING: BankingInfo = {
   routingNumber: "",
   accountNumber: "",
   accountType: "checking",
-  plaidConnected: false,
 };
 
 export const WIZARD_STEPS = [
@@ -89,6 +102,38 @@ export type OrgUser = {
   role: OrgUserRole;
   status: OrgUserStatus;
   accessEnabled: boolean;
+};
+
+export type ClinicApplicationSummary = {
+  id: string;
+  clinic_name: string;
+  email: string;
+  primary_contact_name: string;
+  application_status: string;
+};
+
+export type ApplyClinicResponse = {
+  status: boolean;
+  message: string;
+  application: ClinicApplicationSummary;
+};
+
+export type UploadedClinicDocument = {
+  id: string;
+  document_type: string;
+  file_url: string;
+  status: string;
+};
+
+export type UploadDocumentsResponse = {
+  status: boolean;
+  message: string;
+  application: {
+    id: string;
+    application_status: string;
+    logo_url: string | null;
+  };
+  documents: UploadedClinicDocument[];
 };
 
 export const ORG_ROLE_LABELS: Record<OrgUserRole, string> = {

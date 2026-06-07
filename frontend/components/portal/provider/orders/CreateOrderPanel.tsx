@@ -262,7 +262,14 @@ export function CreateOrderPanel({ open, onClose }: CreateOrderPanelProps) {
         open={addPatientOpen}
         onClose={() => setAddPatientOpen(false)}
         onSubmit={(payload) => {
-          const patient = addPatient(payload);
+          const patient = addPatient({
+            name: `${payload.first_name} ${payload.last_name}`.trim(),
+            email: payload.email,
+            phone: payload.phone ?? "",
+            dateOfBirth: payload.dob ?? "",
+            address: { line1: "", city: "", state: "", zip: "" },
+            sendInvite: true,
+          });
           setCustomerId(patient.id);
           toast.success(`${patient.name} added.`);
         }}

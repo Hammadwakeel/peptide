@@ -2,7 +2,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from config import SMTP_EMAIL, SMTP_FROM, SMTP_HOST, SMTP_PASSWORD, SMTP_PORT
+from config import FRONTEND_URL, SMTP_EMAIL, SMTP_FROM, SMTP_HOST, SMTP_PASSWORD, SMTP_PORT
 
 
 def _send_email(to_email: str, subject: str, text: str, html: str) -> None:
@@ -69,6 +69,139 @@ def send_patient_invite_email(
     </body></html>
     """
     _send_email(to_email, "Frontier Nexus Rx — Patient Invitation", text, html)
+
+
+def send_application_rejection_email(to_email: str, clinic_name: str, reason: str) -> None:
+    text = (
+        f"Dear {clinic_name} team,\n\n"
+        f"Thank you for applying to Frontier Nexus Rx. After review, your clinic application "
+        f"was not approved at this time.\n\n"
+        f"Reason: {reason}\n\n"
+        f"If you believe this was made in error or would like to reapply with updated "
+        f"information, please contact Frontier Nexus Rx support."
+    )
+    html = f"""
+    <html><body>
+      <p>Dear <strong>{clinic_name}</strong> team,</p>
+      <p>Thank you for applying to Frontier Nexus Rx. After review, your clinic application
+      was <strong>not approved</strong> at this time.</p>
+      <p><strong>Reason:</strong> {reason}</p>
+      <p>If you believe this was made in error or would like to reapply with updated
+      information, please contact Frontier Nexus Rx support.</p>
+    </body></html>
+    """
+    _send_email(to_email, "Frontier Nexus Rx — Clinic Application Not Approved", text, html)
+
+
+def send_application_approved_email(
+    to_email: str,
+    clinic_name: str,
+    *,
+    password: str | None = None,
+) -> None:
+    login_url = f"{FRONTEND_URL}/login"
+    if password:
+        creds_text = (
+            f"Email: {to_email}\n"
+            f"Temporary password: {password}\n\n"
+            f"Please log in and change your password after your first sign-in."
+        )
+        creds_html = (
+            f"<p><strong>Email:</strong> {to_email}</p>"
+            f"<p><strong>Temporary password:</strong> {password}</p>"
+            f"<p>Please log in and change your password after your first sign-in.</p>"
+        )
+    else:
+        creds_text = (
+            f"Log in with the email and password you provided during your application.\n"
+        )
+        creds_html = (
+            "<p>Log in with the email and password you provided during your application.</p>"
+        )
+
+    text = (
+        f"Dear {clinic_name} team,\n\n"
+        f"Congratulations! Your clinic application has been approved.\n\n"
+        f"Your provider portal and storefront are now active.\n\n"
+        f"{creds_text}\n"
+        f"Login: {login_url}\n\n"
+        f"Welcome to Frontier Nexus Rx."
+    )
+    html = f"""
+    <html><body>
+      <p>Dear <strong>{clinic_name}</strong> team,</p>
+      <p>Congratulations! Your clinic application has been <strong>approved</strong>.</p>
+      <p>Your provider portal and storefront are now active.</p>
+      {creds_html}
+      <p><a href="{login_url}">Log in to your provider portal</a></p>
+      <p>Welcome to Frontier Nexus Rx.</p>
+    </body></html>
+    """
+    _send_email(to_email, "Frontier Nexus Rx — Clinic Application Approved", text, html)
+
+
+def send_affiliate_credentials_email(
+    to_email: str,
+    password: str,
+    affiliate_code: str,
+    affiliate_type: str,
+) -> None:
+    login_url = f"{FRONTEND_URL}/login"
+    type_label = "Main Affiliate" if affiliate_type == "main" else "Sub-Affiliate"
+    text = (
+        f"Your Frontier Nexus Rx {type_label} account has been created.\n\n"
+        f"Email: {to_email}\n"
+        f"Password: {password}\n"
+        f"Affiliate code: {affiliate_code}\n\n"
+        f"Login: {login_url}\n\n"
+        f"Share your affiliate code with clinics to track referrals."
+    )
+    html = f"""
+    <html><body>
+      <p>Your Frontier Nexus Rx <strong>{type_label}</strong> account has been created.</p>
+      <p><strong>Email:</strong> {to_email}</p>
+      <p><strong>Password:</strong> {password}</p>
+      <p><strong>Affiliate code:</strong> {affiliate_code}</p>
+      <p><a href="{login_url}">Log in to the affiliate portal</a></p>
+      <p>Share your affiliate code with clinics to track referrals.</p>
+    </body></html>
+    """
+    _send_email(to_email, f"Frontier Nexus Rx — Your {type_label} Account", text, html)
+
+
+def send_more_info_request_email(to_email: str, clinic_name: str, admin_note: str) -> None:
+    text = (
+        f"Additional information is needed for your clinic application ({clinic_name}).\n\n"
+        f"Admin note: {admin_note}\n\n"
+        f"Please resubmit the requested documents to continue your application."
+    )
+    html = f"""
+    <html><body>
+      <p>Additional information is needed for your clinic application
+      (<strong>{clinic_name}</strong>).</p>
+      <p><strong>Admin note:</strong> {admin_note}</p>
+      <p>Please resubmit the requested documents to continue your application.</p>
+    </body></html>
+    """
+    _send_email(to_email, "Frontier Nexus Rx — Application Needs More Information", text, html)
+
+
+def send_welcome_email(to_email: str, clinic_name: str) -> None:
+    text = (
+        f"Welcome to Frontier Nexus Rx, {clinic_name}!\n\n"
+        f"Your clinic application has been approved. You can now log in with the email "
+        f"and password you provided during signup.\n\n"
+        f"Your storefront is active with default branding."
+    )
+    html = f"""
+    <html><body>
+      <p>Welcome to Frontier Nexus Rx, <strong>{clinic_name}</strong>!</p>
+      <p>Your clinic application has been approved. Log in with the email and password
+      you provided during signup.</p>
+      <p>Your storefront is active with default branding.</p>
+    </body></html>
+    """
+    _send_email(to_email, "Frontier Nexus Rx — Welcome to the Provider Portal", text, html)
 
 
 def send_password_reset_email(to_email: str, new_password: str) -> None:

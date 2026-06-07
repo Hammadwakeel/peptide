@@ -1,0 +1,14 @@
+import { IDENTITY_API_URL } from "@/lib/auth/endpoints";
+
+export const ADMIN_ENDPOINTS = {
+  applications: `${IDENTITY_API_URL}/admin/applications`,
+  applicationReview: (applicationId: string) =>
+    `${IDENTITY_API_URL}/admin/applications/${applicationId}`,
+  clinics: `${IDENTITY_API_URL}/admin/clinics`,
+  clinicPatients: (clinicId: string) =>
+    `${IDENTITY_API_URL}/admin/clinics/${clinicId}/patients`,
+  affiliates: `${IDENTITY_API_URL}/admin/affiliates`,
+  deleteUser: (userId: string) => `${IDENTITY_API_URL}/admin/users/${userId}`,
+  changePatientPassword: (patientId: string) =>
+    `${IDENTITY_API_URL}/admin/patients/${patientId}/password`,
+} as const;

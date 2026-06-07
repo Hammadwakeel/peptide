@@ -57,6 +57,9 @@ backend/**/.env.*
 # GCP service account keys only (do not block package.json, tsconfig.json, etc.)
 backend/database/glowing-arcadia-*.json
 backend/database/*-service-account*.json
+backend/gcp-storage.json
+backend/**/gcp-storage.json
+**/*-service-account*.json
 
 # IDE / editor
 .idea/

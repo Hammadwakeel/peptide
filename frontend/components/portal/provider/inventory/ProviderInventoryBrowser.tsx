@@ -1,55 +1,109 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ProductGridCard } from "@/components/portal/provider/inventory/ProductGridCard";
 import { useProviderPortal } from "@/context/ProviderPortalProvider";
-import { MOCK_PRODUCTS, productsToCsv } from "@/lib/products/mock-data";
+import { listCatalog } from "@/lib/products/api";
+import type { CatalogProduct, CatalogProductType } from "@/lib/products/catalog-types";
 import {
-  getStockStatus,
-  PRODUCT_TYPE_LABELS,
-  type InventoryFilter,
-  type InventoryView,
-  type ProductType,
-} from "@/lib/products/types";
-import { toast } from "@/lib/toast";
+  CATALOG_PRODUCT_TYPE_LABELS,
+  defaultRetailPrice,
+} from "@/lib/products/catalog-types";
+import { showError, toast } from "@/lib/toast";
+
+type InventoryFilter = "all" | "category" | "favorites" | "stock";
+type InventoryView = "grid" | "list";
 
 export function ProviderInventoryBrowser() {
-  const { isInMyStore, addToMyStore, removeFromMyStore } = useProviderPortal();
-  const [tab, setTab] = useState<ProductType>("research");
+  const { isInMyStore, addToMyStore, removeFromMyStoreByProductId } = useProviderPortal();
+  const [products, setProducts] = useState<CatalogProduct[]>([]);
+  const [tab, setTab] = useState<CatalogProductType>("ruo");
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<InventoryFilter>("all");
   const [view, setView] = useState<InventoryView>("grid");
-  const [favorites, setFavorites] = useState<Set<string>>(new Set(["prod-001"]));
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [category, setCategory] = useState("all");
+  const [isLoading, setIsLoading] = useState(true);
+  const [updatingProductId, setUpdatingProductId] = useState<string | null>(null);
+
+  const loadCatalog = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await listCatalog({
+        page: 1,
+        limit: 100,
+        product_type: tab,
+        search: search.trim() || undefined,
+      });
+      setProducts(response.products);
+    } catch (error) {
+      showError(error, "Unable to load catalog.");
+      setProducts([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [tab, search]);
+
+  useEffect(() => {
+    void loadCatalog();
+  }, [loadCatalog]);
 
   const categories = useMemo(
-    () => Array.from(new Set(MOCK_PRODUCTS.filter((p) => p.type === tab).map((p) => p.category))),
-    [tab],
+    () =>
+      Array.from(
+        new Set(products.map((product) => product.category.name).filter(Boolean) as string[]),
+      ).sort(),
+    [products],
   );
-  const [category, setCategory] = useState("all");
 
-  const products = useMemo(() => {
-    let list = MOCK_PRODUCTS.filter((p) => p.type === tab);
-    const q = search.trim().toLowerCase();
-    if (q) {
-      list = list.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.sku.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q),
-      );
+  const filteredProducts = useMemo(() => {
+    let list = [...products];
+    if (filter === "favorites") {
+      list = list.filter((product) => favorites.has(product.id));
     }
-    if (filter === "favorites") list = list.filter((p) => favorites.has(p.id));
     if (filter === "stock") {
-      list = list.filter((p) => getStockStatus(p) !== "in_stock");
+      list = list.filter((product) => product.stock_status !== "in_stock");
     }
     if (filter === "category" && category !== "all") {
-      list = list.filter((p) => p.category === category);
+      list = list.filter((product) => product.category.name === category);
     }
     return list;
-  }, [tab, search, filter, favorites, category]);
+  }, [products, filter, favorites, category]);
+
+  async function handleToggleStore(product: CatalogProduct) {
+    if (updatingProductId) return;
+    setUpdatingProductId(product.id);
+    try {
+      if (isInMyStore(product.id)) {
+        await removeFromMyStoreByProductId(product.id);
+        toast.success(`${product.name} removed from My Store.`);
+      } else {
+        await addToMyStore([
+          { productId: product.id, retailPrice: defaultRetailPrice(product.clinic_cost) },
+        ]);
+        toast.success(`${product.name} added to My Store.`);
+      }
+    } catch (error) {
+      showError(error, "Unable to update My Store.");
+    } finally {
+      setUpdatingProductId(null);
+    }
+  }
 
   function handleExport() {
-    const csv = productsToCsv(products);
+    const header = ["Name", "SKU", "Category", "Type", "Clinic Cost", "Stock", "Status"];
+    const rows = filteredProducts.map((product) => [
+      product.name,
+      product.sku,
+      product.category.name ?? "",
+      product.product_type,
+      product.clinic_cost ?? "",
+      product.stock_count,
+      product.stock_status,
+    ]);
+    const csv = [header, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(","))
+      .join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -64,7 +118,7 @@ export function ProviderInventoryBrowser() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-2">
-          {(["research", "pharmacy"] as ProductType[]).map((type) => (
+          {(["ruo", "pharmacy"] as CatalogProductType[]).map((type) => (
             <button
               key={type}
               type="button"
@@ -75,7 +129,7 @@ export function ProviderInventoryBrowser() {
                   : "border border-deep-teal/15 text-deep-teal/70"
               }`}
             >
-              {PRODUCT_TYPE_LABELS[type]}
+              {CATALOG_PRODUCT_TYPE_LABELS[type]}
             </button>
           ))}
         </div>
@@ -109,8 +163,8 @@ export function ProviderInventoryBrowser() {
         {filter === "category" ? (
           <select value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-xl border border-deep-teal/15 px-3 py-2 text-sm">
             <option value="all">All categories</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>{c}</option>
+            {categories.map((item) => (
+              <option key={item} value={item}>{item}</option>
             ))}
           </select>
         ) : null}
@@ -128,34 +182,42 @@ export function ProviderInventoryBrowser() {
             </button>
           ))}
         </div>
+        <button
+          type="button"
+          onClick={() => void loadCatalog()}
+          className="rounded-xl border border-deep-teal/15 px-3 py-2 text-sm text-deep-teal hover:border-pacific-teal"
+        >
+          Refresh
+        </button>
       </div>
 
-      <div className={view === "grid" ? "grid gap-4 sm:grid-cols-2 xl:grid-cols-3" : "space-y-3"}>
-        {products.map((product) => (
-          <ProductGridCard
-            key={product.id}
-            product={product}
-            view={view}
-            isFavorite={favorites.has(product.id)}
-            inMyStore={isInMyStore(product.id)}
-            onToggleFavorite={() =>
-              setFavorites((current) => {
-                const next = new Set(current);
-                if (next.has(product.id)) next.delete(product.id);
-                else next.add(product.id);
-                return next;
-              })
-            }
-            onToggleStore={() => {
-              if (isInMyStore(product.id)) {
-                removeFromMyStore(product.id);
-              } else {
-                addToMyStore([product.id]);
+      {isLoading ? (
+        <p className="py-12 text-center text-sm text-deep-teal/50">Loading catalog…</p>
+      ) : filteredProducts.length === 0 ? (
+        <p className="py-12 text-center text-sm text-deep-teal/50">No products found.</p>
+      ) : (
+        <div className={view === "grid" ? "grid gap-4 sm:grid-cols-2 xl:grid-cols-3" : "space-y-3"}>
+          {filteredProducts.map((product) => (
+            <ProductGridCard
+              key={product.id}
+              product={product}
+              view={view}
+              isFavorite={favorites.has(product.id)}
+              inMyStore={isInMyStore(product.id)}
+              isStoreUpdating={updatingProductId === product.id}
+              onToggleFavorite={() =>
+                setFavorites((current) => {
+                  const next = new Set(current);
+                  if (next.has(product.id)) next.delete(product.id);
+                  else next.add(product.id);
+                  return next;
+                })
               }
-            }}
-          />
-        ))}
-      </div>
+              onToggleStore={() => void handleToggleStore(product)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

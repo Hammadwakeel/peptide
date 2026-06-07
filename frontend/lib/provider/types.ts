@@ -7,11 +7,6 @@ export type ProviderMetrics = {
   orderCount: number;
 };
 
-export type MyStoreEntry = {
-  productId: string;
-  retailPrice: number;
-};
-
 export type StorefrontBranding = {
   clinicName: string;
   tagline: string;

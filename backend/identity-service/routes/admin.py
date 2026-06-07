@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from middleware.auth import require_roles
-from schemas.admin import ChangePatientPasswordRequest, CreateMainAffiliateRequest, ReviewClinicRequest
+from schemas.admin import ChangePatientPasswordRequest, CreateAffiliateRequest, ReviewApplicationRequest
 from schemas.pagination import PaginationQuery
 from services import admin_service
 
@@ -10,23 +10,27 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 admin_user = require_roles("admin", "super_admin")
 
 
-@router.get("/clinics/pending")
-def pending_clinics(
+@router.get("/applications")
+def list_applications(
     pagination: PaginationQuery = Depends(),
+    status: str | None = Query(
+        None,
+        description="Comma-separated application statuses, e.g. submitted,pending_review",
+    ),
     _: dict = Depends(admin_user),
 ) -> dict:
-    """Admin approval queue for new clinic applications (paginated)."""
-    return admin_service.list_pending_applications(pagination)
+    """Admin approval queue — paginated clinic applications with documents and banking summary."""
+    return admin_service.list_applications_queue(pagination, status)
 
 
-@router.post("/clinics/{clinic_id}/review")
-def review_clinic(
-    clinic_id: str,
-    body: ReviewClinicRequest,
+@router.patch("/applications/{application_id}")
+def review_application(
+    application_id: str,
+    body: ReviewApplicationRequest,
     _: dict = Depends(admin_user),
 ) -> dict:
-    """Admin approves or rejects clinic — auto-generates password and emails on approve."""
-    return admin_service.review_clinic(clinic_id, body)
+    """Approve, reject, or request more info for a clinic application."""
+    return admin_service.review_application(application_id, body)
 
 
 @router.get("/clinics")
@@ -48,13 +52,22 @@ def clinic_patients(
     return admin_service.list_clinic_patients(clinic_id, pagination)
 
 
-@router.post("/affiliates/main")
-def create_main_affiliate(
-    body: CreateMainAffiliateRequest,
+@router.get("/affiliates")
+def list_affiliates(
+    pagination: PaginationQuery = Depends(),
     _: dict = Depends(admin_user),
 ) -> dict:
-    """Create the single main affiliate (only one allowed)."""
-    return admin_service.create_main_affiliate(body)
+    """Admin lists all affiliate accounts."""
+    return admin_service.list_affiliates(pagination)
+
+
+@router.post("/affiliates")
+def create_affiliate(
+    body: CreateAffiliateRequest,
+    _: dict = Depends(admin_user),
+) -> dict:
+    """Admin creates a main affiliate. Code and credentials are auto-generated and emailed."""
+    return admin_service.create_affiliate(body)
 
 
 @router.delete("/users/{user_id}")

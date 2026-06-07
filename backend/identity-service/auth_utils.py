@@ -56,6 +56,10 @@ def generate_invite_token() -> str:
     return secrets.token_urlsafe(32)
 
 
+def generate_affiliate_code() -> str:
+    return f"AFF-{secrets.token_hex(4).upper()}"
+
+
 def hash_otp(code: str) -> str:
     return hashlib.sha256(code.encode()).hexdigest()
 

@@ -1,14 +1,14 @@
+import { AUTH_ENDPOINTS } from "@/lib/auth/endpoints";
 import { REFRESH_THRESHOLD_MS } from "@/lib/auth/constants";
 import type {
   AuthSession,
   ForgotPasswordPayload,
   LoginCredentials,
   ResetPasswordPayload,
+  SendOtpResponse,
   UserRole,
+  VerifyOtpResponse,
 } from "@/lib/auth/types";
-
-const IDENTITY_API_URL =
-  process.env.NEXT_PUBLIC_IDENTITY_API_URL ?? "http://localhost:3001";
 
 type LoginResponse = {
   status: boolean;
@@ -30,6 +30,16 @@ type RefreshResponse = {
   refresh_token?: string;
 };
 
+export class OtpRequiredError extends Error {
+  readonly email: string;
+
+  constructor(email: string) {
+    super("OTP verification required");
+    this.name = "OtpRequiredError";
+    this.email = email;
+  }
+}
+
 function parseApiError(payload: unknown, fallback: string): string {
   if (!payload || typeof payload !== "object") return fallback;
   const record = payload as { detail?: unknown; message?: unknown };
@@ -41,16 +51,7 @@ function parseApiError(payload: unknown, fallback: string): string {
   return fallback;
 }
 
-function mapBackendRole(role: string): UserRole {
-  const normalized = role.toLowerCase();
-  if (normalized === "clinic_owner" || normalized === "clinic_staff") return "doctor";
-  if (normalized === "admin" || normalized === "super_admin") return "admin";
-  if (normalized === "affiliate") return "affiliate";
-  if (normalized === "patient") return "patient";
-  throw new Error(`Unsupported account role: ${role}`);
-}
-
-function getTokenExpiryMs(token: string): number {
+export function getTokenExpiryMs(token: string): number {
   try {
     const payload = token.split(".")[1];
     if (!payload) throw new Error("Invalid token");
@@ -64,10 +65,24 @@ function getTokenExpiryMs(token: string): number {
   return Date.now() + 15 * 60 * 1000;
 }
 
+export function isTokenExpired(expiresAt: number) {
+  return expiresAt <= Date.now();
+}
+
+function mapBackendRole(role: string): UserRole {
+  const normalized = role.toLowerCase();
+  if (normalized === "clinic_owner" || normalized === "clinic_staff") return "doctor";
+  if (normalized === "admin" || normalized === "super_admin") return "admin";
+  if (normalized === "affiliate") return "affiliate";
+  if (normalized === "patient") return "patient";
+  throw new Error(`Unsupported account role: ${role}`);
+}
+
 function toAuthSession(
   accessToken: string,
   refreshToken: string,
   email: string,
+  userId: string,
   backendRole: string,
   requestedRole: UserRole,
 ): AuthSession {
@@ -82,8 +97,10 @@ function toAuthSession(
     accessToken,
     refreshToken,
     expiresAt: getTokenExpiryMs(accessToken),
+    refreshExpiresAt: getTokenExpiryMs(refreshToken),
     role,
     email: email.trim().toLowerCase(),
+    userId,
   };
 }
 
@@ -97,7 +114,7 @@ export async function loginWithBackend(
     throw new Error("Email and password are required.");
   }
 
-  const response = await fetch(`${IDENTITY_API_URL}/auth/login`, {
+  const response = await fetch(AUTH_ENDPOINTS.login, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -114,6 +131,9 @@ export async function loginWithBackend(
   }
 
   if (payload.status === false) {
+    if (payload.email_verified === false) {
+      throw new OtpRequiredError(email);
+    }
     throw new Error(payload.message ?? "Additional verification is required.");
   }
 
@@ -125,13 +145,18 @@ export async function loginWithBackend(
     payload.token,
     payload.refresh_token,
     payload.user.email,
+    payload.user.id,
     payload.user.role,
     credentials.role,
   );
 }
 
 export async function refreshAuthSession(session: AuthSession): Promise<AuthSession> {
-  const response = await fetch(`${IDENTITY_API_URL}/auth/refresh-token`, {
+  if (isTokenExpired(session.refreshExpiresAt)) {
+    throw new Error("Session expired. Please sign in again.");
+  }
+
+  const response = await fetch(AUTH_ENDPOINTS.refreshToken, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ refresh_token: session.refreshToken }),
@@ -148,34 +173,52 @@ export async function refreshAuthSession(session: AuthSession): Promise<AuthSess
     accessToken: payload.token,
     refreshToken: payload.refresh_token,
     expiresAt: getTokenExpiryMs(payload.token),
+    refreshExpiresAt: getTokenExpiryMs(payload.refresh_token),
   };
 }
 
-export async function sendPatientOtp(email: string): Promise<void> {
-  const response = await fetch(`${IDENTITY_API_URL}/auth/send-otp`, {
+export async function sendOtp(email: string): Promise<SendOtpResponse> {
+  const response = await fetch(AUTH_ENDPOINTS.sendOtp, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email: email.trim() }),
   });
 
-  const payload = await response.json().catch(() => null);
-  if (!response.ok) {
+  const payload = (await response.json().catch(() => null)) as SendOtpResponse | null;
+  if (!response.ok || !payload?.status) {
     throw new Error(parseApiError(payload, "Unable to send verification code."));
   }
+
+  return payload;
 }
 
-export async function verifyPatientOtp(email: string, otp: string): Promise<void> {
-  const response = await fetch(`${IDENTITY_API_URL}/auth/verify-otp`, {
+export async function verifyOtp(
+  email: string,
+  otp: string,
+): Promise<VerifyOtpResponse> {
+  const response = await fetch(AUTH_ENDPOINTS.verifyOtp, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email: email.trim(), otp: otp.trim() }),
   });
 
-  const payload = await response.json().catch(() => null);
-  if (!response.ok) {
+  const payload = (await response.json().catch(() => null)) as VerifyOtpResponse | null;
+  if (!response.ok || !payload?.status) {
     throw new Error(parseApiError(payload, "Invalid or expired verification code."));
   }
+
+  return payload;
 }
+
+/** @deprecated Use sendOtp */
+export const sendPatientOtp = async (email: string) => {
+  await sendOtp(email);
+};
+
+/** @deprecated Use verifyOtp */
+export const verifyPatientOtp = async (email: string, otp: string) => {
+  await verifyOtp(email, otp);
+};
 
 export async function requestPasswordReset(
   _payload: ForgotPasswordPayload,

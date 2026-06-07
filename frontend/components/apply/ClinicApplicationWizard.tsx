@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   AuthCard,
   AuthShell,
@@ -13,14 +13,16 @@ import { StepDocuments } from "@/components/apply/wizard/StepDocuments";
 import { StepESign } from "@/components/apply/wizard/StepESign";
 import { StepPracticeInfo } from "@/components/apply/wizard/StepPracticeInfo";
 import { WizardStepper } from "@/components/apply/wizard/WizardStepper";
+import { submitClinicApplication, uploadClinicDocuments } from "@/lib/apply/api";
+import { storeApplicationSummary } from "@/lib/apply/storage";
 import {
   INITIAL_BANKING,
   INITIAL_DOCUMENTS,
   INITIAL_PRACTICE,
   type ApplicationWizardState,
 } from "@/lib/apply/types";
-import { mockSubmitApplication } from "@/lib/apply/mock-submit";
 import {
+  validateApplicationState,
   validateBankingStep,
   validateDocumentsStep,
   validatePracticeStep,
@@ -29,14 +31,27 @@ import { showError, toast } from "@/lib/toast";
 
 export function ClinicApplicationWizard() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [state, setState] = useState<ApplicationWizardState>({
-    practice: INITIAL_PRACTICE,
+    practice: {
+      ...INITIAL_PRACTICE,
+      affiliateCode: searchParams.get("ref") ?? searchParams.get("affiliate") ?? "",
+    },
     documents: INITIAL_DOCUMENTS,
     banking: INITIAL_BANKING,
     eSignCompleted: false,
   });
+
+  useEffect(() => {
+    const affiliateCode = searchParams.get("ref") ?? searchParams.get("affiliate");
+    if (!affiliateCode) return;
+    setState((current) => ({
+      ...current,
+      practice: { ...current.practice, affiliateCode },
+    }));
+  }, [searchParams]);
 
   function goNext() {
     if (step === 1) {
@@ -59,17 +74,34 @@ export function ClinicApplicationWizard() {
   }
 
   async function handleSubmit() {
-    if (!state.eSignCompleted) {
-      showError(new Error("Complete the e-signature before submitting."));
+    const validationError = validateApplicationState(state);
+    if (validationError) {
+      showError(new Error(validationError));
       return;
     }
 
     setIsSubmitting(true);
     const toastId = toast.loading("Submitting application…");
+
     try {
-      await mockSubmitApplication(state);
+      const applyResult = await submitClinicApplication(state);
+      storeApplicationSummary(applyResult.application);
+
       toast.dismiss(toastId);
-      router.push("/apply/submitted");
+      const uploadToastId = toast.loading("Uploading documents…");
+      const uploadResult = await uploadClinicDocuments(
+        applyResult.application.id,
+        state.documents,
+      );
+
+      storeApplicationSummary({
+        ...applyResult.application,
+        application_status: uploadResult.application.application_status,
+      });
+
+      toast.dismiss(uploadToastId);
+      toast.success(uploadResult.message);
+      router.push(`/apply/submitted?ref=${applyResult.application.id}`);
     } catch (error) {
       toast.dismiss(toastId);
       showError(error, "Unable to submit application.");

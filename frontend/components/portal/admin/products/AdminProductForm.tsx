@@ -3,200 +3,289 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   authInputClassName,
   authLabelClassName,
 } from "@/components/auth/AuthShell";
-import { getProductById } from "@/lib/products/mock-data";
-import type { PricingTier, ProductVariant } from "@/lib/products/types";
-import { toast } from "@/lib/toast";
+import {
+  createProduct,
+  getProduct,
+  listCategories,
+  updateProduct,
+  uploadProductImages,
+} from "@/lib/admin/inventory/api";
+import type { InventoryCategory, ProductType } from "@/lib/admin/inventory/types";
+import { showError, toast } from "@/lib/toast";
 
 type ProductFormProps = {
   productId?: string;
 };
 
-function emptyVariant(): ProductVariant {
-  return {
-    id: crypto.randomUUID(),
-    size: "",
-    strength: "",
-    price: 0,
-    imageUrl: "/brand/product-vial-2x-blend-hero.png",
-  };
-}
-
-function emptyTier(): PricingTier {
-  return { id: crypto.randomUUID(), minQty: 1, maxQty: null, unitPrice: 0 };
-}
-
 export function AdminProductForm({ productId }: ProductFormProps) {
   const router = useRouter();
-  const existing = productId ? getProductById(productId) : undefined;
+  const isEditing = Boolean(productId);
 
-  const [name, setName] = useState(existing?.name ?? "");
-  const [sku, setSku] = useState(existing?.sku ?? "");
-  const [category, setCategory] = useState(existing?.category ?? "");
-  const [type, setType] = useState(existing?.type ?? "research");
-  const [status, setStatus] = useState(existing?.status ?? "draft");
-  const [price, setPrice] = useState(String(existing?.price ?? ""));
-  const [description, setDescription] = useState(existing?.description.replace(/<[^>]+>/g, "") ?? "");
-  const [images, setImages] = useState<string[]>(existing?.images ?? []);
-  const [coaFileName, setCoaFileName] = useState(existing?.coaFileName ?? "");
-  const [variants, setVariants] = useState<ProductVariant[]>(
-    existing?.variants ?? [emptyVariant()],
-  );
-  const [tiers, setTiers] = useState<PricingTier[]>(
-    existing?.pricingTiers ?? [emptyTier()],
-  );
+  const [categories, setCategories] = useState<InventoryCategory[]>([]);
+  const [isLoading, setIsLoading] = useState(isEditing);
+  const [isSaving, setIsSaving] = useState(false);
 
-  async function handleSave(e: React.FormEvent) {
-    e.preventDefault();
-    await new Promise((r) => setTimeout(r, 500));
-    toast.success(productId ? "Product updated." : "Product created.");
-    router.push("/portal/admin/catalog");
+  const [sku, setSku] = useState("");
+  const [productName, setProductName] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [productType, setProductType] = useState<ProductType>("ruo");
+  const [active, setActive] = useState(true);
+  const [clinicCost, setClinicCost] = useState("");
+  const [stockCount, setStockCount] = useState("0");
+  const [lowStockThreshold, setLowStockThreshold] = useState("10");
+  const [description, setDescription] = useState("");
+  const [directions, setDirections] = useState("");
+  const [strength, setStrength] = useState("");
+  const [form, setForm] = useState("");
+  const [bestUseWithin, setBestUseWithin] = useState("");
+  const [deaSchedule, setDeaSchedule] = useState("");
+  const [primaryImage, setPrimaryImage] = useState<File | null>(null);
+  const [extraImages, setExtraImages] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<{ url: string; is_primary?: boolean }[]>([]);
+
+  useEffect(() => {
+    async function loadFormData() {
+      try {
+        const categoriesResponse = await listCategories();
+        setCategories(categoriesResponse.categories);
+
+        if (!productId) return;
+
+        const productResponse = await getProduct(productId);
+        const product = productResponse.product;
+        setSku(product.sku);
+        setProductName(product.name);
+        setCategoryId(product.category.id ?? "");
+        setProductType(product.product_type);
+        setActive(product.status === "ACTIVE");
+        setClinicCost(product.clinic_cost != null ? String(product.clinic_cost) : "");
+        setStockCount(String(product.stock_count));
+        setLowStockThreshold(String(product.low_stock_threshold));
+        setDescription(product.description ?? "");
+        setDirections(product.directions ?? "");
+        setStrength(product.strength ?? "");
+        setForm(product.form ?? "");
+        setBestUseWithin(product.best_use_within ?? "");
+        setDeaSchedule(product.dea_schedule ?? "");
+        setExistingImages(product.images);
+      } catch (error) {
+        showError(error, "Unable to load product.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    void loadFormData();
+  }, [productId]);
+
+  async function handleSave(event: React.FormEvent) {
+    event.preventDefault();
+
+    if (!productName.trim() || !sku.trim()) {
+      toast.error("Name and SKU are required.");
+      return;
+    }
+
+    if (!clinicCost || Number(clinicCost) < 0) {
+      toast.error("Enter a valid clinic cost.");
+      return;
+    }
+
+    setIsSaving(true);
+    const toastId = toast.loading(isEditing ? "Updating product…" : "Creating product…");
+
+    try {
+      if (isEditing && productId) {
+        await updateProduct(
+          productId,
+          {
+            product_name: productName.trim(),
+            category_id: categoryId || undefined,
+            description: description.trim() || undefined,
+            directions: directions.trim() || undefined,
+            stock_count: Number(stockCount),
+            low_stock_threshold: Number(lowStockThreshold),
+            clinic_cost: Number(clinicCost),
+            active,
+            strength: strength.trim() || undefined,
+            form: form.trim() || undefined,
+            best_use_within: bestUseWithin.trim() || undefined,
+            dea_schedule: deaSchedule.trim() || undefined,
+          },
+          primaryImage,
+        );
+
+        if (extraImages.length > 0) {
+          await uploadProductImages(productId, extraImages);
+        }
+
+        toast.dismiss(toastId);
+        toast.success("Product updated.");
+      } else {
+        await createProduct(
+          {
+            sku: sku.trim(),
+            product_name: productName.trim(),
+            category_id: categoryId || undefined,
+            product_type: productType,
+            description: description.trim() || undefined,
+            directions: directions.trim() || undefined,
+            stock_count: Number(stockCount),
+            low_stock_threshold: Number(lowStockThreshold),
+            clinic_cost: Number(clinicCost),
+            strength: strength.trim() || undefined,
+            form: form.trim() || undefined,
+            best_use_within: bestUseWithin.trim() || undefined,
+            dea_schedule: deaSchedule.trim() || undefined,
+          },
+          primaryImage,
+        );
+
+        toast.dismiss(toastId);
+        toast.success("Product created.");
+      }
+
+      router.push("/portal/admin/catalog");
+    } catch (error) {
+      toast.dismiss(toastId);
+      showError(error, "Unable to save product.");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
-  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []);
-    if (!files.length) return;
-    setImages((current) => [
-      ...current,
-      ...files.map((f) => URL.createObjectURL(f)),
-    ]);
+  if (isLoading) {
+    return <p className="text-sm text-deep-teal/60">Loading product…</p>;
   }
 
   return (
-    <form onSubmit={(e) => void handleSave(e)} className="space-y-6">
+    <form onSubmit={(event) => void handleSave(event)} className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className={authLabelClassName}>Name</label>
-          <input required value={name} onChange={(e) => setName(e.target.value)} className={authInputClassName} />
+          <label className={authLabelClassName}>Product name</label>
+          <input required value={productName} onChange={(e) => setProductName(e.target.value)} className={authInputClassName} />
         </div>
         <div>
           <label className={authLabelClassName}>SKU</label>
-          <input required value={sku} onChange={(e) => setSku(e.target.value)} className={authInputClassName} />
+          <input required value={sku} onChange={(e) => setSku(e.target.value)} disabled={isEditing} className={authInputClassName} />
         </div>
         <div>
           <label className={authLabelClassName}>Category</label>
-          <input required value={category} onChange={(e) => setCategory(e.target.value)} className={authInputClassName} />
+          <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className={authInputClassName}>
+            <option value="">No category</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>{category.name}</option>
+            ))}
+          </select>
         </div>
         <div>
-          <label className={authLabelClassName}>Type</label>
-          <select value={type} onChange={(e) => setType(e.target.value as typeof type)} className={authInputClassName}>
-            <option value="research">Research</option>
+          <label className={authLabelClassName}>Product type</label>
+          <select
+            value={productType}
+            onChange={(e) => setProductType(e.target.value as ProductType)}
+            disabled={isEditing}
+            className={authInputClassName}
+          >
+            <option value="ruo">Research (RUO)</option>
             <option value="pharmacy">Pharmacy</option>
           </select>
         </div>
-        <div>
-          <label className={authLabelClassName}>Status</label>
-          <select value={status} onChange={(e) => setStatus(e.target.value as typeof status)} className={authInputClassName}>
-            <option value="active">Active</option>
-            <option value="draft">Draft</option>
-            <option value="archived">Archived</option>
-          </select>
-        </div>
-        <div>
-          <label className={authLabelClassName}>Base price ($)</label>
-          <input required type="number" min="0" value={price} onChange={(e) => setPrice(e.target.value)} className={authInputClassName} />
-        </div>
-      </div>
-
-      <div>
-        <label className={authLabelClassName}>Description (rich text editor scaffold)</label>
-        <div className="mb-2 flex gap-2">
-          {["Bold", "Italic", "List"].map((tool) => (
-            <button key={tool} type="button" className="rounded-lg border border-deep-teal/15 px-2 py-1 text-xs text-deep-teal/70">
-              {tool}
-            </button>
-          ))}
-        </div>
-        <textarea
-          rows={6}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className={`${authInputClassName} resize-none`}
-        />
-      </div>
-
-      <div>
-        <label className={authLabelClassName}>Product images</label>
-        <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="text-sm" />
-        <div className="mt-3 flex flex-wrap gap-3">
-          {images.map((src) => (
-            <div key={src} className="relative size-20 overflow-hidden rounded-lg border border-deep-teal/10">
-              <Image src={src} alt="" fill className="object-cover" sizes="80px" />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <label className={authLabelClassName}>COA file</label>
-        <input
-          type="file"
-          accept=".pdf"
-          onChange={(e) => setCoaFileName(e.target.files?.[0]?.name ?? "")}
-          className="text-sm"
-        />
-        {coaFileName ? <p className="mt-1 text-xs text-deep-teal/50">{coaFileName}</p> : null}
-      </div>
-
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-deep-teal">Variants</h3>
-          <button type="button" onClick={() => setVariants((v) => [...v, emptyVariant()])} className="text-xs text-pacific-teal hover:underline">
-            Add variant row
-          </button>
-        </div>
-        {variants.map((variant, index) => (
-          <div key={variant.id} className="grid gap-2 rounded-xl border border-deep-teal/10 p-3 sm:grid-cols-4">
-            <input placeholder="Size" value={variant.size} onChange={(e) => setVariants((rows) => rows.map((r, i) => i === index ? { ...r, size: e.target.value } : r))} className={authInputClassName} />
-            <input placeholder="Strength" value={variant.strength} onChange={(e) => setVariants((rows) => rows.map((r, i) => i === index ? { ...r, strength: e.target.value } : r))} className={authInputClassName} />
-            <input placeholder="Price" type="number" value={variant.price} onChange={(e) => setVariants((rows) => rows.map((r, i) => i === index ? { ...r, price: Number(e.target.value) } : r))} className={authInputClassName} />
-            <input placeholder="Image URL" value={variant.imageUrl} onChange={(e) => setVariants((rows) => rows.map((r, i) => i === index ? { ...r, imageUrl: e.target.value } : r))} className={authInputClassName} />
+        {isEditing ? (
+          <div>
+            <label className={authLabelClassName}>Active</label>
+            <select
+              value={active ? "true" : "false"}
+              onChange={(e) => setActive(e.target.value === "true")}
+              className={authInputClassName}
+            >
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
+            </select>
           </div>
-        ))}
+        ) : null}
+        <div>
+          <label className={authLabelClassName}>Clinic cost ($)</label>
+          <input required type="number" min="0" step="0.01" value={clinicCost} onChange={(e) => setClinicCost(e.target.value)} className={authInputClassName} />
+        </div>
+        <div>
+          <label className={authLabelClassName}>Stock count</label>
+          <input type="number" min="0" value={stockCount} onChange={(e) => setStockCount(e.target.value)} className={authInputClassName} />
+        </div>
+        <div>
+          <label className={authLabelClassName}>Low stock threshold</label>
+          <input type="number" min="0" value={lowStockThreshold} onChange={(e) => setLowStockThreshold(e.target.value)} className={authInputClassName} />
+        </div>
+        <div>
+          <label className={authLabelClassName}>Strength</label>
+          <input value={strength} onChange={(e) => setStrength(e.target.value)} className={authInputClassName} />
+        </div>
+        <div>
+          <label className={authLabelClassName}>Form</label>
+          <input value={form} onChange={(e) => setForm(e.target.value)} className={authInputClassName} />
+        </div>
+        <div>
+          <label className={authLabelClassName}>Best use within</label>
+          <input value={bestUseWithin} onChange={(e) => setBestUseWithin(e.target.value)} className={authInputClassName} />
+        </div>
+        <div>
+          <label className={authLabelClassName}>DEA schedule</label>
+          <input value={deaSchedule} onChange={(e) => setDeaSchedule(e.target.value)} className={authInputClassName} />
+        </div>
       </div>
 
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-deep-teal">Tiered pricing</h3>
-          <button type="button" onClick={() => setTiers((t) => [...t, emptyTier()])} className="text-xs text-pacific-teal hover:underline">
-            Add tier
-          </button>
-        </div>
-        <div className="overflow-x-auto rounded-xl border border-deep-teal/10">
-          <table className="min-w-full text-sm">
-            <thead className="bg-deep-teal/[0.02] text-xs uppercase text-deep-teal/45">
-              <tr>
-                <th className="px-3 py-2 text-left">Min qty</th>
-                <th className="px-3 py-2 text-left">Max qty</th>
-                <th className="px-3 py-2 text-left">Unit price</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tiers.map((tier, index) => (
-                <tr key={tier.id} className="border-t border-deep-teal/5">
-                  <td className="px-3 py-2">
-                    <input type="number" value={tier.minQty} onChange={(e) => setTiers((rows) => rows.map((r, i) => i === index ? { ...r, minQty: Number(e.target.value) } : r))} className={authInputClassName} />
-                  </td>
-                  <td className="px-3 py-2">
-                    <input type="number" placeholder="∞" value={tier.maxQty ?? ""} onChange={(e) => setTiers((rows) => rows.map((r, i) => i === index ? { ...r, maxQty: e.target.value ? Number(e.target.value) : null } : r))} className={authInputClassName} />
-                  </td>
-                  <td className="px-3 py-2">
-                    <input type="number" value={tier.unitPrice} onChange={(e) => setTiers((rows) => rows.map((r, i) => i === index ? { ...r, unitPrice: Number(e.target.value) } : r))} className={authInputClassName} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div>
+        <label className={authLabelClassName}>Description</label>
+        <textarea rows={5} value={description} onChange={(e) => setDescription(e.target.value)} className={`${authInputClassName} resize-none`} />
       </div>
+
+      <div>
+        <label className={authLabelClassName}>Directions</label>
+        <textarea rows={3} value={directions} onChange={(e) => setDirections(e.target.value)} className={`${authInputClassName} resize-none`} />
+      </div>
+
+      <div>
+        <label className={authLabelClassName}>{isEditing ? "Replace primary image" : "Primary image"}</label>
+        <input type="file" accept="image/*" onChange={(e) => setPrimaryImage(e.target.files?.[0] ?? null)} className="text-sm" />
+      </div>
+
+      {isEditing ? (
+        <div>
+          <label className={authLabelClassName}>Upload additional images</label>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={(e) => setExtraImages(Array.from(e.target.files ?? []))}
+            className="text-sm"
+          />
+        </div>
+      ) : null}
+
+      {existingImages.length > 0 ? (
+        <div>
+          <p className={authLabelClassName}>Current images</p>
+          <div className="mt-3 flex flex-wrap gap-3">
+            {existingImages.map((image) => (
+              <div key={image.url} className="relative size-20 overflow-hidden rounded-lg border border-deep-teal/10">
+                <Image src={image.url} alt="" fill className="object-cover" sizes="80px" unoptimized />
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div className="flex flex-wrap gap-3">
-        <button type="submit" className="rounded-full bg-deep-teal px-5 py-2.5 text-sm font-medium text-pure-white hover:bg-pacific-teal">
-          Save product
+        <button
+          type="submit"
+          disabled={isSaving}
+          className="rounded-full bg-deep-teal px-5 py-2.5 text-sm font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-60"
+        >
+          {isSaving ? "Saving…" : isEditing ? "Update product" : "Create product"}
         </button>
         <Link href="/portal/admin/catalog" className="rounded-full border border-deep-teal/15 px-5 py-2.5 text-sm text-deep-teal">
           Cancel
