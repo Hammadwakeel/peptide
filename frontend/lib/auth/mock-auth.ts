@@ -1,4 +1,5 @@
 import { REFRESH_THRESHOLD_MS, SESSION_TTL_MS } from "@/lib/auth/constants";
+import { findDemoAccount } from "@/lib/auth/demo-credentials";
 import type {
   AuthSession,
   ForgotPasswordPayload,
@@ -43,15 +44,19 @@ export async function mockLogin(credentials: LoginCredentials): Promise<AuthSess
     throw new Error("Email and password are required.");
   }
 
-  if (!email.includes("@")) {
-    throw new Error("Enter a valid email address.");
+  const demoAccount = findDemoAccount(email, password);
+
+  if (!demoAccount) {
+    throw new Error("Invalid email or password. Use a demo account from the login page.");
   }
 
-  if (password.length < 6) {
-    throw new Error("Password must be at least 6 characters.");
+  if (credentials.role !== demoAccount.role) {
+    throw new Error(
+      `Select the "${demoAccount.role.charAt(0).toUpperCase()}${demoAccount.role.slice(1)}" role for this account.`,
+    );
   }
 
-  return createSession(email, credentials.role, credentials.rememberMe);
+  return createSession(demoAccount.email, demoAccount.role, credentials.rememberMe);
 }
 
 export async function mockForgotPassword(

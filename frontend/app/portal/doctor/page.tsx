@@ -1,16 +1,10 @@
-import { PortalShell } from "@/components/portal/PortalShell";
+import { ProviderDashboard } from "@/components/portal/provider/ProviderDashboard";
 
 export const metadata = {
-  title: "Doctor portal — Frontier Biomed",
-  description: "Doctor workspace for Frontier Biomed partners.",
+  title: "Provider dashboard — Frontier Biomed",
+  description: "Provider workspace for Frontier Biomed partners.",
 };
 
 export default function DoctorPortalPage() {
-  return (
-    <PortalShell
-      role="doctor"
-      title="Doctor workspace"
-      description="This is the doctor portal shell. Orders, verification, and clinic workflows will live here once backend services are connected."
-    />
-  );
+  return <ProviderDashboard />;
 }

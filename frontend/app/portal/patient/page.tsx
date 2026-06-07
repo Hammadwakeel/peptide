@@ -1,16 +1,10 @@
-import { PortalShell } from "@/components/portal/PortalShell";
+import { PendingPaymentsTab } from "@/components/portal/patient/PendingPaymentsTab";
 
 export const metadata = {
-  title: "Patient portal — Frontier Biomed",
-  description: "Patient workspace for Frontier Biomed partners.",
+  title: "Pending Payments — Patient portal",
+  description: "View and pay pending orders.",
 };
 
 export default function PatientPortalPage() {
-  return (
-    <PortalShell
-      role="patient"
-      title="Patient workspace"
-      description="This is the patient portal shell. Prescriptions, messaging, and account settings will live here once backend services are connected."
-    />
-  );
+  return <PendingPaymentsTab />;
 }

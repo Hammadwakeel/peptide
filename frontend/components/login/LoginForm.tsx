@@ -11,6 +11,7 @@ import {
   authLinkClassName,
 } from "@/components/auth/AuthShell";
 import { RoleToggle } from "@/components/auth/RoleToggle";
+import { DemoCredentialsPanel } from "@/components/login/DemoCredentialsPanel";
 import {
   fadeInUp,
   motion,
@@ -211,6 +212,14 @@ export function LoginForm() {
               Back to home
             </Link>
           </motion.div>
+
+          <DemoCredentialsPanel
+            onUseAccount={(demoEmail, demoPassword, demoRole) => {
+              setEmail(demoEmail);
+              setPassword(demoPassword);
+              setRole(demoRole);
+            }}
+          />
 
           <motion.p
             className="mt-6 font-mono text-[11px] leading-relaxed text-deep-teal/45"

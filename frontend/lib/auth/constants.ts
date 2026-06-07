@@ -20,4 +20,5 @@ export const PUBLIC_ROUTES = [
   "/forgot-password",
   "/reset-password",
   "/apply",
+  "/apply/submitted",
 ] as const;

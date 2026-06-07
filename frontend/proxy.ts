@@ -42,10 +42,21 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(portalForRole(role!), request.url));
   }
 
+  if (isAuthenticated && pathname === "/patient/login") {
+    return NextResponse.redirect(new URL(PORTAL_PATHS.patient, request.url));
+  }
+
   if (!isAuthenticated && pathname.startsWith("/portal")) {
-    const loginUrl = new URL("/login", request.url);
+    const loginUrl = new URL(
+      pathname.startsWith("/portal/patient") ? "/patient/login" : "/login",
+      request.url,
+    );
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  if (!isAuthenticated && pathname === "/patient/login") {
+    return NextResponse.next();
   }
 
   if (isAuthenticated && role && pathname.startsWith("/portal")) {
