@@ -10,10 +10,10 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import {
-  mockLogin,
-  mockRefreshToken,
+  loginWithBackend,
+  refreshAuthSession,
   shouldRefreshToken,
-} from "@/lib/auth/mock-auth";
+} from "@/lib/auth/api";
 import {
   clearSession,
   getPortalPath,
@@ -44,15 +44,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const interval = window.setInterval(() => {
+    const interval = window.setInterval(async () => {
       const current = readSession();
       if (!current || !shouldRefreshToken(current.expiresAt)) return;
 
-      const refreshed = mockRefreshToken(current);
-      const rememberMe =
-        refreshed.expiresAt - Date.now() > 24 * 60 * 60 * 1000;
-      persistSession(refreshed, rememberMe);
-      setSession(refreshed);
+      try {
+        const refreshed = await refreshAuthSession(current);
+        const rememberMe = refreshed.expiresAt - Date.now() > 24 * 60 * 60 * 1000;
+        persistSession(refreshed, rememberMe);
+        setSession(refreshed);
+      } catch {
+        clearSession();
+        setSession(null);
+      }
     }, 60_000);
 
     return () => window.clearInterval(interval);
@@ -60,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(
     async (credentials: LoginCredentials) => {
-      const nextSession = await mockLogin(credentials);
+      const nextSession = await loginWithBackend(credentials);
       persistSession(nextSession, credentials.rememberMe);
       setSession(nextSession);
       router.push(getPortalPath(credentials.role));

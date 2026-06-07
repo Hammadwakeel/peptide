@@ -11,7 +11,7 @@ import {
   authLinkClassName,
 } from "@/components/auth/AuthShell";
 import { fadeInUp, motion, staggerContainer, transition } from "@/components/motion";
-import { mockResetPassword } from "@/lib/auth/mock-auth";
+import { resetPassword } from "@/lib/auth/api";
 import { clearResetToken, readResetToken } from "@/lib/auth/storage";
 import { showError, toast } from "@/lib/toast";
 
@@ -29,7 +29,7 @@ export function ResetPasswordForm() {
     const toastId = toast.loading("Updating password…");
 
     try {
-      await mockResetPassword({ token, password, confirmPassword });
+      await resetPassword({ token, password, confirmPassword });
       clearResetToken();
       toast.dismiss(toastId);
       toast.success("Password updated. You can sign in now.");

@@ -11,7 +11,7 @@ import {
   authLinkClassName,
 } from "@/components/auth/AuthShell";
 import { fadeInUp, motion, staggerContainer, transition } from "@/components/motion";
-import { mockForgotPassword } from "@/lib/auth/mock-auth";
+import { requestPasswordReset } from "@/lib/auth/api";
 import { storeResetToken } from "@/lib/auth/storage";
 import { showError, toast } from "@/lib/toast";
 
@@ -26,7 +26,7 @@ export function ForgotPasswordForm() {
     const toastId = toast.loading("Sending reset link…");
 
     try {
-      const { resetToken } = await mockForgotPassword({ email });
+      const { resetToken } = await requestPasswordReset({ email });
       storeResetToken(resetToken);
       toast.dismiss(toastId);
       toast.success("Reset link sent.");

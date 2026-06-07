@@ -7,6 +7,7 @@ import {
   authLabelClassName,
 } from "@/components/auth/AuthShell";
 import { useAuth } from "@/context/AuthProvider";
+import { sendPatientOtp, verifyPatientOtp } from "@/lib/auth/api";
 import { CLINIC_BRANDING } from "@/lib/patient-portal/mock-data";
 import { showError, toast } from "@/lib/toast";
 
@@ -20,6 +21,25 @@ export function PatientLoginForm() {
   const [mode, setMode] = useState<LoginMode>("password");
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+
+  async function handleSendOtp() {
+    if (!email.trim()) {
+      toast.error("Enter your email first.");
+      return;
+    }
+
+    const toastId = toast.loading("Sending verification code…");
+    try {
+      await sendPatientOtp(email);
+      setOtpSent(true);
+      toast.dismiss(toastId);
+      toast.success("Verification code sent.");
+    } catch (error) {
+      toast.dismiss(toastId);
+      showError(error, "Unable to send verification code.");
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -28,18 +48,18 @@ export function PatientLoginForm() {
 
     try {
       if (mode === "otp") {
-        if (otp.trim().length < 4) {
-          throw new Error("Enter the verification code sent to your email.");
+        if (otp.trim().length !== 6) {
+          throw new Error("Enter the 6-digit verification code.");
         }
-        await login({
-          email,
-          password: otp.trim(),
-          role: "patient",
-          rememberMe,
-        });
-      } else {
-        await login({ email, password, role: "patient", rememberMe });
+        await verifyPatientOtp(email, otp);
+        toast.dismiss(toastId);
+        toast.success("Email verified. Sign in with your password.");
+        setMode("password");
+        setOtp("");
+        return;
       }
+
+      await login({ email, password, role: "patient", rememberMe });
       toast.dismiss(toastId);
       toast.success("Welcome back.");
     } catch (error) {
@@ -116,8 +136,16 @@ export function PatientLoginForm() {
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     placeholder="Enter 6-digit code"
+                    maxLength={6}
                     className={authInputClassName}
                   />
+                  <button
+                    type="button"
+                    onClick={handleSendOtp}
+                    className="mt-2 text-xs font-medium text-pacific-teal hover:underline"
+                  >
+                    {otpSent ? "Resend code" : "Send code"}
+                  </button>
                 </div>
               )}
 
@@ -158,7 +186,13 @@ export function PatientLoginForm() {
                 className="w-full rounded-full py-3 text-sm font-medium text-pure-white disabled:opacity-60"
                 style={{ backgroundColor: CLINIC_BRANDING.themeColor }}
               >
-                {isSubmitting ? "Signing in…" : "Sign in"}
+                {isSubmitting
+                  ? mode === "otp"
+                    ? "Verifying…"
+                    : "Signing in…"
+                  : mode === "otp"
+                    ? "Verify code"
+                    : "Sign in"}
               </button>
             </form>
 
