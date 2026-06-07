@@ -1,5 +1,5 @@
 import { REFRESH_THRESHOLD_MS, SESSION_TTL_MS } from "@/lib/auth/constants";
-import { findDemoAccount } from "@/lib/auth/demo-credentials";
+import { findDemoAccountByEmail } from "@/lib/auth/demo-credentials";
 import type {
   AuthSession,
   ForgotPasswordPayload,
@@ -44,10 +44,10 @@ export async function mockLogin(credentials: LoginCredentials): Promise<AuthSess
     throw new Error("Email and password are required.");
   }
 
-  const demoAccount = findDemoAccount(email, password);
+  const demoAccount = findDemoAccountByEmail(email);
 
   if (!demoAccount) {
-    throw new Error("Invalid email or password. Use a demo account from the login page.");
+    throw new Error("Invalid email or password.");
   }
 
   if (credentials.role !== demoAccount.role) {

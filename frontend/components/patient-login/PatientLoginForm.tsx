@@ -33,7 +33,7 @@ export function PatientLoginForm() {
         }
         await login({
           email,
-          password: "Demo2026!",
+          password: otp.trim(),
           role: "patient",
           rememberMe,
         });
@@ -118,9 +118,6 @@ export function PatientLoginForm() {
                     placeholder="Enter 6-digit code"
                     className={authInputClassName}
                   />
-                  <p className="mt-2 text-xs text-deep-teal/50">
-                    Demo: use any code with 4+ digits, or sign in with password mode.
-                  </p>
                 </div>
               )}
 
