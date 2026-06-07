@@ -49,7 +49,7 @@ def invite_patient(doctor_user: dict, body: InvitePatientRequest) -> dict:
         )
 
         invite_link = (
-            f"{FRONTEND_URL}/patient/accept-invitation"
+            f"{FRONTEND_URL}/accept-invitation"
             f"?token={raw_token}&doctor_id={doctor_user['sub']}"
         )
 
