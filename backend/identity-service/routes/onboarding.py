@@ -16,47 +16,52 @@ def _parse_application_request(**data) -> ClinicApplicationRequest:
 
 @router.post("/apply")
 def apply_clinic(
-    clinic_name: str = Form(..., min_length=2, examples=["ABC Wellness Clinic"]),
-    npi_number: str = Form(..., examples=["1234567890"]),
-    dea_number: str = Form(..., examples=["AB1234567"]),
-    state_license_number: str = Form(..., examples=["SL-998877"]),
-    address1: str = Form(..., examples=["123 Main St"]),
-    address2: str | None = Form(None, examples=["Suite 200"]),
-    city: str = Form(..., examples=["New York"]),
-    state: str = Form(..., examples=["NY"]),
-    zip: str = Form(..., examples=["10001"]),
-    country: str = Form("US", examples=["US"]),
-    phone: str = Form(..., examples=["555-0100"]),
-    primary_contact_name: str = Form(..., examples=["Dr. Jane Smith"]),
+    first_name: str = Form(..., examples=["Jane"]),
+    last_name: str = Form(..., examples=["Smith"]),
     email: str = Form(..., examples=["clinic@example.com"]),
-    password: str = Form(..., min_length=8, examples=["SecurePass123!"]),
+    phone: str = Form(..., examples=["555-0100"]),
+    clinic_name: str = Form(..., min_length=2, examples=["ABC Wellness Clinic"]),
+    website: str = Form(..., examples=["https://abcwellness.com"]),
+    tax_id: str = Form(..., examples=["12-3456789"]),
+    address: str = Form(..., examples=["123 Main St"]),
+    city: str = Form(..., examples=["Austin"]),
+    state: str = Form(..., examples=["TX"]),
+    zip: str = Form(..., examples=["78701"]),
     bank_name: str = Form(..., examples=["Chase Bank"]),
-    routing_number: str = Form(..., min_length=9, max_length=9, examples=["021000021"]),
     account_number: str = Form(..., min_length=4, examples=["123456789"]),
     account_type: str = Form("checking", examples=["checking"]),
-    affiliate_code: str | None = Form(None, examples=["REF123"]),
+    affiliate_code: str | None = Form(None, examples=["12345678"]),
+    npi_number: str | None = Form(None, examples=["1234567890"]),
+    dea_number: str | None = Form(None, examples=["AB1234567"]),
+    state_license_number: str | None = Form(None, examples=["SL-998877"]),
+    reseller_permit_number: str = Form(..., examples=["RP-12345"]),
 ) -> dict:
-    """Public clinic signup — practice info, credentials, and encrypted banking details."""
+    """Public clinic onboarding — personal, clinic, banking, and license details.
+
+    Affiliate code is optional. When provided it must be an 8-digit code.
+    No password is collected here. Upload reseller permit + logo via
+    POST /onboarding/documents after this step.
+    """
     body = _parse_application_request(
+        first_name=first_name,
+        last_name=last_name,
+        email=email,
+        phone=phone,
         clinic_name=clinic_name,
-        npi_number=npi_number,
-        dea_number=dea_number,
-        state_license_number=state_license_number,
-        address1=address1,
-        address2=address2,
+        website=website,
+        tax_id=tax_id,
+        address=address,
         city=city,
         state=state,
         zip=zip,
-        country=country,
-        phone=phone,
-        primary_contact_name=primary_contact_name,
-        email=email,
-        password=password,
         bank_name=bank_name,
-        routing_number=routing_number,
         account_number=account_number,
         account_type=account_type,
         affiliate_code=affiliate_code,
+        npi_number=npi_number,
+        dea_number=dea_number,
+        state_license_number=state_license_number,
+        reseller_permit_number=reseller_permit_number,
     )
     return onboarding_service.submit_application(body)
 
@@ -64,18 +69,12 @@ def apply_clinic(
 @router.post("/documents")
 async def upload_documents(
     clinic_id: str = Form(...),
-    dea_license: UploadFile | None = File(None),
-    npi_certificate: UploadFile | None = File(None),
-    state_license: UploadFile | None = File(None),
-    business_registration: UploadFile | None = File(None),
+    reseller_permit: UploadFile = File(...),
     clinic_logo: UploadFile | None = File(None),
 ) -> dict:
-    """Upload DEA, NPI, state license, business registration, and optional clinic logo to GCS."""
+    """Upload reseller permit document (PDF or image) and optional clinic logo."""
     return await onboarding_service.upload_documents(
         clinic_id,
-        dea_license=dea_license,
-        npi_certificate=npi_certificate,
-        state_license=state_license,
-        business_registration=business_registration,
+        reseller_permit=reseller_permit,
         clinic_logo=clinic_logo,
     )

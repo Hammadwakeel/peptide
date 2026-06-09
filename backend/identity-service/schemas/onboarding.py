@@ -2,22 +2,29 @@ from pydantic import BaseModel, EmailStr, Field
 
 
 class ClinicApplicationRequest(BaseModel):
+    # Personal info
+    first_name: str = Field(..., min_length=1)
+    last_name: str = Field(..., min_length=1)
+    email: EmailStr
+    phone: str = Field(..., min_length=1)
+
+    # Clinic info
     clinic_name: str = Field(..., min_length=2)
-    npi_number: str = Field(..., min_length=1)
-    dea_number: str = Field(..., min_length=1)
-    state_license_number: str = Field(..., min_length=1)
-    address1: str = Field(..., min_length=1)
-    address2: str | None = None
+    website: str = Field(..., min_length=1)
+    tax_id: str = Field(..., min_length=1)
+    address: str = Field(..., min_length=1)
     city: str = Field(..., min_length=1)
     state: str = Field(..., min_length=1)
     zip: str = Field(..., min_length=1)
-    country: str = "US"
-    phone: str = Field(..., min_length=1)
-    primary_contact_name: str = Field(..., min_length=1)
-    email: EmailStr
-    password: str = Field(..., min_length=8)
+
+    # Banking
     bank_name: str = Field(..., min_length=1)
-    routing_number: str = Field(..., min_length=9, max_length=9)
     account_number: str = Field(..., min_length=4)
     account_type: str = Field("checking", pattern="^(checking|savings)$")
-    affiliate_code: str | None = None
+
+    # Affiliate + licenses
+    affiliate_code: str | None = Field(None, min_length=8, max_length=8, pattern=r"^\d{8}$")
+    npi_number: str | None = None
+    dea_number: str | None = None
+    state_license_number: str | None = None
+    reseller_permit_number: str = Field(..., min_length=1)

@@ -29,11 +29,10 @@ def create_clinic_application(cursor, data: dict) -> dict[str, Any]:
         """
         INSERT INTO clinics (
             clinic_name, email, phone, npi_number, dea_number,
-            primary_contact_name, state_license_number,
-            application_status, application_password_hash,
-            status, affiliate_id
+            first_name, last_name, website, tax_id, reseller_permit_number,
+            state_license_number, application_status, status, affiliate_id
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending', %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending', %s)
         RETURNING id, clinic_name, email, status::text AS status,
                   application_status, created_at
         """,
@@ -43,10 +42,13 @@ def create_clinic_application(cursor, data: dict) -> dict[str, Any]:
             data.get("phone"),
             data.get("npi_number"),
             data.get("dea_number"),
-            data.get("primary_contact_name"),
+            data.get("first_name"),
+            data.get("last_name"),
+            data.get("website"),
+            data.get("tax_id"),
+            data.get("reseller_permit_number"),
             data.get("state_license_number"),
             data.get("application_status", "submitted"),
-            data.get("application_password_hash"),
             data.get("affiliate_id"),
         ),
     )
@@ -182,7 +184,8 @@ def list_applications(
     cursor.execute(
         f"""
         SELECT c.id, c.clinic_name, c.email, c.phone, c.npi_number, c.dea_number,
-               c.state_license_number, c.primary_contact_name,
+               c.first_name, c.last_name, c.website, c.tax_id, c.reseller_permit_number,
+               c.state_license_number,
                c.status::text AS status, c.application_status,
                c.rejection_reason, c.admin_note, c.created_at, c.affiliate_id,
                ca.address1, ca.address2, ca.city, ca.state, ca.zip, ca.country,

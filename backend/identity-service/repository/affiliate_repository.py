@@ -33,7 +33,8 @@ def get_affiliate_by_user_id(cursor, user_id: str) -> dict[str, Any] | None:
     cursor.execute(
         """
         SELECT a.id, a.user_id, a.affiliate_code, a.affiliate_type::text AS affiliate_type,
-               a.parent_affiliate_id, a.status::text AS status, u.email
+               a.parent_affiliate_id, a.status::text AS status,
+               a.profit_margin_percent, u.email
         FROM affiliates a
         JOIN users u ON u.id = a.user_id
         WHERE a.user_id = %s
@@ -49,7 +50,8 @@ def get_affiliate_by_id(cursor, affiliate_id: str) -> dict[str, Any] | None:
     cursor.execute(
         """
         SELECT a.id, a.user_id, a.affiliate_code, a.affiliate_type::text AS affiliate_type,
-               a.parent_affiliate_id, a.status::text AS status, u.email
+               a.parent_affiliate_id, a.status::text AS status,
+               a.profit_margin_percent, u.email
         FROM affiliates a
         JOIN users u ON u.id = a.user_id
         WHERE a.id = %s
@@ -118,7 +120,8 @@ def count_sub_affiliates(cursor, main_affiliate_id: str) -> int:
 def list_sub_affiliates(cursor, main_affiliate_id: str, limit: int, offset: int) -> list[dict[str, Any]]:
     cursor.execute(
         """
-        SELECT a.id, a.affiliate_code, a.status::text AS status, a.created_at, u.email,
+        SELECT a.id, a.affiliate_code, a.status::text AS status, a.profit_margin_percent,
+               a.created_at, u.email,
                COUNT(ar.id) AS clinic_referral_count
         FROM affiliates a
         JOIN users u ON u.id = a.user_id
@@ -202,7 +205,7 @@ def list_all_affiliates(cursor, limit: int, offset: int) -> list[dict[str, Any]]
     cursor.execute(
         """
         SELECT a.id, a.affiliate_code, a.affiliate_type::text AS affiliate_type,
-               a.status::text AS status, a.created_at, u.email,
+               a.status::text AS status, a.profit_margin_percent, a.created_at, u.email,
                pa.affiliate_code AS parent_affiliate_code,
                COUNT(ar.id) AS clinic_referral_count
         FROM affiliates a
@@ -261,3 +264,20 @@ def list_clinic_referrals(
             (str(affiliate["id"]), limit, offset),
         )
     return _rows_to_dicts(cursor, cursor.fetchall())
+
+
+def update_affiliate_profit_margin(
+    cursor, affiliate_id: str, profit_margin_percent: float,
+) -> dict[str, Any] | None:
+    cursor.execute(
+        """
+        UPDATE affiliates
+        SET profit_margin_percent = %s, updated_at = NOW()
+        WHERE id = %s
+        RETURNING id, affiliate_code, affiliate_type::text AS affiliate_type,
+                  profit_margin_percent, status::text AS status
+        """,
+        (profit_margin_percent, affiliate_id),
+    )
+    row = cursor.fetchone()
+    return _row_to_dict(cursor, row) if row else None

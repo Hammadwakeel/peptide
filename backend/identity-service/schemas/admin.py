@@ -22,5 +22,7 @@ class ChangePatientPasswordRequest(BaseModel):
 
 class CreateAffiliateRequest(BaseModel):
     email: EmailStr
-    password: str | None = Field(None, min_length=8)
-    auto_generate_password: bool = True
+
+
+class UpdateAffiliateProfitMarginRequest(BaseModel):
+    profit_margin_percent: float = Field(..., ge=0, le=100)

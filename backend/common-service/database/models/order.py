@@ -2,8 +2,10 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import (
+    CheckConstraint,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     Numeric,
     String,
@@ -19,6 +21,12 @@ from ..enums import OrderType, PaymentStatus, ShipmentStatus, pg_enum
 
 class Order(UUIDMixin, TimestampMixin, Base):
     __tablename__ = "orders"
+    __table_args__ = (
+        CheckConstraint("total_amount >= 0", name="total_amount_non_negative"),
+        Index("ix_orders_clinic_created", "clinic_id", text("created_at DESC")),
+        Index("ix_orders_patient", "patient_id"),
+        Index("ix_orders_status", "payment_status", "shipment_status"),
+    )
 
     order_number: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     clinic_id: Mapped[uuid.UUID] = mapped_column(
@@ -49,12 +57,13 @@ class Order(UUIDMixin, TimestampMixin, Base):
 
 class OrderItem(UUIDMixin, CreatedAtMixin, Base):
     __tablename__ = "order_items"
+    __table_args__ = (CheckConstraint("qty > 0", name="qty_positive"),)
 
     order_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("orders.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("orders.id", ondelete="CASCADE"), nullable=False, index=True
     )
     product_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("products.id", ondelete="RESTRICT"), nullable=False
+        UUID(as_uuid=True), ForeignKey("products.id", ondelete="RESTRICT"), nullable=False, index=True
     )
     variant_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("product_variants.id", ondelete="SET NULL")
@@ -69,7 +78,7 @@ class OrderTracking(UUIDMixin, TimestampMixin, Base):
     __tablename__ = "order_tracking"
 
     order_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("orders.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("orders.id", ondelete="CASCADE"), nullable=False, index=True
     )
     carrier: Mapped[str | None] = mapped_column(String(100))
     tracking_number: Mapped[str | None] = mapped_column(String(255))
@@ -82,7 +91,7 @@ class OrderPayment(UUIDMixin, CreatedAtMixin, Base):
     __tablename__ = "order_payments"
 
     order_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("orders.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("orders.id", ondelete="CASCADE"), nullable=False, index=True
     )
     stripe_payment_intent_id: Mapped[str | None] = mapped_column(Text)
     amount: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
@@ -98,7 +107,7 @@ class OrderRefund(UUIDMixin, CreatedAtMixin, Base):
     __tablename__ = "order_refunds"
 
     order_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("orders.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("orders.id", ondelete="CASCADE"), nullable=False, index=True
     )
     amount: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
     reason: Mapped[str | None] = mapped_column(Text)
@@ -110,10 +119,10 @@ class OrderShipmentEvent(UUIDMixin, Base):
     __tablename__ = "order_shipment_events"
 
     order_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("orders.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("orders.id", ondelete="CASCADE"), nullable=False, index=True
     )
     tracking_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("order_tracking.id", ondelete="CASCADE")
+        UUID(as_uuid=True), ForeignKey("order_tracking.id", ondelete="CASCADE"), index=True
     )
     event_type: Mapped[str] = mapped_column(String(100), nullable=False)
     location: Mapped[str | None] = mapped_column(String(255))
@@ -130,7 +139,7 @@ class PendingPaymentOrder(UUIDMixin, CreatedAtMixin, Base):
         UUID(as_uuid=True), ForeignKey("orders.id", ondelete="CASCADE"), unique=True, nullable=False
     )
     patient_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("patients.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("patients.id", ondelete="CASCADE"), nullable=False, index=True
     )
     payment_link: Mapped[str | None] = mapped_column(Text)
     reminder_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
@@ -144,7 +153,7 @@ class ClinicBulkOrder(UUIDMixin, CreatedAtMixin, Base):
         UUID(as_uuid=True), ForeignKey("orders.id", ondelete="CASCADE"), unique=True, nullable=False
     )
     clinic_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("clinics.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("clinics.id", ondelete="CASCADE"), nullable=False, index=True
     )
     shipping_address_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("clinic_addresses.id", ondelete="SET NULL")

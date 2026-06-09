@@ -28,6 +28,11 @@ class AccountStatus(str, enum.Enum):
     pending = "pending"
 
 
+class AffiliateType(str, enum.Enum):
+    main = "main"
+    sub = "sub"
+
+
 class OrderType(str, enum.Enum):
     customer = "customer"
     clinic = "clinic"

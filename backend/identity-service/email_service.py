@@ -1,22 +1,18 @@
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import sys
+from pathlib import Path
 
-from config import FRONTEND_URL, SMTP_EMAIL, SMTP_FROM, SMTP_HOST, SMTP_PASSWORD, SMTP_PORT
+from config import FRONTEND_URL
+
+COMMON_SERVICE_DIR = Path(__file__).resolve().parent.parent / "common-service"
+sys.path.insert(0, str(COMMON_SERVICE_DIR))
+
+from service.send_email import EmailService  # noqa: E402
+
+_email = EmailService()
 
 
 def _send_email(to_email: str, subject: str, text: str, html: str) -> None:
-    message = MIMEMultipart("alternative")
-    message["Subject"] = subject
-    message["From"] = SMTP_FROM
-    message["To"] = to_email
-    message.attach(MIMEText(text, "plain"))
-    message.attach(MIMEText(html, "html"))
-
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-        server.starttls()
-        server.login(SMTP_EMAIL, SMTP_PASSWORD)
-        server.sendmail(SMTP_FROM, to_email, message.as_string())
+    _email.send(to_email, subject, text, html)
 
 
 def send_otp_email(to_email: str, otp_code: str) -> None:
@@ -140,6 +136,54 @@ def send_application_approved_email(
     _send_email(to_email, "Frontier Nexus Rx — Clinic Application Approved", text, html)
 
 
+def send_set_password_email(
+    to_email: str,
+    recipient_name: str,
+    setup_link: str,
+    *,
+    context: str = "account",
+) -> None:
+    if context == "clinic":
+        intro = (
+            f"Dear {recipient_name} team,\n\n"
+            f"Congratulations! Your clinic application has been approved.\n\n"
+            f"To activate your provider portal, set your account password using the secure "
+            f"link below:"
+        )
+        intro_html = (
+            f"<p>Dear <strong>{recipient_name}</strong> team,</p>"
+            f"<p>Congratulations! Your clinic application has been <strong>approved</strong>.</p>"
+            f"<p>To activate your provider portal, set your account password using the secure "
+            f"link below:</p>"
+        )
+    else:
+        intro = (
+            f"Hello,\n\n"
+            f"Your Frontier Nexus Rx {recipient_name} account has been created.\n\n"
+            f"Set your password using the secure link below:"
+        )
+        intro_html = (
+            f"<p>Your Frontier Nexus Rx <strong>{recipient_name}</strong> account has been created.</p>"
+            f"<p>Set your password using the secure link below:</p>"
+        )
+
+    text = (
+        f"{intro}\n\n"
+        f"{setup_link}\n\n"
+        f"For your security, this link can only be used once and will expire soon. "
+        f"If it expires, contact Frontier Nexus Rx support to request a new link."
+    )
+    html = f"""
+    <html><body>
+      {intro_html}
+      <p><a href="{setup_link}">Set your password</a></p>
+      <p>For your security, this link can only be used once and will expire soon.
+      If it expires, contact Frontier Nexus Rx support to request a new link.</p>
+    </body></html>
+    """
+    _send_email(to_email, "Frontier Nexus Rx — Set Your Password", text, html)
+
+
 def send_affiliate_credentials_email(
     to_email: str,
     password: str,
@@ -202,6 +246,28 @@ def send_welcome_email(to_email: str, clinic_name: str) -> None:
     </body></html>
     """
     _send_email(to_email, "Frontier Nexus Rx — Welcome to the Provider Portal", text, html)
+
+
+def send_doctor_referral_invite_email(
+    to_email: str,
+    affiliate_code: str,
+    referral_link: str,
+) -> None:
+    text = (
+        f"You have been invited to join Frontier Nexus Rx as a clinic provider.\n\n"
+        f"Use affiliate code: {affiliate_code}\n"
+        f"Or apply directly: {referral_link}\n\n"
+        f"Complete the clinic application to get started."
+    )
+    html = f"""
+    <html><body>
+      <p>You have been invited to join <strong>Frontier Nexus Rx</strong> as a clinic provider.</p>
+      <p><strong>Affiliate code:</strong> {affiliate_code}</p>
+      <p><a href="{referral_link}">Start clinic application</a></p>
+      <p>Complete the application to get started.</p>
+    </body></html>
+    """
+    _send_email(to_email, "Frontier Nexus Rx — Clinic Provider Invitation", text, html)
 
 
 def send_password_reset_email(to_email: str, new_password: str) -> None:

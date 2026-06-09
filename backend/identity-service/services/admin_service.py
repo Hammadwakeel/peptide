@@ -1,22 +1,33 @@
 from __future__ import annotations
 
+import secrets
+from datetime import datetime, timedelta, timezone
+
 from fastapi import HTTPException
 
-from auth_utils import generate_affiliate_code, generate_password, hash_password
-from db import connect
+from auth_utils import (
+    generate_affiliate_code,
+    generate_invite_token,
+    generate_password,
+    hash_password,
+    hash_token,
+)
+from config import FRONTEND_URL, PASSWORD_SETUP_EXPIRY_HOURS
+from db import SessionLocal, connect
 from email_service import (
-    send_affiliate_credentials_email,
-    send_application_approved_email,
     send_application_rejection_email,
     send_more_info_request_email,
     send_password_reset_email,
+    send_set_password_email,
 )
 from repository import find_user_by_email
 from repository.affiliate_repository import (
     activate_clinic_referral,
     count_all_affiliates,
     create_main_affiliate as db_create_main_affiliate,
+    get_affiliate_by_id,
     list_all_affiliates,
+    update_affiliate_profit_margin as db_update_affiliate_profit_margin,
 )
 from repository.clinic_repository import (
     approve_clinic,
@@ -35,15 +46,29 @@ from repository.patient_repository import (
     get_patient_by_id,
     list_patients_by_clinic_admin,
 )
-from repository.user_repository import create_user, deactivate_user, get_user_by_id, update_user_password
+from repository.user_repository import (
+    create_password_setup_token,
+    create_user,
+    deactivate_user,
+    get_user_by_id,
+    update_user_password,
+)
 from schemas.admin import (
     ChangePatientPasswordRequest,
     CreateAffiliateRequest,
     ReviewApplicationRequest,
+    UpdateAffiliateProfitMarginRequest,
 )
 from schemas.pagination import PaginationQuery, paginated_response
 
 REVIEWABLE_STATUSES = ["submitted", "docs_signed", "pending_review", "more_info_requested"]
+
+
+def _issue_password_setup_link(cursor, user_id: str) -> str:
+    raw_token = generate_invite_token()
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=PASSWORD_SETUP_EXPIRY_HOURS)
+    create_password_setup_token(cursor, user_id, hash_token(raw_token), expires_at)
+    return f"{FRONTEND_URL}/set-password?token={raw_token}"
 
 
 def _format_application(c: dict, documents: list[dict] | None = None) -> dict:
@@ -52,7 +77,11 @@ def _format_application(c: dict, documents: list[dict] | None = None) -> dict:
         "clinic_name": c["clinic_name"],
         "email": c["email"],
         "phone": c.get("phone"),
-        "primary_contact_name": c.get("primary_contact_name"),
+        "first_name": c.get("first_name"),
+        "last_name": c.get("last_name"),
+        "website": c.get("website"),
+        "tax_id": c.get("tax_id"),
+        "reseller_permit_number": c.get("reseller_permit_number"),
         "npi_number": c.get("npi_number"),
         "dea_number": c.get("dea_number"),
         "state_license_number": c.get("state_license_number"),
@@ -188,39 +217,44 @@ def review_application(application_id: str, body: ReviewApplicationRequest) -> d
                 "email_sent_to": clinic["email"],
             }
 
-        if find_user_by_email(cursor, clinic["email"]):
-            raise HTTPException(status_code=409, detail="User with clinic email already exists")
+        db = SessionLocal()
+        try:
+            if find_user_by_email(db, clinic["email"]):
+                raise HTTPException(status_code=409, detail="User with clinic email already exists")
+        finally:
+            db.close()
 
-        password_hash = clinic.get("application_password_hash")
-        if not password_hash:
-            password = generate_password()
-            password_hash = hash_password(password)
-        else:
-            password = None
-
+        # Create the clinic owner account with an unusable random password and
+        # unverified email. The owner sets their real password via a one-time
+        # email link; until then the account cannot be logged into.
+        placeholder_hash = hash_password(secrets.token_urlsafe(32))
         user = create_user(
             cursor,
             clinic["email"],
-            password_hash,
+            placeholder_hash,
             "clinic_owner",
-            email_verified=True,
+            email_verified=False,
         )
         approve_clinic(cursor, application_id)
         link_clinic_owner(cursor, application_id, str(user["id"]))
         activate_clinic_referral(cursor, application_id)
+
+        setup_link = _issue_password_setup_link(cursor, str(user["id"]))
         conn.commit()
 
-        send_application_approved_email(
+        send_set_password_email(
             clinic["email"],
             clinic["clinic_name"],
-            password=password,
+            setup_link,
+            context="clinic",
         )
         return {
             "status": True,
-            "message": "Application approved. Approval email sent to clinic.",
+            "message": "Application approved. A set-password email has been sent to the clinic.",
             "application_id": application_id,
             "application_status": "approved",
             "email_sent_to": clinic["email"],
+            "setup_link": setup_link,
             "user": {
                 "id": str(user["id"]),
                 "email": user["email"],
@@ -303,38 +337,40 @@ def _generate_unique_affiliate_code(cursor) -> str:
 
 
 def create_affiliate(body: CreateAffiliateRequest) -> dict:
+    db = SessionLocal()
+    try:
+        if find_user_by_email(db, body.email):
+            raise HTTPException(status_code=409, detail="Email already registered")
+    finally:
+        db.close()
+
     conn = connect()
     cursor = conn.cursor()
     try:
-        if find_user_by_email(cursor, body.email):
-            raise HTTPException(status_code=409, detail="Email already registered")
-
         affiliate_code = _generate_unique_affiliate_code(cursor)
-        password = (
-            body.password
-            if body.password and not body.auto_generate_password
-            else generate_password()
-        )
+        placeholder_hash = hash_password(secrets.token_urlsafe(32))
         user = create_user(
             cursor,
             body.email,
-            hash_password(password),
+            placeholder_hash,
             "affiliate",
-            email_verified=True,
+            email_verified=False,
         )
         affiliate = db_create_main_affiliate(cursor, str(user["id"]), affiliate_code)
 
+        setup_link = _issue_password_setup_link(cursor, str(user["id"]))
         conn.commit()
-        send_affiliate_credentials_email(
+
+        send_set_password_email(
             body.email,
-            password,
-            affiliate["affiliate_code"],
-            "main",
+            "Affiliate",
+            setup_link,
+            context="affiliate",
         )
 
         return {
             "status": True,
-            "message": "Main affiliate created. Credentials sent to email.",
+            "message": "Main affiliate created. A set-password email has been sent.",
             "affiliate": {
                 "id": str(affiliate["id"]),
                 "email": user["email"],
@@ -342,6 +378,7 @@ def create_affiliate(body: CreateAffiliateRequest) -> dict:
                 "affiliate_type": "main",
             },
             "email_sent_to": body.email,
+            "setup_link": setup_link,
         }
     except HTTPException:
         conn.rollback()
@@ -368,6 +405,7 @@ def list_affiliates(pagination: PaginationQuery) -> dict:
                 "affiliate_code": a["affiliate_code"],
                 "affiliate_type": a["affiliate_type"],
                 "status": a["status"],
+                "profit_margin_percent": float(a.get("profit_margin_percent") or 0),
                 "parent_affiliate_code": a.get("parent_affiliate_code"),
                 "clinic_referral_count": a.get("clinic_referral_count", 0),
                 "created_at": str(a["created_at"]),
@@ -375,6 +413,46 @@ def list_affiliates(pagination: PaginationQuery) -> dict:
             for a in affiliates
         ]
         return paginated_response(items, total, pagination.page, pagination.limit, key="affiliates")
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def update_affiliate_profit_margin(
+    affiliate_id: str,
+    body: UpdateAffiliateProfitMarginRequest,
+) -> dict:
+    conn = connect()
+    cursor = conn.cursor()
+    try:
+        existing = get_affiliate_by_id(cursor, affiliate_id)
+        if not existing:
+            raise HTTPException(status_code=404, detail="Affiliate not found")
+
+        updated = db_update_affiliate_profit_margin(
+            cursor,
+            affiliate_id,
+            body.profit_margin_percent,
+        )
+        conn.commit()
+        return {
+            "status": True,
+            "message": f"Profit margin updated for {updated['affiliate_type']} affiliate.",
+            "affiliate": {
+                "id": str(updated["id"]),
+                "email": existing["email"],
+                "affiliate_code": updated["affiliate_code"],
+                "affiliate_type": updated["affiliate_type"],
+                "profit_margin_percent": float(updated["profit_margin_percent"]),
+                "status": updated["status"],
+            },
+        }
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception as exc:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
     finally:
         cursor.close()
         conn.close()

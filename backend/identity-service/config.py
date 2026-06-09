@@ -4,15 +4,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 SERVICE_DIR = Path(__file__).resolve().parent
-BACKEND_DIR = SERVICE_DIR.parent
 load_dotenv(SERVICE_DIR / ".env", override=True)
-
-GCS_CREDENTIALS_PATH = os.getenv(
-    "GCS_CREDENTIALS_PATH",
-    str(BACKEND_DIR / "gcp-storage.json"),
-)
-GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME", "nexus-docs")
-GCS_USE_OBJECT_ACL = os.getenv("GCS_USE_OBJECT_ACL", "false").lower() == "true"
 
 PORT = int(os.getenv("IDENTITY_SERVICE_PORT", "3001"))
 JWT_SECRET = os.getenv("JWT_SECRET", "")
@@ -20,15 +12,15 @@ JWT_REFRESH_SECRET = os.getenv("JWT_REFRESH_SECRET", "")
 JWT_EXPIRES_IN = os.getenv("JWT_EXPIRES_IN", "15m")
 JWT_REFRESH_EXPIRES_IN = os.getenv("JWT_REFRESH_EXPIRES_IN", "7d")
 
-SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_EMAIL = os.getenv("SMTP_EMAIL", "")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
-SMTP_FROM = os.getenv("SMTP_FROM", SMTP_EMAIL)
-
 OTP_EXPIRY_MINUTES = int(os.getenv("OTP_EXPIRY_MINUTES", "10"))
+# How long (in minutes) a successful OTP verification keeps a login "trusted".
+# Within this window, login skips OTP; once it elapses (or on first login),
+# OTP verification is required again. Default 12000 min = 200 hours.
+LOGIN_OTP_REVERIFY_MINUTES = int(os.getenv("LOGIN_OTP_REVERIFY_MINUTES", "12000"))
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 INVITE_EXPIRY_DAYS = int(os.getenv("INVITE_EXPIRY_DAYS", "7"))
+# How long a set-password link (sent after admin approval) stays valid.
+PASSWORD_SETUP_EXPIRY_HOURS = int(os.getenv("PASSWORD_SETUP_EXPIRY_HOURS", "48"))
 
 ROLE_ALIASES: dict[str, list[str]] = {
     "doctor": ["clinic_owner", "clinic_staff"],

@@ -1,8 +1,8 @@
-"""initial schema
+"""schema with otp_codes
 
-Revision ID: 4a940dfced4e
+Revision ID: 096202cbd498
 Revises: 
-Create Date: 2026-06-09 13:16:02.196297
+Create Date: 2026-06-09 17:23:12.492728
 
 """
 from typing import Sequence, Union
@@ -12,10 +12,30 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = '4a940dfced4e'
+revision: str = '096202cbd498'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
+
+# Tables that carry an updated_at column maintained by a DB trigger.
+_UPDATED_AT_TABLES = (
+    "users",
+    "affiliates",
+    "clinics",
+    "clinic_branding",
+    "clinic_bank_accounts",
+    "clinic_settings",
+    "patients",
+    "patient_subscriptions",
+    "patient_profiles",
+    "patient_notes",
+    "products",
+    "product_inventory",
+    "clinic_store_products",
+    "orders",
+    "order_tracking",
+    "conversations",
+)
 
 
 def upgrade() -> None:
@@ -28,9 +48,9 @@ def upgrade() -> None:
     sa.Column('active', sa.Boolean(), server_default=sa.text('TRUE'), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('name'),
-    sa.UniqueConstraint('slug')
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_categories')),
+    sa.UniqueConstraint('name', name=op.f('uq_categories_name')),
+    sa.UniqueConstraint('slug', name=op.f('uq_categories_slug'))
     )
     op.create_table('payout_batches',
     sa.Column('batch_number', sa.String(length=100), nullable=False),
@@ -39,16 +59,16 @@ def upgrade() -> None:
     sa.Column('processed_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('batch_number')
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_payout_batches')),
+    sa.UniqueConstraint('batch_number', name=op.f('uq_payout_batches_batch_number'))
     )
     op.create_table('roles',
     sa.Column('name', sa.String(length=100), nullable=False),
     sa.Column('description', sa.Text(), nullable=True),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('name')
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_roles')),
+    sa.UniqueConstraint('name', name=op.f('uq_roles_name'))
     )
     op.create_table('users',
     sa.Column('email', sa.String(length=255), nullable=False),
@@ -62,9 +82,10 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('email')
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_users')),
+    sa.UniqueConstraint('email', name=op.f('uq_users_email'))
     )
+    op.create_index('ix_users_role_status', 'users', ['role', 'status'], unique=False)
     op.create_table('admin_audit_logs',
     sa.Column('admin_id', sa.UUID(), nullable=False),
     sa.Column('action', sa.Text(), nullable=False),
@@ -74,9 +95,11 @@ def upgrade() -> None:
     sa.Column('ip_address', postgresql.INET(), nullable=True),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['admin_id'], ['users.id'], ondelete='RESTRICT'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['admin_id'], ['users.id'], name=op.f('fk_admin_audit_logs_admin_id_users'), ondelete='RESTRICT'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_admin_audit_logs'))
     )
+    op.create_index(op.f('ix_admin_audit_logs_admin_id'), 'admin_audit_logs', ['admin_id'], unique=False)
+    op.create_index('ix_admin_audit_logs_created', 'admin_audit_logs', [sa.literal_column('created_at DESC')], unique=False)
     op.create_table('affiliates',
     sa.Column('user_id', sa.UUID(), nullable=False),
     sa.Column('affiliate_code', sa.String(length=100), nullable=False),
@@ -84,10 +107,24 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='RESTRICT'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('affiliate_code')
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_affiliates_user_id_users'), ondelete='RESTRICT'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_affiliates')),
+    sa.UniqueConstraint('affiliate_code', name=op.f('uq_affiliates_affiliate_code'))
     )
+    op.create_index(op.f('ix_affiliates_user_id'), 'affiliates', ['user_id'], unique=False)
+    op.create_table('otp_codes',
+    sa.Column('user_id', sa.UUID(), nullable=False),
+    sa.Column('email', sa.String(length=255), nullable=False),
+    sa.Column('code_hash', sa.Text(), nullable=False),
+    sa.Column('expires_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('used_at', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_otp_codes_user_id_users'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_otp_codes'))
+    )
+    op.create_index('ix_otp_codes_email', 'otp_codes', ['email'], unique=False)
+    op.create_index(op.f('ix_otp_codes_user_id'), 'otp_codes', ['user_id'], unique=False)
     op.create_table('password_reset_tokens',
     sa.Column('user_id', sa.UUID(), nullable=False),
     sa.Column('token_hash', sa.Text(), nullable=False),
@@ -95,10 +132,11 @@ def upgrade() -> None:
     sa.Column('used_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('token_hash')
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_password_reset_tokens_user_id_users'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_password_reset_tokens')),
+    sa.UniqueConstraint('token_hash', name=op.f('uq_password_reset_tokens_token_hash'))
     )
+    op.create_index(op.f('ix_password_reset_tokens_user_id'), 'password_reset_tokens', ['user_id'], unique=False)
     op.create_table('products',
     sa.Column('sku', sa.String(length=100), nullable=False),
     sa.Column('product_name', sa.String(length=255), nullable=False),
@@ -112,10 +150,14 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['category_id'], ['categories.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('sku')
+    sa.CheckConstraint('stock_count >= 0', name=op.f('ck_products_stock_count_non_negative')),
+    sa.ForeignKeyConstraint(['category_id'], ['categories.id'], name=op.f('fk_products_category_id_categories'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_products')),
+    sa.UniqueConstraint('sku', name=op.f('uq_products_sku'))
     )
+    op.create_index('ix_products_category_active', 'products', ['category_id'], unique=False, postgresql_where=sa.text('active'))
+    op.create_index(op.f('ix_products_category_id'), 'products', ['category_id'], unique=False)
+    op.create_index('ix_products_type', 'products', ['product_type'], unique=False)
     op.create_table('sessions',
     sa.Column('user_id', sa.UUID(), nullable=False),
     sa.Column('token_hash', sa.Text(), nullable=False),
@@ -124,20 +166,24 @@ def upgrade() -> None:
     sa.Column('expires_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('token_hash')
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_sessions_user_id_users'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_sessions')),
+    sa.UniqueConstraint('token_hash', name=op.f('uq_sessions_token_hash'))
     )
+    op.create_index(op.f('ix_sessions_expires_at'), 'sessions', ['expires_at'], unique=False)
+    op.create_index(op.f('ix_sessions_user_id'), 'sessions', ['user_id'], unique=False)
     op.create_table('user_roles',
     sa.Column('user_id', sa.UUID(), nullable=False),
     sa.Column('role_id', sa.UUID(), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['role_id'], ['roles.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('user_id', 'role_id')
+    sa.ForeignKeyConstraint(['role_id'], ['roles.id'], name=op.f('fk_user_roles_role_id_roles'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_user_roles_user_id_users'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_user_roles')),
+    sa.UniqueConstraint('user_id', 'role_id', name=op.f('uq_user_roles_user_id'))
     )
+    op.create_index(op.f('ix_user_roles_role_id'), 'user_roles', ['role_id'], unique=False)
+    op.create_index(op.f('ix_user_roles_user_id'), 'user_roles', ['user_id'], unique=False)
     op.create_table('affiliate_payouts',
     sa.Column('affiliate_id', sa.UUID(), nullable=False),
     sa.Column('amount', sa.Numeric(precision=12, scale=2), nullable=False),
@@ -145,9 +191,11 @@ def upgrade() -> None:
     sa.Column('payout_date', sa.DateTime(timezone=True), nullable=True),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['affiliate_id'], ['affiliates.id'], ondelete='RESTRICT'),
-    sa.PrimaryKeyConstraint('id')
+    sa.CheckConstraint('amount >= 0', name=op.f('ck_affiliate_payouts_amount_non_negative')),
+    sa.ForeignKeyConstraint(['affiliate_id'], ['affiliates.id'], name=op.f('fk_affiliate_payouts_affiliate_id_affiliates'), ondelete='RESTRICT'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_affiliate_payouts'))
     )
+    op.create_index(op.f('ix_affiliate_payouts_affiliate_id'), 'affiliate_payouts', ['affiliate_id'], unique=False)
     op.create_table('clinics',
     sa.Column('clinic_name', sa.String(length=255), nullable=False),
     sa.Column('email', sa.String(length=255), nullable=False),
@@ -159,9 +207,12 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['affiliate_id'], ['affiliates.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['affiliate_id'], ['affiliates.id'], name=op.f('fk_clinics_affiliate_id_affiliates'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_clinics'))
     )
+    op.create_index(op.f('ix_clinics_affiliate_id'), 'clinics', ['affiliate_id'], unique=False)
+    op.create_index(op.f('ix_clinics_email'), 'clinics', ['email'], unique=False)
+    op.create_index('ix_clinics_status', 'clinics', ['status'], unique=False)
     op.create_table('coa_library',
     sa.Column('product_id', sa.UUID(), nullable=False),
     sa.Column('lot_number', sa.String(length=100), nullable=False),
@@ -170,19 +221,22 @@ def upgrade() -> None:
     sa.Column('uploaded_by', sa.UUID(), nullable=True),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['product_id'], ['products.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['uploaded_by'], ['users.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['product_id'], ['products.id'], name=op.f('fk_coa_library_product_id_products'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['uploaded_by'], ['users.id'], name=op.f('fk_coa_library_uploaded_by_users'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_coa_library'))
     )
+    op.create_index(op.f('ix_coa_library_product_id'), 'coa_library', ['product_id'], unique=False)
+    op.create_index(op.f('ix_coa_library_uploaded_by'), 'coa_library', ['uploaded_by'], unique=False)
     op.create_table('product_coa_documents',
     sa.Column('product_id', sa.UUID(), nullable=False),
     sa.Column('lot_number', sa.String(length=100), nullable=True),
     sa.Column('file_url', sa.Text(), nullable=False),
     sa.Column('uploaded_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
-    sa.ForeignKeyConstraint(['product_id'], ['products.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['product_id'], ['products.id'], name=op.f('fk_product_coa_documents_product_id_products'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_product_coa_documents'))
     )
+    op.create_index(op.f('ix_product_coa_documents_product_id'), 'product_coa_documents', ['product_id'], unique=False)
     op.create_table('product_images',
     sa.Column('product_id', sa.UUID(), nullable=False),
     sa.Column('image_url', sa.Text(), nullable=False),
@@ -191,9 +245,10 @@ def upgrade() -> None:
     sa.Column('is_primary', sa.Boolean(), server_default=sa.text('FALSE'), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['product_id'], ['products.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['product_id'], ['products.id'], name=op.f('fk_product_images_product_id_products'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_product_images'))
     )
+    op.create_index(op.f('ix_product_images_product_id'), 'product_images', ['product_id'], unique=False)
     op.create_table('product_variants',
     sa.Column('product_id', sa.UUID(), nullable=False),
     sa.Column('strength', sa.String(length=255), nullable=True),
@@ -205,9 +260,11 @@ def upgrade() -> None:
     sa.Column('active', sa.Boolean(), server_default=sa.text('TRUE'), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['product_id'], ['products.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.CheckConstraint('clinic_cost >= 0', name=op.f('ck_product_variants_clinic_cost_non_negative')),
+    sa.ForeignKeyConstraint(['product_id'], ['products.id'], name=op.f('fk_product_variants_product_id_products'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_product_variants'))
     )
+    op.create_index(op.f('ix_product_variants_product_id'), 'product_variants', ['product_id'], unique=False)
     op.create_table('affiliate_referrals',
     sa.Column('affiliate_id', sa.UUID(), nullable=False),
     sa.Column('clinic_id', sa.UUID(), nullable=False),
@@ -216,11 +273,12 @@ def upgrade() -> None:
     sa.Column('status', sa.String(length=50), server_default='active', nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['affiliate_id'], ['affiliates.id'], ondelete='RESTRICT'),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='RESTRICT'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('affiliate_id', 'clinic_id')
+    sa.ForeignKeyConstraint(['affiliate_id'], ['affiliates.id'], name=op.f('fk_affiliate_referrals_affiliate_id_affiliates'), ondelete='RESTRICT'),
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_affiliate_referrals_clinic_id_clinics'), ondelete='RESTRICT'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_affiliate_referrals')),
+    sa.UniqueConstraint('affiliate_id', 'clinic_id', name=op.f('uq_affiliate_referrals_affiliate_id'))
     )
+    op.create_index(op.f('ix_affiliate_referrals_clinic_id'), 'affiliate_referrals', ['clinic_id'], unique=False)
     op.create_table('clinic_addresses',
     sa.Column('clinic_id', sa.UUID(), nullable=False),
     sa.Column('address1', sa.Text(), nullable=False),
@@ -232,9 +290,10 @@ def upgrade() -> None:
     sa.Column('is_primary', sa.Boolean(), server_default=sa.text('TRUE'), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_clinic_addresses_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_clinic_addresses'))
     )
+    op.create_index(op.f('ix_clinic_addresses_clinic_id'), 'clinic_addresses', ['clinic_id'], unique=False)
     op.create_table('clinic_audit_logs',
     sa.Column('clinic_id', sa.UUID(), nullable=False),
     sa.Column('user_id', sa.UUID(), nullable=True),
@@ -244,10 +303,12 @@ def upgrade() -> None:
     sa.Column('metadata', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_clinic_audit_logs_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_clinic_audit_logs_user_id_users'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_clinic_audit_logs'))
     )
+    op.create_index('ix_clinic_audit_logs_clinic_created', 'clinic_audit_logs', ['clinic_id', sa.literal_column('created_at DESC')], unique=False)
+    op.create_index(op.f('ix_clinic_audit_logs_user_id'), 'clinic_audit_logs', ['user_id'], unique=False)
     op.create_table('clinic_bank_accounts',
     sa.Column('clinic_id', sa.UUID(), nullable=False),
     sa.Column('bank_name', sa.String(length=255), nullable=False),
@@ -258,9 +319,10 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_clinic_bank_accounts_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_clinic_bank_accounts'))
     )
+    op.create_index(op.f('ix_clinic_bank_accounts_clinic_id'), 'clinic_bank_accounts', ['clinic_id'], unique=False)
     op.create_table('clinic_branding',
     sa.Column('clinic_id', sa.UUID(), nullable=False),
     sa.Column('logo_url', sa.Text(), nullable=True),
@@ -268,9 +330,9 @@ def upgrade() -> None:
     sa.Column('tagline', sa.Text(), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('clinic_id')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_clinic_branding_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_clinic_branding')),
+    sa.UniqueConstraint('clinic_id', name=op.f('uq_clinic_branding_clinic_id'))
     )
     op.create_table('clinic_documents',
     sa.Column('clinic_id', sa.UUID(), nullable=False),
@@ -282,10 +344,12 @@ def upgrade() -> None:
     sa.Column('expires_at', sa.Date(), nullable=True),
     sa.Column('uploaded_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['reviewed_by'], ['users.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_clinic_documents_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['reviewed_by'], ['users.id'], name=op.f('fk_clinic_documents_reviewed_by_users'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_clinic_documents'))
     )
+    op.create_index('ix_clinic_documents_clinic_status', 'clinic_documents', ['clinic_id', 'status'], unique=False)
+    op.create_index(op.f('ix_clinic_documents_reviewed_by'), 'clinic_documents', ['reviewed_by'], unique=False)
     op.create_table('clinic_invitations',
     sa.Column('clinic_id', sa.UUID(), nullable=False),
     sa.Column('email', sa.String(length=255), nullable=False),
@@ -297,11 +361,13 @@ def upgrade() -> None:
     sa.Column('accepted_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['invited_by'], ['users.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('token_hash')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_clinic_invitations_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['invited_by'], ['users.id'], name=op.f('fk_clinic_invitations_invited_by_users'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_clinic_invitations')),
+    sa.UniqueConstraint('token_hash', name=op.f('uq_clinic_invitations_token_hash'))
     )
+    op.create_index('ix_clinic_invitations_clinic_status', 'clinic_invitations', ['clinic_id', 'status'], unique=False)
+    op.create_index(op.f('ix_clinic_invitations_invited_by'), 'clinic_invitations', ['invited_by'], unique=False)
     op.create_table('clinic_settings',
     sa.Column('clinic_id', sa.UUID(), nullable=False),
     sa.Column('notification_email', sa.Boolean(), server_default=sa.text('TRUE'), nullable=False),
@@ -311,9 +377,9 @@ def upgrade() -> None:
     sa.Column('timezone', sa.String(length=50), server_default='America/New_York', nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('clinic_id')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_clinic_settings_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_clinic_settings')),
+    sa.UniqueConstraint('clinic_id', name=op.f('uq_clinic_settings_clinic_id'))
     )
     op.create_table('clinic_store_products',
     sa.Column('clinic_id', sa.UUID(), nullable=False),
@@ -324,12 +390,15 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['product_id'], ['products.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['variant_id'], ['product_variants.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('clinic_id', 'product_id', 'variant_id')
+    sa.CheckConstraint('retail_price >= 0', name=op.f('ck_clinic_store_products_retail_price_non_negative')),
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_clinic_store_products_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['product_id'], ['products.id'], name=op.f('fk_clinic_store_products_product_id_products'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['variant_id'], ['product_variants.id'], name=op.f('fk_clinic_store_products_variant_id_product_variants'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_clinic_store_products')),
+    sa.UniqueConstraint('clinic_id', 'product_id', 'variant_id', name=op.f('uq_clinic_store_products_clinic_id'))
     )
+    op.create_index(op.f('ix_clinic_store_products_clinic_id'), 'clinic_store_products', ['clinic_id'], unique=False)
+    op.create_index('ix_clinic_store_products_product', 'clinic_store_products', ['product_id'], unique=False)
     op.create_table('clinic_users',
     sa.Column('clinic_id', sa.UUID(), nullable=False),
     sa.Column('user_id', sa.UUID(), nullable=False),
@@ -337,11 +406,13 @@ def upgrade() -> None:
     sa.Column('is_active', sa.Boolean(), server_default=sa.text('TRUE'), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('clinic_id', 'user_id')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_clinic_users_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_clinic_users_user_id_users'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_clinic_users')),
+    sa.UniqueConstraint('clinic_id', 'user_id', name=op.f('uq_clinic_users_clinic_id'))
     )
+    op.create_index(op.f('ix_clinic_users_clinic_id'), 'clinic_users', ['clinic_id'], unique=False)
+    op.create_index(op.f('ix_clinic_users_user_id'), 'clinic_users', ['user_id'], unique=False)
     op.create_table('compliance_flags',
     sa.Column('clinic_id', sa.UUID(), nullable=True),
     sa.Column('entity_type', sa.String(length=100), nullable=False),
@@ -354,10 +425,12 @@ def upgrade() -> None:
     sa.Column('resolved_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['resolved_by'], ['users.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_compliance_flags_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['resolved_by'], ['users.id'], name=op.f('fk_compliance_flags_resolved_by_users'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_compliance_flags'))
     )
+    op.create_index('ix_compliance_flags_clinic_unresolved', 'compliance_flags', ['clinic_id'], unique=False, postgresql_where=sa.text('NOT resolved'))
+    op.create_index(op.f('ix_compliance_flags_resolved_by'), 'compliance_flags', ['resolved_by'], unique=False)
     op.create_table('liability_waivers',
     sa.Column('clinic_id', sa.UUID(), nullable=False),
     sa.Column('signed_by', sa.UUID(), nullable=True),
@@ -365,10 +438,12 @@ def upgrade() -> None:
     sa.Column('file_url', sa.Text(), nullable=True),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['signed_by'], ['users.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_liability_waivers_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['signed_by'], ['users.id'], name=op.f('fk_liability_waivers_signed_by_users'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_liability_waivers'))
     )
+    op.create_index(op.f('ix_liability_waivers_clinic_id'), 'liability_waivers', ['clinic_id'], unique=False)
+    op.create_index(op.f('ix_liability_waivers_signed_by'), 'liability_waivers', ['signed_by'], unique=False)
     op.create_table('license_verifications',
     sa.Column('clinic_id', sa.UUID(), nullable=False),
     sa.Column('license_type', sa.String(length=100), nullable=False),
@@ -380,10 +455,12 @@ def upgrade() -> None:
     sa.Column('expires_at', sa.Date(), nullable=True),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['verified_by'], ['users.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_license_verifications_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['verified_by'], ['users.id'], name=op.f('fk_license_verifications_verified_by_users'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_license_verifications'))
     )
+    op.create_index('ix_license_verifications_clinic_status', 'license_verifications', ['clinic_id', 'status'], unique=False)
+    op.create_index(op.f('ix_license_verifications_verified_by'), 'license_verifications', ['verified_by'], unique=False)
     op.create_table('message_templates',
     sa.Column('clinic_id', sa.UUID(), nullable=True),
     sa.Column('label', sa.String(length=255), nullable=False),
@@ -393,9 +470,10 @@ def upgrade() -> None:
     sa.Column('active', sa.Boolean(), server_default=sa.text('TRUE'), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_message_templates_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_message_templates'))
     )
+    op.create_index(op.f('ix_message_templates_clinic_id'), 'message_templates', ['clinic_id'], unique=False)
     op.create_table('patients',
     sa.Column('clinic_id', sa.UUID(), nullable=False),
     sa.Column('user_id', sa.UUID(), nullable=True),
@@ -408,10 +486,13 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_patients_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_patients_user_id_users'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_patients'))
     )
+    op.create_index(op.f('ix_patients_clinic_id'), 'patients', ['clinic_id'], unique=False)
+    op.create_index('ix_patients_email', 'patients', ['email'], unique=False)
+    op.create_index(op.f('ix_patients_user_id'), 'patients', ['user_id'], unique=False)
     op.create_table('payouts',
     sa.Column('clinic_id', sa.UUID(), nullable=False),
     sa.Column('amount', sa.Numeric(precision=12, scale=2), nullable=False),
@@ -420,19 +501,22 @@ def upgrade() -> None:
     sa.Column('stripe_transfer_id', sa.Text(), nullable=True),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='RESTRICT'),
-    sa.PrimaryKeyConstraint('id')
+    sa.CheckConstraint('amount >= 0', name=op.f('ck_payouts_amount_non_negative')),
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_payouts_clinic_id_clinics'), ondelete='RESTRICT'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_payouts'))
     )
+    op.create_index(op.f('ix_payouts_clinic_id'), 'payouts', ['clinic_id'], unique=False)
     op.create_table('product_favorites',
     sa.Column('clinic_id', sa.UUID(), nullable=False),
     sa.Column('product_id', sa.UUID(), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['product_id'], ['products.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('clinic_id', 'product_id')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_product_favorites_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['product_id'], ['products.id'], name=op.f('fk_product_favorites_product_id_products'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_product_favorites')),
+    sa.UniqueConstraint('clinic_id', 'product_id', name=op.f('uq_product_favorites_clinic_id'))
     )
+    op.create_index(op.f('ix_product_favorites_product_id'), 'product_favorites', ['product_id'], unique=False)
     op.create_table('product_inventory',
     sa.Column('product_id', sa.UUID(), nullable=False),
     sa.Column('variant_id', sa.UUID(), nullable=True),
@@ -442,19 +526,25 @@ def upgrade() -> None:
     sa.Column('expires_at', sa.Date(), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
-    sa.ForeignKeyConstraint(['product_id'], ['products.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['variant_id'], ['product_variants.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.CheckConstraint('quantity_on_hand >= 0', name=op.f('ck_product_inventory_quantity_on_hand_non_negative')),
+    sa.CheckConstraint('reorder_level >= 0', name=op.f('ck_product_inventory_reorder_level_non_negative')),
+    sa.ForeignKeyConstraint(['product_id'], ['products.id'], name=op.f('fk_product_inventory_product_id_products'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['variant_id'], ['product_variants.id'], name=op.f('fk_product_inventory_variant_id_product_variants'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_product_inventory'))
     )
+    op.create_index(op.f('ix_product_inventory_product_id'), 'product_inventory', ['product_id'], unique=False)
+    op.create_index(op.f('ix_product_inventory_variant_id'), 'product_inventory', ['variant_id'], unique=False)
     op.create_table('product_prices',
     sa.Column('variant_id', sa.UUID(), nullable=False),
     sa.Column('qty', sa.Integer(), nullable=False),
     sa.Column('price', sa.Numeric(precision=12, scale=2), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['variant_id'], ['product_variants.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('variant_id', 'qty')
+    sa.CheckConstraint('price >= 0', name=op.f('ck_product_prices_price_non_negative')),
+    sa.CheckConstraint('qty > 0', name=op.f('ck_product_prices_qty_positive')),
+    sa.ForeignKeyConstraint(['variant_id'], ['product_variants.id'], name=op.f('fk_product_prices_variant_id_product_variants'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_product_prices')),
+    sa.UniqueConstraint('variant_id', 'qty', name=op.f('uq_product_prices_variant_id'))
     )
     op.create_table('provider_agreements',
     sa.Column('clinic_id', sa.UUID(), nullable=False),
@@ -465,10 +555,12 @@ def upgrade() -> None:
     sa.Column('ip_address', postgresql.INET(), nullable=True),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['signed_by'], ['users.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_provider_agreements_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['signed_by'], ['users.id'], name=op.f('fk_provider_agreements_signed_by_users'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_provider_agreements'))
     )
+    op.create_index(op.f('ix_provider_agreements_clinic_id'), 'provider_agreements', ['clinic_id'], unique=False)
+    op.create_index(op.f('ix_provider_agreements_signed_by'), 'provider_agreements', ['signed_by'], unique=False)
     op.create_table('conversations',
     sa.Column('clinic_id', sa.UUID(), nullable=False),
     sa.Column('patient_id', sa.UUID(), nullable=False),
@@ -476,11 +568,12 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('clinic_id', 'patient_id')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_conversations_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], name=op.f('fk_conversations_patient_id_patients'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_conversations')),
+    sa.UniqueConstraint('clinic_id', 'patient_id', name=op.f('uq_conversations_clinic_id'))
     )
+    op.create_index(op.f('ix_conversations_patient_id'), 'conversations', ['patient_id'], unique=False)
     op.create_table('orders',
     sa.Column('order_number', sa.String(length=100), nullable=False),
     sa.Column('clinic_id', sa.UUID(), nullable=False),
@@ -496,11 +589,15 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='RESTRICT'),
-    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('order_number')
+    sa.CheckConstraint('total_amount >= 0', name=op.f('ck_orders_total_amount_non_negative')),
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_orders_clinic_id_clinics'), ondelete='RESTRICT'),
+    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], name=op.f('fk_orders_patient_id_patients'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_orders')),
+    sa.UniqueConstraint('order_number', name=op.f('uq_orders_order_number'))
     )
+    op.create_index('ix_orders_clinic_created', 'orders', ['clinic_id', sa.literal_column('created_at DESC')], unique=False)
+    op.create_index('ix_orders_patient', 'orders', ['patient_id'], unique=False)
+    op.create_index('ix_orders_status', 'orders', ['payment_status', 'shipment_status'], unique=False)
     op.create_table('patient_addresses',
     sa.Column('patient_id', sa.UUID(), nullable=False),
     sa.Column('address1', sa.Text(), nullable=False),
@@ -512,9 +609,10 @@ def upgrade() -> None:
     sa.Column('is_default', sa.Boolean(), server_default=sa.text('FALSE'), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], name=op.f('fk_patient_addresses_patient_id_patients'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_patient_addresses'))
     )
+    op.create_index(op.f('ix_patient_addresses_patient_id'), 'patient_addresses', ['patient_id'], unique=False)
     op.create_table('patient_invites',
     sa.Column('patient_id', sa.UUID(), nullable=False),
     sa.Column('clinic_id', sa.UUID(), nullable=False),
@@ -525,11 +623,13 @@ def upgrade() -> None:
     sa.Column('accepted_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('token_hash')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_patient_invites_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], name=op.f('fk_patient_invites_patient_id_patients'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_patient_invites')),
+    sa.UniqueConstraint('token_hash', name=op.f('uq_patient_invites_token_hash'))
     )
+    op.create_index(op.f('ix_patient_invites_clinic_id'), 'patient_invites', ['clinic_id'], unique=False)
+    op.create_index(op.f('ix_patient_invites_patient_id'), 'patient_invites', ['patient_id'], unique=False)
     op.create_table('patient_notes',
     sa.Column('patient_id', sa.UUID(), nullable=False),
     sa.Column('clinic_id', sa.UUID(), nullable=False),
@@ -539,11 +639,14 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['created_by'], ['users.id'], ondelete='RESTRICT'),
-    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_patient_notes_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['created_by'], ['users.id'], name=op.f('fk_patient_notes_created_by_users'), ondelete='RESTRICT'),
+    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], name=op.f('fk_patient_notes_patient_id_patients'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_patient_notes'))
     )
+    op.create_index(op.f('ix_patient_notes_clinic_id'), 'patient_notes', ['clinic_id'], unique=False)
+    op.create_index(op.f('ix_patient_notes_created_by'), 'patient_notes', ['created_by'], unique=False)
+    op.create_index(op.f('ix_patient_notes_patient_id'), 'patient_notes', ['patient_id'], unique=False)
     op.create_table('patient_payment_methods',
     sa.Column('patient_id', sa.UUID(), nullable=False),
     sa.Column('stripe_payment_method_id', sa.Text(), nullable=False),
@@ -552,9 +655,10 @@ def upgrade() -> None:
     sa.Column('is_default', sa.Boolean(), server_default=sa.text('FALSE'), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], name=op.f('fk_patient_payment_methods_patient_id_patients'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_patient_payment_methods'))
     )
+    op.create_index(op.f('ix_patient_payment_methods_patient_id'), 'patient_payment_methods', ['patient_id'], unique=False)
     op.create_table('patient_profiles',
     sa.Column('patient_id', sa.UUID(), nullable=False),
     sa.Column('gender', sa.String(length=20), nullable=True),
@@ -565,9 +669,9 @@ def upgrade() -> None:
     sa.Column('emergency_contact_phone', sa.String(length=50), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
-    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('patient_id')
+    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], name=op.f('fk_patient_profiles_patient_id_patients'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_patient_profiles')),
+    sa.UniqueConstraint('patient_id', name=op.f('uq_patient_profiles_patient_id'))
     )
     op.create_table('patient_requests',
     sa.Column('clinic_id', sa.UUID(), nullable=False),
@@ -579,12 +683,16 @@ def upgrade() -> None:
     sa.Column('reviewed_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['product_id'], ['products.id'], ondelete='RESTRICT'),
-    sa.ForeignKeyConstraint(['reviewed_by'], ['users.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_patient_requests_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], name=op.f('fk_patient_requests_patient_id_patients'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['product_id'], ['products.id'], name=op.f('fk_patient_requests_product_id_products'), ondelete='RESTRICT'),
+    sa.ForeignKeyConstraint(['reviewed_by'], ['users.id'], name=op.f('fk_patient_requests_reviewed_by_users'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_patient_requests'))
     )
+    op.create_index('ix_patient_requests_clinic_status', 'patient_requests', ['clinic_id', 'status'], unique=False)
+    op.create_index(op.f('ix_patient_requests_patient_id'), 'patient_requests', ['patient_id'], unique=False)
+    op.create_index(op.f('ix_patient_requests_product_id'), 'patient_requests', ['product_id'], unique=False)
+    op.create_index(op.f('ix_patient_requests_reviewed_by'), 'patient_requests', ['reviewed_by'], unique=False)
     op.create_table('patient_subscriptions',
     sa.Column('patient_id', sa.UUID(), nullable=False),
     sa.Column('product_id', sa.UUID(), nullable=True),
@@ -597,19 +705,24 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.CheckConstraint('frequency_days > 0', name=op.f('ck_patient_subscriptions_frequency_days_positive')),
+    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], name=op.f('fk_patient_subscriptions_patient_id_patients'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_patient_subscriptions'))
     )
+    op.create_index(op.f('ix_patient_subscriptions_patient_id'), 'patient_subscriptions', ['patient_id'], unique=False)
+    op.create_index('ix_patient_subscriptions_status', 'patient_subscriptions', ['status'], unique=False)
     op.create_table('payout_line_items',
     sa.Column('batch_id', sa.UUID(), nullable=False),
     sa.Column('payout_id', sa.UUID(), nullable=False),
     sa.Column('amount', sa.Numeric(precision=12, scale=2), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['batch_id'], ['payout_batches.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['payout_id'], ['payouts.id'], ondelete='RESTRICT'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['batch_id'], ['payout_batches.id'], name=op.f('fk_payout_line_items_batch_id_payout_batches'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['payout_id'], ['payouts.id'], name=op.f('fk_payout_line_items_payout_id_payouts'), ondelete='RESTRICT'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_payout_line_items'))
     )
+    op.create_index(op.f('ix_payout_line_items_batch_id'), 'payout_line_items', ['batch_id'], unique=False)
+    op.create_index(op.f('ix_payout_line_items_payout_id'), 'payout_line_items', ['payout_id'], unique=False)
     op.create_table('affiliate_commissions',
     sa.Column('affiliate_id', sa.UUID(), nullable=False),
     sa.Column('order_id', sa.UUID(), nullable=True),
@@ -619,23 +732,28 @@ def upgrade() -> None:
     sa.Column('status', sa.String(length=50), server_default='pending', nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['affiliate_id'], ['affiliates.id'], ondelete='RESTRICT'),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='RESTRICT'),
-    sa.ForeignKeyConstraint(['order_id'], ['orders.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id')
+    sa.CheckConstraint('amount >= 0', name=op.f('ck_affiliate_commissions_amount_non_negative')),
+    sa.ForeignKeyConstraint(['affiliate_id'], ['affiliates.id'], name=op.f('fk_affiliate_commissions_affiliate_id_affiliates'), ondelete='RESTRICT'),
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_affiliate_commissions_clinic_id_clinics'), ondelete='RESTRICT'),
+    sa.ForeignKeyConstraint(['order_id'], ['orders.id'], name=op.f('fk_affiliate_commissions_order_id_orders'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_affiliate_commissions'))
     )
+    op.create_index(op.f('ix_affiliate_commissions_affiliate_id'), 'affiliate_commissions', ['affiliate_id'], unique=False)
+    op.create_index(op.f('ix_affiliate_commissions_clinic_id'), 'affiliate_commissions', ['clinic_id'], unique=False)
+    op.create_index(op.f('ix_affiliate_commissions_order_id'), 'affiliate_commissions', ['order_id'], unique=False)
     op.create_table('clinic_bulk_orders',
     sa.Column('order_id', sa.UUID(), nullable=False),
     sa.Column('clinic_id', sa.UUID(), nullable=False),
     sa.Column('shipping_address_id', sa.UUID(), nullable=True),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['order_id'], ['orders.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['shipping_address_id'], ['clinic_addresses.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('order_id')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_clinic_bulk_orders_clinic_id_clinics'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['order_id'], ['orders.id'], name=op.f('fk_clinic_bulk_orders_order_id_orders'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['shipping_address_id'], ['clinic_addresses.id'], name=op.f('fk_clinic_bulk_orders_shipping_address_id_clinic_addresses'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_clinic_bulk_orders')),
+    sa.UniqueConstraint('order_id', name=op.f('uq_clinic_bulk_orders_order_id'))
     )
+    op.create_index(op.f('ix_clinic_bulk_orders_clinic_id'), 'clinic_bulk_orders', ['clinic_id'], unique=False)
     op.create_table('order_items',
     sa.Column('order_id', sa.UUID(), nullable=False),
     sa.Column('product_id', sa.UUID(), nullable=False),
@@ -646,11 +764,14 @@ def upgrade() -> None:
     sa.Column('total', sa.Numeric(precision=12, scale=2), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['order_id'], ['orders.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['product_id'], ['products.id'], ondelete='RESTRICT'),
-    sa.ForeignKeyConstraint(['variant_id'], ['product_variants.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id')
+    sa.CheckConstraint('qty > 0', name=op.f('ck_order_items_qty_positive')),
+    sa.ForeignKeyConstraint(['order_id'], ['orders.id'], name=op.f('fk_order_items_order_id_orders'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['product_id'], ['products.id'], name=op.f('fk_order_items_product_id_products'), ondelete='RESTRICT'),
+    sa.ForeignKeyConstraint(['variant_id'], ['product_variants.id'], name=op.f('fk_order_items_variant_id_product_variants'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_order_items'))
     )
+    op.create_index(op.f('ix_order_items_order_id'), 'order_items', ['order_id'], unique=False)
+    op.create_index(op.f('ix_order_items_product_id'), 'order_items', ['product_id'], unique=False)
     op.create_table('order_payments',
     sa.Column('order_id', sa.UUID(), nullable=False),
     sa.Column('stripe_payment_intent_id', sa.Text(), nullable=True),
@@ -659,9 +780,10 @@ def upgrade() -> None:
     sa.Column('paid_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['order_id'], ['orders.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['order_id'], ['orders.id'], name=op.f('fk_order_payments_order_id_orders'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_order_payments'))
     )
+    op.create_index(op.f('ix_order_payments_order_id'), 'order_payments', ['order_id'], unique=False)
     op.create_table('order_refunds',
     sa.Column('order_id', sa.UUID(), nullable=False),
     sa.Column('amount', sa.Numeric(precision=12, scale=2), nullable=False),
@@ -670,9 +792,10 @@ def upgrade() -> None:
     sa.Column('refunded_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['order_id'], ['orders.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['order_id'], ['orders.id'], name=op.f('fk_order_refunds_order_id_orders'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_order_refunds'))
     )
+    op.create_index(op.f('ix_order_refunds_order_id'), 'order_refunds', ['order_id'], unique=False)
     op.create_table('order_tracking',
     sa.Column('order_id', sa.UUID(), nullable=False),
     sa.Column('carrier', sa.String(length=100), nullable=True),
@@ -683,9 +806,10 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['order_id'], ['orders.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['order_id'], ['orders.id'], name=op.f('fk_order_tracking_order_id_orders'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_order_tracking'))
     )
+    op.create_index(op.f('ix_order_tracking_order_id'), 'order_tracking', ['order_id'], unique=False)
     op.create_table('pending_payment_orders',
     sa.Column('order_id', sa.UUID(), nullable=False),
     sa.Column('patient_id', sa.UUID(), nullable=False),
@@ -694,11 +818,12 @@ def upgrade() -> None:
     sa.Column('expires_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['order_id'], ['orders.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('order_id')
+    sa.ForeignKeyConstraint(['order_id'], ['orders.id'], name=op.f('fk_pending_payment_orders_order_id_orders'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['patient_id'], ['patients.id'], name=op.f('fk_pending_payment_orders_patient_id_patients'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_pending_payment_orders')),
+    sa.UniqueConstraint('order_id', name=op.f('uq_pending_payment_orders_order_id'))
     )
+    op.create_index(op.f('ix_pending_payment_orders_patient_id'), 'pending_payment_orders', ['patient_id'], unique=False)
     op.create_table('transactions',
     sa.Column('order_id', sa.UUID(), nullable=False),
     sa.Column('clinic_id', sa.UUID(), nullable=False),
@@ -707,10 +832,12 @@ def upgrade() -> None:
     sa.Column('profit', sa.Numeric(precision=12, scale=2), server_default=sa.text('0'), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
-    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], ondelete='RESTRICT'),
-    sa.ForeignKeyConstraint(['order_id'], ['orders.id'], ondelete='RESTRICT'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['clinic_id'], ['clinics.id'], name=op.f('fk_transactions_clinic_id_clinics'), ondelete='RESTRICT'),
+    sa.ForeignKeyConstraint(['order_id'], ['orders.id'], name=op.f('fk_transactions_order_id_orders'), ondelete='RESTRICT'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_transactions'))
     )
+    op.create_index(op.f('ix_transactions_clinic_id'), 'transactions', ['clinic_id'], unique=False)
+    op.create_index(op.f('ix_transactions_order_id'), 'transactions', ['order_id'], unique=False)
     op.create_table('order_shipment_events',
     sa.Column('order_id', sa.UUID(), nullable=False),
     sa.Column('tracking_id', sa.UUID(), nullable=True),
@@ -719,66 +846,177 @@ def upgrade() -> None:
     sa.Column('description', sa.Text(), nullable=True),
     sa.Column('occurred_at', sa.DateTime(timezone=True), server_default=sa.text('NOW()'), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
-    sa.ForeignKeyConstraint(['order_id'], ['orders.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['tracking_id'], ['order_tracking.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['order_id'], ['orders.id'], name=op.f('fk_order_shipment_events_order_id_orders'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['tracking_id'], ['order_tracking.id'], name=op.f('fk_order_shipment_events_tracking_id_order_tracking'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_order_shipment_events'))
     )
+    op.create_index(op.f('ix_order_shipment_events_order_id'), 'order_shipment_events', ['order_id'], unique=False)
+    op.create_index(op.f('ix_order_shipment_events_tracking_id'), 'order_shipment_events', ['tracking_id'], unique=False)
     # ### end Alembic commands ###
+
+    # --- updated_at trigger: keep the column accurate for ORM *and* raw SQL writes ---
+    op.execute(
+        """
+        CREATE OR REPLACE FUNCTION set_updated_at()
+        RETURNS TRIGGER AS $$
+        BEGIN
+          NEW.updated_at = NOW();
+          RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+        """
+    )
+    for table in _UPDATED_AT_TABLES:
+        op.execute(
+            f"CREATE TRIGGER trg_{table}_updated "
+            f"BEFORE UPDATE ON {table} "
+            f"FOR EACH ROW EXECUTE PROCEDURE set_updated_at();"
+        )
 
 
 def downgrade() -> None:
+    for table in _UPDATED_AT_TABLES:
+        op.execute(f"DROP TRIGGER IF EXISTS trg_{table}_updated ON {table};")
+    op.execute("DROP FUNCTION IF EXISTS set_updated_at();")
+
     # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_index(op.f('ix_order_shipment_events_tracking_id'), table_name='order_shipment_events')
+    op.drop_index(op.f('ix_order_shipment_events_order_id'), table_name='order_shipment_events')
     op.drop_table('order_shipment_events')
+    op.drop_index(op.f('ix_transactions_order_id'), table_name='transactions')
+    op.drop_index(op.f('ix_transactions_clinic_id'), table_name='transactions')
     op.drop_table('transactions')
+    op.drop_index(op.f('ix_pending_payment_orders_patient_id'), table_name='pending_payment_orders')
     op.drop_table('pending_payment_orders')
+    op.drop_index(op.f('ix_order_tracking_order_id'), table_name='order_tracking')
     op.drop_table('order_tracking')
+    op.drop_index(op.f('ix_order_refunds_order_id'), table_name='order_refunds')
     op.drop_table('order_refunds')
+    op.drop_index(op.f('ix_order_payments_order_id'), table_name='order_payments')
     op.drop_table('order_payments')
+    op.drop_index(op.f('ix_order_items_product_id'), table_name='order_items')
+    op.drop_index(op.f('ix_order_items_order_id'), table_name='order_items')
     op.drop_table('order_items')
+    op.drop_index(op.f('ix_clinic_bulk_orders_clinic_id'), table_name='clinic_bulk_orders')
     op.drop_table('clinic_bulk_orders')
+    op.drop_index(op.f('ix_affiliate_commissions_order_id'), table_name='affiliate_commissions')
+    op.drop_index(op.f('ix_affiliate_commissions_clinic_id'), table_name='affiliate_commissions')
+    op.drop_index(op.f('ix_affiliate_commissions_affiliate_id'), table_name='affiliate_commissions')
     op.drop_table('affiliate_commissions')
+    op.drop_index(op.f('ix_payout_line_items_payout_id'), table_name='payout_line_items')
+    op.drop_index(op.f('ix_payout_line_items_batch_id'), table_name='payout_line_items')
     op.drop_table('payout_line_items')
+    op.drop_index('ix_patient_subscriptions_status', table_name='patient_subscriptions')
+    op.drop_index(op.f('ix_patient_subscriptions_patient_id'), table_name='patient_subscriptions')
     op.drop_table('patient_subscriptions')
+    op.drop_index(op.f('ix_patient_requests_reviewed_by'), table_name='patient_requests')
+    op.drop_index(op.f('ix_patient_requests_product_id'), table_name='patient_requests')
+    op.drop_index(op.f('ix_patient_requests_patient_id'), table_name='patient_requests')
+    op.drop_index('ix_patient_requests_clinic_status', table_name='patient_requests')
     op.drop_table('patient_requests')
     op.drop_table('patient_profiles')
+    op.drop_index(op.f('ix_patient_payment_methods_patient_id'), table_name='patient_payment_methods')
     op.drop_table('patient_payment_methods')
+    op.drop_index(op.f('ix_patient_notes_patient_id'), table_name='patient_notes')
+    op.drop_index(op.f('ix_patient_notes_created_by'), table_name='patient_notes')
+    op.drop_index(op.f('ix_patient_notes_clinic_id'), table_name='patient_notes')
     op.drop_table('patient_notes')
+    op.drop_index(op.f('ix_patient_invites_patient_id'), table_name='patient_invites')
+    op.drop_index(op.f('ix_patient_invites_clinic_id'), table_name='patient_invites')
     op.drop_table('patient_invites')
+    op.drop_index(op.f('ix_patient_addresses_patient_id'), table_name='patient_addresses')
     op.drop_table('patient_addresses')
+    op.drop_index('ix_orders_status', table_name='orders')
+    op.drop_index('ix_orders_patient', table_name='orders')
+    op.drop_index('ix_orders_clinic_created', table_name='orders')
     op.drop_table('orders')
+    op.drop_index(op.f('ix_conversations_patient_id'), table_name='conversations')
     op.drop_table('conversations')
+    op.drop_index(op.f('ix_provider_agreements_signed_by'), table_name='provider_agreements')
+    op.drop_index(op.f('ix_provider_agreements_clinic_id'), table_name='provider_agreements')
     op.drop_table('provider_agreements')
     op.drop_table('product_prices')
+    op.drop_index(op.f('ix_product_inventory_variant_id'), table_name='product_inventory')
+    op.drop_index(op.f('ix_product_inventory_product_id'), table_name='product_inventory')
     op.drop_table('product_inventory')
+    op.drop_index(op.f('ix_product_favorites_product_id'), table_name='product_favorites')
     op.drop_table('product_favorites')
+    op.drop_index(op.f('ix_payouts_clinic_id'), table_name='payouts')
     op.drop_table('payouts')
+    op.drop_index(op.f('ix_patients_user_id'), table_name='patients')
+    op.drop_index('ix_patients_email', table_name='patients')
+    op.drop_index(op.f('ix_patients_clinic_id'), table_name='patients')
     op.drop_table('patients')
+    op.drop_index(op.f('ix_message_templates_clinic_id'), table_name='message_templates')
     op.drop_table('message_templates')
+    op.drop_index(op.f('ix_license_verifications_verified_by'), table_name='license_verifications')
+    op.drop_index('ix_license_verifications_clinic_status', table_name='license_verifications')
     op.drop_table('license_verifications')
+    op.drop_index(op.f('ix_liability_waivers_signed_by'), table_name='liability_waivers')
+    op.drop_index(op.f('ix_liability_waivers_clinic_id'), table_name='liability_waivers')
     op.drop_table('liability_waivers')
+    op.drop_index(op.f('ix_compliance_flags_resolved_by'), table_name='compliance_flags')
+    op.drop_index('ix_compliance_flags_clinic_unresolved', table_name='compliance_flags', postgresql_where=sa.text('NOT resolved'))
     op.drop_table('compliance_flags')
+    op.drop_index(op.f('ix_clinic_users_user_id'), table_name='clinic_users')
+    op.drop_index(op.f('ix_clinic_users_clinic_id'), table_name='clinic_users')
     op.drop_table('clinic_users')
+    op.drop_index('ix_clinic_store_products_product', table_name='clinic_store_products')
+    op.drop_index(op.f('ix_clinic_store_products_clinic_id'), table_name='clinic_store_products')
     op.drop_table('clinic_store_products')
     op.drop_table('clinic_settings')
+    op.drop_index(op.f('ix_clinic_invitations_invited_by'), table_name='clinic_invitations')
+    op.drop_index('ix_clinic_invitations_clinic_status', table_name='clinic_invitations')
     op.drop_table('clinic_invitations')
+    op.drop_index(op.f('ix_clinic_documents_reviewed_by'), table_name='clinic_documents')
+    op.drop_index('ix_clinic_documents_clinic_status', table_name='clinic_documents')
     op.drop_table('clinic_documents')
     op.drop_table('clinic_branding')
+    op.drop_index(op.f('ix_clinic_bank_accounts_clinic_id'), table_name='clinic_bank_accounts')
     op.drop_table('clinic_bank_accounts')
+    op.drop_index(op.f('ix_clinic_audit_logs_user_id'), table_name='clinic_audit_logs')
+    op.drop_index('ix_clinic_audit_logs_clinic_created', table_name='clinic_audit_logs')
     op.drop_table('clinic_audit_logs')
+    op.drop_index(op.f('ix_clinic_addresses_clinic_id'), table_name='clinic_addresses')
     op.drop_table('clinic_addresses')
+    op.drop_index(op.f('ix_affiliate_referrals_clinic_id'), table_name='affiliate_referrals')
     op.drop_table('affiliate_referrals')
+    op.drop_index(op.f('ix_product_variants_product_id'), table_name='product_variants')
     op.drop_table('product_variants')
+    op.drop_index(op.f('ix_product_images_product_id'), table_name='product_images')
     op.drop_table('product_images')
+    op.drop_index(op.f('ix_product_coa_documents_product_id'), table_name='product_coa_documents')
     op.drop_table('product_coa_documents')
+    op.drop_index(op.f('ix_coa_library_uploaded_by'), table_name='coa_library')
+    op.drop_index(op.f('ix_coa_library_product_id'), table_name='coa_library')
     op.drop_table('coa_library')
+    op.drop_index('ix_clinics_status', table_name='clinics')
+    op.drop_index(op.f('ix_clinics_email'), table_name='clinics')
+    op.drop_index(op.f('ix_clinics_affiliate_id'), table_name='clinics')
     op.drop_table('clinics')
+    op.drop_index(op.f('ix_affiliate_payouts_affiliate_id'), table_name='affiliate_payouts')
     op.drop_table('affiliate_payouts')
+    op.drop_index(op.f('ix_user_roles_user_id'), table_name='user_roles')
+    op.drop_index(op.f('ix_user_roles_role_id'), table_name='user_roles')
     op.drop_table('user_roles')
+    op.drop_index(op.f('ix_sessions_user_id'), table_name='sessions')
+    op.drop_index(op.f('ix_sessions_expires_at'), table_name='sessions')
     op.drop_table('sessions')
+    op.drop_index('ix_products_type', table_name='products')
+    op.drop_index(op.f('ix_products_category_id'), table_name='products')
+    op.drop_index('ix_products_category_active', table_name='products', postgresql_where=sa.text('active'))
     op.drop_table('products')
+    op.drop_index(op.f('ix_password_reset_tokens_user_id'), table_name='password_reset_tokens')
     op.drop_table('password_reset_tokens')
+    op.drop_index(op.f('ix_otp_codes_user_id'), table_name='otp_codes')
+    op.drop_index('ix_otp_codes_email', table_name='otp_codes')
+    op.drop_table('otp_codes')
+    op.drop_index(op.f('ix_affiliates_user_id'), table_name='affiliates')
     op.drop_table('affiliates')
+    op.drop_index('ix_admin_audit_logs_created', table_name='admin_audit_logs')
+    op.drop_index(op.f('ix_admin_audit_logs_admin_id'), table_name='admin_audit_logs')
     op.drop_table('admin_audit_logs')
+    op.drop_index('ix_users_role_status', table_name='users')
     op.drop_table('users')
     op.drop_table('roles')
     op.drop_table('payout_batches')

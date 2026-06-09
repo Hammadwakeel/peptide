@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 
 from middleware.auth import require_roles
-from schemas.affiliate import InviteSubAffiliateRequest
+from schemas.affiliate import InviteDoctorRequest, InviteSubAffiliateRequest
 from schemas.pagination import PaginationQuery
 from services import affiliate_service
 
@@ -14,6 +14,15 @@ affiliate_user = require_roles("affiliate")
 def affiliate_profile(user: dict = Depends(affiliate_user)) -> dict:
     """Affiliate views profile — main or sub with referral stats."""
     return affiliate_service.get_affiliate_profile(user)
+
+
+@router.post("/referrals/invite")
+def invite_doctor(
+    body: InviteDoctorRequest,
+    user: dict = Depends(affiliate_user),
+) -> dict:
+    """Affiliate creates a doctor/clinic referral link (optionally emails the doctor)."""
+    return affiliate_service.invite_doctor(user, body)
 
 
 @router.post("/sub-affiliates/invite")

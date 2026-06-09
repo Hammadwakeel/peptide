@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import os
+import uuid
+
 from fastapi import HTTPException, UploadFile
 
-from auth_utils import hash_password
-from db import connect
+from db import SessionLocal, connect
 from repository import find_user_by_email
 from repository.affiliate_repository import create_clinic_referral, resolve_affiliate_chain
 from repository.clinic_repository import (
@@ -18,15 +20,8 @@ from repository.clinic_repository import (
 )
 from schemas.onboarding import ClinicApplicationRequest
 from services.encryption import encrypt_value
-from services.gcs_storage import gcs
+from services.storage import public_url, s3
 from services.upload_utils import ALLOWED_DOCUMENT_TYPES, ALLOWED_IMAGE_TYPES, read_upload
-
-CLINIC_DOCUMENT_UPLOADS = {
-    "dea_license": ("clinic-documents/dea-license", ALLOWED_DOCUMENT_TYPES),
-    "npi_certificate": ("clinic-documents/npi-certificate", ALLOWED_DOCUMENT_TYPES),
-    "state_license": ("clinic-documents/state-license", ALLOWED_DOCUMENT_TYPES),
-    "business_registration": ("clinic-documents/business-registration", ALLOWED_DOCUMENT_TYPES),
-}
 
 
 async def _upload_clinic_file(
@@ -38,48 +33,50 @@ async def _upload_clinic_file(
     if file is None or not file.filename:
         return None
     data, content_type = await read_upload(file, allowed_types)
-    result = gcs.upload_bytes(
-        data,
-        filename=file.filename,
-        folder=f"{folder}/{clinic_id}",
-        content_type=content_type,
-        make_public=True,
-    )
-    return result["url"]
+    ext = os.path.splitext(file.filename)[1]
+    key = f"{folder}/{clinic_id}/{uuid.uuid4().hex}{ext}"
+    s3.upload_bytes(data, key, content_type=content_type)
+    return public_url(key)
 
 
 def submit_application(body: ClinicApplicationRequest) -> dict:
+    db = SessionLocal()
+    try:
+        if find_user_by_email(db, body.email):
+            raise HTTPException(status_code=409, detail="Email already registered")
+    finally:
+        db.close()
+
     conn = connect()
     cursor = conn.cursor()
     try:
-        if find_user_by_email(cursor, body.email):
-            raise HTTPException(status_code=409, detail="Email already registered")
-
         if find_clinic_by_email(cursor, body.email):
             raise HTTPException(status_code=409, detail="Clinic application already submitted")
 
         affiliate = None
-        if body.affiliate_code:
-            affiliate = find_affiliate_by_code(cursor, body.affiliate_code)
+        affiliate_code = (body.affiliate_code or "").strip()
+        if affiliate_code:
+            affiliate = find_affiliate_by_code(cursor, affiliate_code)
             if not affiliate:
                 raise HTTPException(status_code=400, detail="Invalid affiliate code")
 
         clinic = create_clinic_application(cursor, {
+            "first_name": body.first_name,
+            "last_name": body.last_name,
             "clinic_name": body.clinic_name,
             "email": body.email,
             "phone": body.phone,
+            "website": body.website,
+            "tax_id": body.tax_id,
             "npi_number": body.npi_number,
             "dea_number": body.dea_number,
-            "primary_contact_name": body.primary_contact_name,
             "state_license_number": body.state_license_number,
-            "address1": body.address1,
-            "address2": body.address2,
+            "reseller_permit_number": body.reseller_permit_number,
+            "address1": body.address,
             "city": body.city,
             "state": body.state,
             "zip": body.zip,
-            "country": body.country,
             "application_status": "submitted",
-            "application_password_hash": hash_password(body.password),
             "affiliate_id": str(affiliate["id"]) if affiliate else None,
         })
         clinic_id = str(clinic["id"])
@@ -87,9 +84,9 @@ def submit_application(body: ClinicApplicationRequest) -> dict:
         save_clinic_banking(cursor, clinic_id, {
             "bank_name": body.bank_name,
             "account_type": body.account_type,
-            "encrypted_routing": encrypt_value(body.routing_number),
+            "encrypted_routing": encrypt_value(""),
             "encrypted_account": encrypt_value(body.account_number),
-            "routing_last4": body.routing_number[-4:],
+            "routing_last4": "----",
             "account_last4": body.account_number[-4:],
         })
 
@@ -101,19 +98,20 @@ def submit_application(body: ClinicApplicationRequest) -> dict:
                 clinic_id,
                 referring_id,
                 main_id,
-                body.affiliate_code,
+                affiliate_code,
                 status="pending",
             )
 
         conn.commit()
         result = {
             "status": True,
-            "message": "Application submitted. Upload required documents to complete onboarding.",
+            "message": "Application submitted. Upload reseller permit and logo to complete onboarding.",
             "application": {
                 "id": clinic_id,
                 "clinic_name": clinic["clinic_name"],
                 "email": clinic["email"],
-                "primary_contact_name": body.primary_contact_name,
+                "first_name": body.first_name,
+                "last_name": body.last_name,
                 "application_status": clinic["application_status"],
             },
         }
@@ -138,10 +136,7 @@ def submit_application(body: ClinicApplicationRequest) -> dict:
 
 async def upload_documents(
     clinic_id: str,
-    dea_license: UploadFile | None = None,
-    npi_certificate: UploadFile | None = None,
-    state_license: UploadFile | None = None,
-    business_registration: UploadFile | None = None,
+    reseller_permit: UploadFile,
     clinic_logo: UploadFile | None = None,
 ) -> dict:
     conn = connect()
@@ -164,27 +159,19 @@ async def upload_documents(
         if logo_url:
             upsert_clinic_branding_logo(cursor, clinic_id, logo_url)
 
-        uploaded_documents = []
-        document_files = {
-            "dea_license": dea_license,
-            "npi_certificate": npi_certificate,
-            "state_license": state_license,
-            "business_registration": business_registration,
-        }
-        for document_type, upload_file in document_files.items():
-            folder, allowed_types = CLINIC_DOCUMENT_UPLOADS[document_type]
-            file_url = await _upload_clinic_file(clinic_id, upload_file, folder, allowed_types)
-            if file_url:
-                doc = insert_clinic_document(cursor, clinic_id, document_type, file_url)
-                uploaded_documents.append({
-                    "id": str(doc["id"]),
-                    "document_type": doc["document_type"],
-                    "file_url": doc["file_url"],
-                    "status": doc["status"],
-                })
+        permit_url = await _upload_clinic_file(
+            clinic_id, reseller_permit, "clinic-documents/reseller-permit", ALLOWED_DOCUMENT_TYPES,
+        )
+        if not permit_url:
+            raise HTTPException(status_code=400, detail="Reseller permit document is required")
 
-        if not uploaded_documents and not logo_url:
-            raise HTTPException(status_code=400, detail="At least one document or logo file is required")
+        doc = insert_clinic_document(cursor, clinic_id, "reseller_permit", permit_url)
+        uploaded_document = {
+            "id": str(doc["id"]),
+            "document_type": doc["document_type"],
+            "file_url": doc["file_url"],
+            "status": doc["status"],
+        }
 
         update_application_status(cursor, clinic_id, "pending_review")
         conn.commit()
@@ -197,7 +184,7 @@ async def upload_documents(
                 "application_status": "pending_review",
                 "logo_url": logo_url,
             },
-            "documents": uploaded_documents,
+            "documents": [uploaded_document],
         }
     except HTTPException:
         conn.rollback()

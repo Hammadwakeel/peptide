@@ -15,7 +15,7 @@ class Conversation(UUIDMixin, TimestampMixin, Base):
         UUID(as_uuid=True), ForeignKey("clinics.id", ondelete="CASCADE"), nullable=False
     )
     patient_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("patients.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("patients.id", ondelete="CASCADE"), nullable=False, index=True
     )
     status: Mapped[str] = mapped_column(String(50), nullable=False, server_default="active")
 
@@ -24,7 +24,7 @@ class MessageTemplate(UUIDMixin, CreatedAtMixin, Base):
     __tablename__ = "message_templates"
 
     clinic_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("clinics.id", ondelete="CASCADE")
+        UUID(as_uuid=True), ForeignKey("clinics.id", ondelete="CASCADE"), index=True
     )
     label: Mapped[str] = mapped_column(String(255), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)

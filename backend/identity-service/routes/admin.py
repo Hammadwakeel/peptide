@@ -1,7 +1,12 @@
 from fastapi import APIRouter, Depends, Query
 
 from middleware.auth import require_roles
-from schemas.admin import ChangePatientPasswordRequest, CreateAffiliateRequest, ReviewApplicationRequest
+from schemas.admin import (
+    ChangePatientPasswordRequest,
+    CreateAffiliateRequest,
+    ReviewApplicationRequest,
+    UpdateAffiliateProfitMarginRequest,
+)
 from schemas.pagination import PaginationQuery
 from services import admin_service
 
@@ -66,8 +71,18 @@ def create_affiliate(
     body: CreateAffiliateRequest,
     _: dict = Depends(admin_user),
 ) -> dict:
-    """Admin creates a main affiliate. Code and credentials are auto-generated and emailed."""
+    """Admin creates a main affiliate. A set-password link is emailed to the affiliate."""
     return admin_service.create_affiliate(body)
+
+
+@router.patch("/affiliates/{affiliate_id}/profit-margin")
+def update_affiliate_profit_margin(
+    affiliate_id: str,
+    body: UpdateAffiliateProfitMarginRequest,
+    _: dict = Depends(admin_user),
+) -> dict:
+    """Admin sets the profit margin (0–100%) for a main or sub affiliate."""
+    return admin_service.update_affiliate_profit_margin(affiliate_id, body)
 
 
 @router.delete("/users/{user_id}")

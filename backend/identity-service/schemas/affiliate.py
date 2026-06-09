@@ -8,4 +8,8 @@ class CreateMainAffiliateRequest(BaseModel):
 
 class InviteSubAffiliateRequest(BaseModel):
     email: EmailStr
-    affiliate_code: str | None = Field(None, min_length=4, max_length=100)
+    affiliate_code: str | None = Field(None, min_length=8, max_length=8, pattern=r"^\d{8}$")
+
+
+class InviteDoctorRequest(BaseModel):
+    doctor_email: EmailStr | None = None

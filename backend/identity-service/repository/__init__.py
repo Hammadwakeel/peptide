@@ -1,7 +1,12 @@
 from repository.auth_repository import (
+    consume_reset_token,
+    describe_reset_token,
     create_otp_code,
+    create_user,
     find_user_by_email,
     find_valid_refresh_session,
+    find_valid_reset_token,
+    lookup_reset_token,
     invalidate_otp_codes,
     mark_email_verified,
     revoke_refresh_session,
@@ -13,6 +18,11 @@ from repository.auth_repository import (
 
 __all__ = [
     "find_user_by_email",
+    "create_user",
+    "find_valid_reset_token",
+    "lookup_reset_token",
+    "consume_reset_token",
+    "describe_reset_token",
     "update_last_login",
     "mark_email_verified",
     "invalidate_otp_codes",

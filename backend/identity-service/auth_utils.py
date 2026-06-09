@@ -57,7 +57,8 @@ def generate_invite_token() -> str:
 
 
 def generate_affiliate_code() -> str:
-    return f"AFF-{secrets.token_hex(4).upper()}"
+    """8-digit numeric code used in clinic onboarding and referral links."""
+    return f"{secrets.randbelow(100_000_000):08d}"
 
 
 def hash_otp(code: str) -> str:

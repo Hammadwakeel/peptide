@@ -1,12 +1,13 @@
 from .accounting import Payout, PayoutBatch, PayoutLineItem, Transaction
 from .affiliate import AffiliateCommission, AffiliatePayout, AffiliateReferral
 from .audit import AdminAuditLog, ClinicAuditLog
-from .auth import PasswordResetToken, Role, Session, User, UserRoleLink
+from .auth import OtpCode, PasswordResetToken, Role, Session, User, UserRoleLink
 from .clinic import (
     Affiliate,
     Clinic,
     ClinicAddress,
     ClinicBankAccount,
+    ClinicBankingDetails,
     ClinicBranding,
     ClinicInvitation,
     ClinicSettings,
@@ -59,12 +60,14 @@ __all__ = [
     "UserRoleLink",
     "Session",
     "PasswordResetToken",
+    "OtpCode",
     "Affiliate",
     "Clinic",
     "ClinicAddress",
     "ClinicUser",
     "ClinicBranding",
     "ClinicBankAccount",
+    "ClinicBankingDetails",
     "ClinicSettings",
     "ClinicInvitation",
     "Patient",

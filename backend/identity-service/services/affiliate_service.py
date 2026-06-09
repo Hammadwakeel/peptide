@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import secrets
-
 from fastapi import HTTPException
 
-from auth_utils import generate_password, hash_password
-from db import connect
-from email_service import send_credentials_email
+from auth_utils import generate_affiliate_code, generate_password, hash_password
+from config import FRONTEND_URL
+from db import SessionLocal, connect
+from email_service import send_credentials_email, send_doctor_referral_invite_email
 from repository import find_user_by_email
 from repository.affiliate_repository import (
     count_clinic_referrals,
@@ -18,7 +17,7 @@ from repository.affiliate_repository import (
 )
 from repository.clinic_repository import find_affiliate_by_code
 from repository.user_repository import create_user
-from schemas.affiliate import InviteSubAffiliateRequest
+from schemas.affiliate import InviteDoctorRequest, InviteSubAffiliateRequest
 from schemas.pagination import PaginationQuery, paginated_response
 
 
@@ -31,8 +30,52 @@ def _require_main_affiliate(cursor, user: dict) -> dict:
     return affiliate
 
 
-def _generate_sub_code() -> str:
-    return f"sub-{secrets.token_hex(4)}"
+def _generate_sub_code(cursor) -> str:
+    for _ in range(10):
+        code = generate_affiliate_code()
+        if not find_affiliate_by_code(cursor, code):
+            return code
+    raise HTTPException(status_code=500, detail="Could not generate unique affiliate code")
+
+
+def _build_referral_link(affiliate_code: str) -> str:
+    return f"{FRONTEND_URL}/apply?ref={affiliate_code}"
+
+
+def invite_doctor(user: dict, body: InviteDoctorRequest) -> dict:
+    conn = connect()
+    cursor = conn.cursor()
+    try:
+        affiliate = get_affiliate_by_user_id(cursor, user["sub"])
+        if not affiliate:
+            raise HTTPException(status_code=404, detail="Affiliate profile not found")
+        if affiliate["status"] != "active":
+            raise HTTPException(status_code=403, detail="Affiliate account is not active")
+
+        referral_code = affiliate["affiliate_code"]
+        referral_link = _build_referral_link(referral_code)
+
+        email_sent_to = None
+        if body.doctor_email:
+            send_doctor_referral_invite_email(body.doctor_email, referral_code, referral_link)
+            email_sent_to = body.doctor_email
+
+        return {
+            "status": True,
+            "message": "Doctor invitation link created."
+            + (" Invitation email sent." if email_sent_to else ""),
+            "referral_code": referral_code,
+            "referral_link": referral_link,
+            "email_sent_to": email_sent_to,
+            "affiliate_type": affiliate["affiliate_type"],
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    finally:
+        cursor.close()
+        conn.close()
 
 
 def invite_sub_affiliate(user: dict, body: InviteSubAffiliateRequest) -> dict:
@@ -41,10 +84,14 @@ def invite_sub_affiliate(user: dict, body: InviteSubAffiliateRequest) -> dict:
     try:
         main_affiliate = _require_main_affiliate(cursor, user)
 
-        if find_user_by_email(cursor, body.email):
-            raise HTTPException(status_code=409, detail="Email already registered")
+        db = SessionLocal()
+        try:
+            if find_user_by_email(db, body.email):
+                raise HTTPException(status_code=409, detail="Email already registered")
+        finally:
+            db.close()
 
-        code = body.affiliate_code or _generate_sub_code()
+        code = body.affiliate_code or _generate_sub_code(cursor)
         if find_affiliate_by_code(cursor, code):
             raise HTTPException(status_code=409, detail="Affiliate code already taken")
 
@@ -103,6 +150,7 @@ def list_sub_affiliates(user: dict, pagination: PaginationQuery) -> dict:
                 "email": r["email"],
                 "affiliate_code": r["affiliate_code"],
                 "status": r["status"],
+                "profit_margin_percent": float(r.get("profit_margin_percent") or 0),
                 "clinic_referral_count": r["clinic_referral_count"],
                 "created_at": str(r["created_at"]),
             }
@@ -197,6 +245,8 @@ def get_affiliate_profile(user: dict) -> dict:
                 "affiliate_code": affiliate["affiliate_code"],
                 "affiliate_type": affiliate["affiliate_type"],
                 "status": affiliate["status"],
+                "profit_margin_percent": float(affiliate.get("profit_margin_percent") or 0),
+                "referral_link": _build_referral_link(affiliate["affiliate_code"]),
                 "parent_affiliate": parent,
                 "stats": {
                     "own_clinic_referrals": own_referrals,
