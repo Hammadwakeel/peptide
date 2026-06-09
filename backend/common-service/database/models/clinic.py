@@ -51,6 +51,7 @@ class Affiliate(UUIDMixin, TimestampMixin, Base):
     profit_margin_percent: Mapped[float] = mapped_column(
         Numeric(5, 2), nullable=False, server_default=text("0")
     )
+    max_sub_affiliates: Mapped[int | None] = mapped_column(Integer)
 
 
 class Clinic(UUIDMixin, TimestampMixin, Base):

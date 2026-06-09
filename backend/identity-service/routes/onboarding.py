@@ -30,7 +30,7 @@ def apply_clinic(
     bank_name: str = Form(..., examples=["Chase Bank"]),
     account_number: str = Form(..., min_length=4, examples=["123456789"]),
     account_type: str = Form("checking", examples=["checking"]),
-    affiliate_code: str | None = Form(None, examples=["12345678"]),
+    affiliate_code: str | None = Form(None, examples=["Ab3!xYz9"]),
     npi_number: str | None = Form(None, examples=["1234567890"]),
     dea_number: str | None = Form(None, examples=["AB1234567"]),
     state_license_number: str | None = Form(None, examples=["SL-998877"]),
@@ -38,7 +38,7 @@ def apply_clinic(
 ) -> dict:
     """Public clinic onboarding — personal, clinic, banking, and license details.
 
-    Affiliate code is optional. When provided it must be an 8-digit code.
+    Affiliate code is optional. When provided it must be an 8-character code.
     No password is collected here. Upload reseller permit + logo via
     POST /onboarding/documents after this step.
     """

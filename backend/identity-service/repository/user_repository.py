@@ -22,14 +22,22 @@ def create_password_setup_token(
     )
 
 
-def create_user(cursor, email: str, password_hash: str, role: str, email_verified: bool = False) -> dict[str, Any]:
+def create_user(
+    cursor,
+    email: str,
+    password_hash: str,
+    role: str,
+    email_verified: bool = False,
+    *,
+    status: str = "active",
+) -> dict[str, Any]:
     cursor.execute(
         """
         INSERT INTO users (email, password_hash, role, status, email_verified)
-        VALUES (%s, %s, %s::user_role, 'active', %s)
+        VALUES (%s, %s, %s::user_role, %s::account_status, %s)
         RETURNING id, email, role::text AS role, status::text AS status, email_verified
         """,
-        (email.lower(), password_hash, role, email_verified),
+        (email.lower(), password_hash, role, status, email_verified),
     )
     return _row_to_dict(cursor, cursor.fetchone())
 

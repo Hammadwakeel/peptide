@@ -56,9 +56,16 @@ def generate_invite_token() -> str:
     return secrets.token_urlsafe(32)
 
 
+AFFILIATE_CODE_LENGTH = 8
+AFFILIATE_CODE_ALPHABET = string.ascii_letters + string.digits + "-_!@#$*"
+AFFILIATE_CODE_PATTERN = r"^[A-Za-z0-9\-_!@#$*]{8}$"
+
+
 def generate_affiliate_code() -> str:
-    """8-digit numeric code used in clinic onboarding and referral links."""
-    return f"{secrets.randbelow(100_000_000):08d}"
+    """8-character code with letters, digits, and URL-safe symbols."""
+    return "".join(
+        secrets.choice(AFFILIATE_CODE_ALPHABET) for _ in range(AFFILIATE_CODE_LENGTH)
+    )
 
 
 def hash_otp(code: str) -> str:

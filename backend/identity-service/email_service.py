@@ -248,7 +248,30 @@ def send_welcome_email(to_email: str, clinic_name: str) -> None:
     _send_email(to_email, "Frontier Nexus Rx — Welcome to the Provider Portal", text, html)
 
 
-def send_doctor_referral_invite_email(
+def send_clinic_member_invite_email(
+    to_email: str,
+    invite_link: str,
+    clinic_name: str,
+    access_level: str,
+) -> None:
+    role_label = access_level.replace("_", " ").title()
+    text = (
+        f"You have been invited to join {clinic_name} on Frontier Nexus Rx as {role_label}.\n\n"
+        f"Accept your invitation: {invite_link}\n\n"
+        f"This link expires in 7 days."
+    )
+    html = f"""
+    <html><body>
+      <p>You have been invited to join <strong>{clinic_name}</strong> on Frontier Nexus Rx
+      as <strong>{role_label}</strong>.</p>
+      <p><a href="{invite_link}">Accept invitation</a></p>
+      <p>This link expires in 7 days.</p>
+    </body></html>
+    """
+    _send_email(to_email, f"Frontier Nexus Rx — Join {clinic_name}", text, html)
+
+
+def send_clinic_referral_invite_email(
     to_email: str,
     affiliate_code: str,
     referral_link: str,
@@ -267,7 +290,7 @@ def send_doctor_referral_invite_email(
       <p>Complete the application to get started.</p>
     </body></html>
     """
-    _send_email(to_email, "Frontier Nexus Rx — Clinic Provider Invitation", text, html)
+    _send_email(to_email, "Frontier Nexus Rx — Clinic Invitation", text, html)
 
 
 def send_password_reset_email(to_email: str, new_password: str) -> None:

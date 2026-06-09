@@ -26,3 +26,11 @@ class CreateAffiliateRequest(BaseModel):
 
 class UpdateAffiliateProfitMarginRequest(BaseModel):
     profit_margin_percent: float = Field(..., ge=0, le=100)
+
+
+class UpdateAffiliateSubAffiliateLimitRequest(BaseModel):
+    max_sub_affiliates: int | None = Field(
+        None,
+        ge=0,
+        description="Maximum sub-affiliates this main affiliate may invite. Omit or null for unlimited.",
+    )

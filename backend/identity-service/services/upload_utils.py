@@ -6,6 +6,15 @@ ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
 ALLOWED_DOCUMENT_TYPES = ALLOWED_IMAGE_TYPES | {"application/pdf"}
 
 
+def normalize_optional_upload(file: UploadFile | None) -> UploadFile | None:
+    """Treat Swagger 'Send empty value' and blank filenames as no upload."""
+    if file is None:
+        return None
+    if not file.filename or not file.filename.strip():
+        return None
+    return file
+
+
 async def read_upload(file: UploadFile, allowed_types: set[str]) -> tuple[bytes, str]:
     if not file.filename:
         raise HTTPException(status_code=400, detail="Uploaded file must have a filename")

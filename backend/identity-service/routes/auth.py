@@ -8,7 +8,8 @@ from schemas.auth import (
     SetPasswordRequest,
     VerifyOtpRequest,
 )
-from services import auth_service
+from schemas.clinic import AcceptClinicInvitationRequest
+from services import auth_service, clinic_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -47,3 +48,9 @@ def check_set_password_token(token: str = Query(..., min_length=16)) -> dict:
 @router.post("/set-password")
 def set_password(body: SetPasswordRequest) -> dict:
     return auth_service.set_password(body)
+
+
+@router.post("/accept-clinic-invitation")
+def accept_clinic_invitation(body: AcceptClinicInvitationRequest) -> dict:
+    """Accept an organization member invitation and create a clinic staff account."""
+    return clinic_service.accept_invitation(body)

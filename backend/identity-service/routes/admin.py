@@ -6,6 +6,7 @@ from schemas.admin import (
     CreateAffiliateRequest,
     ReviewApplicationRequest,
     UpdateAffiliateProfitMarginRequest,
+    UpdateAffiliateSubAffiliateLimitRequest,
 )
 from schemas.pagination import PaginationQuery
 from services import admin_service
@@ -81,8 +82,18 @@ def update_affiliate_profit_margin(
     body: UpdateAffiliateProfitMarginRequest,
     _: dict = Depends(admin_user),
 ) -> dict:
-    """Admin sets the profit margin (0–100%) for a main or sub affiliate."""
+    """Admin sets the profit margin (0–100%) for a main affiliate; all sub-affiliates inherit it."""
     return admin_service.update_affiliate_profit_margin(affiliate_id, body)
+
+
+@router.patch("/affiliates/{affiliate_id}/sub-affiliate-limit")
+def update_affiliate_sub_affiliate_limit(
+    affiliate_id: str,
+    body: UpdateAffiliateSubAffiliateLimitRequest,
+    _: dict = Depends(admin_user),
+) -> dict:
+    """Admin sets how many sub-affiliates a main affiliate may invite (null = unlimited)."""
+    return admin_service.update_affiliate_sub_affiliate_limit(affiliate_id, body)
 
 
 @router.delete("/users/{user_id}")

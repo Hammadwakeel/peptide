@@ -328,7 +328,8 @@ def link_clinic_owner(cursor, clinic_id: str, user_id: str) -> None:
 def get_doctor_clinic(cursor, user_id: str) -> dict[str, Any] | None:
     cursor.execute(
         """
-        SELECT c.id, c.clinic_name, c.email, c.status::text AS status, cu.access_level
+        SELECT c.id, c.clinic_name, c.email, c.status::text AS status,
+               cu.access_level, cu.is_active AS member_active
         FROM clinic_users cu
         JOIN clinics c ON c.id = cu.clinic_id
         WHERE cu.user_id = %s AND cu.is_active = TRUE
@@ -338,6 +339,350 @@ def get_doctor_clinic(cursor, user_id: str) -> dict[str, Any] | None:
     )
     row = cursor.fetchone()
     return _row_to_dict(cursor, row) if row else None
+
+
+def get_clinic_address(cursor, clinic_id: str) -> dict[str, Any] | None:
+    cursor.execute(
+        """
+        SELECT id, address1, address2, city, state, zip, country, is_primary
+        FROM clinic_addresses
+        WHERE clinic_id = %s AND is_primary = TRUE
+        LIMIT 1
+        """,
+        (clinic_id,),
+    )
+    row = cursor.fetchone()
+    if row:
+        return _row_to_dict(cursor, row)
+    cursor.execute(
+        """
+        SELECT id, address1, address2, city, state, zip, country, is_primary
+        FROM clinic_addresses
+        WHERE clinic_id = %s
+        ORDER BY created_at ASC
+        LIMIT 1
+        """,
+        (clinic_id,),
+    )
+    row = cursor.fetchone()
+    return _row_to_dict(cursor, row) if row else None
+
+
+def get_clinic_settings(cursor, clinic_id: str) -> dict[str, Any] | None:
+    cursor.execute(
+        """
+        SELECT notification_email, notification_sms, auto_approve_requests,
+               payout_schedule_days, timezone
+        FROM clinic_settings
+        WHERE clinic_id = %s
+        LIMIT 1
+        """,
+        (clinic_id,),
+    )
+    row = cursor.fetchone()
+    return _row_to_dict(cursor, row) if row else None
+
+
+def update_clinic_profile(cursor, clinic_id: str, data: dict) -> None:
+    fields = []
+    values: list[Any] = []
+    for key in (
+        "clinic_name", "phone", "website", "npi_number", "dea_number",
+        "state_license_number", "tax_id", "first_name", "last_name",
+    ):
+        if key in data and data[key] is not None:
+            fields.append(f"{key} = %s")
+            values.append(data[key])
+    if not fields:
+        return
+    values.append(clinic_id)
+    cursor.execute(
+        f"UPDATE clinics SET {', '.join(fields)}, updated_at = NOW() WHERE id = %s",
+        values,
+    )
+
+
+def update_clinic_address(cursor, clinic_id: str, data: dict) -> dict[str, Any]:
+    existing = get_clinic_address(cursor, clinic_id)
+    if existing:
+        cursor.execute(
+            """
+            UPDATE clinic_addresses
+            SET address1 = %s, address2 = %s, city = %s, state = %s, zip = %s,
+                country = %s, is_primary = TRUE
+            WHERE id = %s
+            RETURNING id, address1, address2, city, state, zip, country, is_primary
+            """,
+            (
+                data["address1"],
+                data.get("address2"),
+                data["city"],
+                data["state"],
+                data["zip"],
+                data.get("country", "US"),
+                existing["id"],
+            ),
+        )
+    else:
+        cursor.execute(
+            """
+            INSERT INTO clinic_addresses (
+                clinic_id, address1, address2, city, state, zip, country, is_primary
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, TRUE)
+            RETURNING id, address1, address2, city, state, zip, country, is_primary
+            """,
+            (
+                clinic_id,
+                data["address1"],
+                data.get("address2"),
+                data["city"],
+                data["state"],
+                data["zip"],
+                data.get("country", "US"),
+            ),
+        )
+    return _row_to_dict(cursor, cursor.fetchone())
+
+
+def update_clinic_branding(cursor, clinic_id: str, data: dict) -> dict[str, Any]:
+    cursor.execute(
+        "INSERT INTO clinic_branding (clinic_id) VALUES (%s) ON CONFLICT (clinic_id) DO NOTHING",
+        (clinic_id,),
+    )
+    fields = []
+    values: list[Any] = []
+    for key, column in (
+        ("tagline", "tagline"),
+        ("theme_color", "theme_color"),
+        ("logo_url", "logo_url"),
+    ):
+        if key in data and data[key] is not None:
+            fields.append(f"{column} = %s")
+            values.append(data[key])
+    if fields:
+        values.append(clinic_id)
+        cursor.execute(
+            f"UPDATE clinic_branding SET {', '.join(fields)}, updated_at = NOW() WHERE clinic_id = %s",
+            values,
+        )
+    cursor.execute(
+        "SELECT logo_url, theme_color, tagline FROM clinic_branding WHERE clinic_id = %s",
+        (clinic_id,),
+    )
+    return _row_to_dict(cursor, cursor.fetchone())
+
+
+def update_clinic_settings(cursor, clinic_id: str, data: dict) -> dict[str, Any]:
+    cursor.execute(
+        "INSERT INTO clinic_settings (clinic_id) VALUES (%s) ON CONFLICT (clinic_id) DO NOTHING",
+        (clinic_id,),
+    )
+    fields = []
+    values: list[Any] = []
+    for key in (
+        "notification_email",
+        "notification_sms",
+        "auto_approve_requests",
+        "payout_schedule_days",
+        "timezone",
+    ):
+        if key in data and data[key] is not None:
+            fields.append(f"{key} = %s")
+            values.append(data[key])
+    if fields:
+        values.append(clinic_id)
+        cursor.execute(
+            f"UPDATE clinic_settings SET {', '.join(fields)}, updated_at = NOW() WHERE clinic_id = %s",
+            values,
+        )
+    cursor.execute(
+        """
+        SELECT notification_email, notification_sms, auto_approve_requests,
+               payout_schedule_days, timezone
+        FROM clinic_settings WHERE clinic_id = %s
+        """,
+        (clinic_id,),
+    )
+    return _row_to_dict(cursor, cursor.fetchone())
+
+
+def list_clinic_members(cursor, clinic_id: str) -> list[dict[str, Any]]:
+    cursor.execute(
+        """
+        SELECT cu.id, cu.access_level, cu.is_active, cu.created_at,
+               u.id AS user_id, u.email, u.status::text AS user_status
+        FROM clinic_users cu
+        JOIN users u ON u.id = cu.user_id
+        WHERE cu.clinic_id = %s
+        ORDER BY
+            CASE cu.access_level
+                WHEN 'owner' THEN 0
+                WHEN 'admin' THEN 1
+                WHEN 'associate_provider' THEN 2
+                ELSE 3
+            END,
+            cu.created_at ASC
+        """,
+        (clinic_id,),
+    )
+    return _rows_to_dicts(cursor, cursor.fetchall())
+
+
+def list_pending_clinic_invitations(cursor, clinic_id: str) -> list[dict[str, Any]]:
+    cursor.execute(
+        """
+        SELECT id, email, role AS access_level, status, expires_at, created_at
+        FROM clinic_invitations
+        WHERE clinic_id = %s AND status = 'pending' AND expires_at > NOW()
+        ORDER BY created_at DESC
+        """,
+        (clinic_id,),
+    )
+    return _rows_to_dicts(cursor, cursor.fetchall())
+
+
+def find_pending_clinic_invitation(cursor, clinic_id: str, email: str) -> dict[str, Any] | None:
+    cursor.execute(
+        """
+        SELECT id, email, role AS access_level, status
+        FROM clinic_invitations
+        WHERE clinic_id = %s AND LOWER(email) = LOWER(%s) AND status = 'pending'
+        LIMIT 1
+        """,
+        (clinic_id, email),
+    )
+    row = cursor.fetchone()
+    return _row_to_dict(cursor, row) if row else None
+
+
+def create_clinic_invitation(
+    cursor,
+    clinic_id: str,
+    email: str,
+    access_level: str,
+    invited_by: str,
+    token_hash: str,
+    expires_at: datetime,
+) -> dict[str, Any]:
+    cursor.execute(
+        """
+        INSERT INTO clinic_invitations (
+            clinic_id, email, role, token_hash, status, invited_by, expires_at
+        )
+        VALUES (%s, %s, %s, %s, 'pending', %s, %s)
+        RETURNING id, email, role AS access_level, status, expires_at, created_at
+        """,
+        (clinic_id, email.lower(), access_level, token_hash, invited_by, expires_at),
+    )
+    return _row_to_dict(cursor, cursor.fetchone())
+
+
+def cancel_clinic_invitation(cursor, clinic_id: str, invitation_id: str) -> bool:
+    cursor.execute(
+        """
+        UPDATE clinic_invitations
+        SET status = 'cancelled'
+        WHERE id = %s AND clinic_id = %s AND status = 'pending'
+        """,
+        (invitation_id, clinic_id),
+    )
+    return cursor.rowcount > 0
+
+
+def get_clinic_member(cursor, clinic_id: str, member_id: str) -> dict[str, Any] | None:
+    cursor.execute(
+        """
+        SELECT cu.id, cu.access_level, cu.is_active, cu.user_id, u.email
+        FROM clinic_users cu
+        JOIN users u ON u.id = cu.user_id
+        WHERE cu.id = %s AND cu.clinic_id = %s
+        LIMIT 1
+        """,
+        (member_id, clinic_id),
+    )
+    row = cursor.fetchone()
+    return _row_to_dict(cursor, row) if row else None
+
+
+def update_clinic_member(
+    cursor,
+    clinic_id: str,
+    member_id: str,
+    *,
+    access_level: str | None = None,
+    is_active: bool | None = None,
+) -> dict[str, Any] | None:
+    fields = []
+    values: list[Any] = []
+    if access_level is not None:
+        fields.append("access_level = %s")
+        values.append(access_level)
+    if is_active is not None:
+        fields.append("is_active = %s")
+        values.append(is_active)
+    if not fields:
+        return get_clinic_member(cursor, clinic_id, member_id)
+    values.extend([member_id, clinic_id])
+    cursor.execute(
+        f"""
+        UPDATE clinic_users
+        SET {', '.join(fields)}
+        WHERE id = %s AND clinic_id = %s
+        RETURNING id, access_level, is_active, user_id
+        """,
+        values,
+    )
+    row = cursor.fetchone()
+    return _row_to_dict(cursor, row) if row else None
+
+
+def add_clinic_member(
+    cursor,
+    clinic_id: str,
+    user_id: str,
+    access_level: str,
+) -> dict[str, Any]:
+    cursor.execute(
+        """
+        INSERT INTO clinic_users (clinic_id, user_id, access_level, is_active)
+        VALUES (%s, %s, %s, TRUE)
+        ON CONFLICT (clinic_id, user_id) DO UPDATE SET
+            access_level = EXCLUDED.access_level,
+            is_active = TRUE
+        RETURNING id, access_level, is_active, user_id
+        """,
+        (clinic_id, user_id, access_level),
+    )
+    return _row_to_dict(cursor, cursor.fetchone())
+
+
+def find_clinic_invitation_by_token(cursor, token_hash: str) -> dict[str, Any] | None:
+    cursor.execute(
+        """
+        SELECT ci.id, ci.clinic_id, ci.email, ci.role AS access_level,
+               ci.status, ci.expires_at, ci.invited_by,
+               c.clinic_name
+        FROM clinic_invitations ci
+        JOIN clinics c ON c.id = ci.clinic_id
+        WHERE ci.token_hash = %s
+        LIMIT 1
+        """,
+        (token_hash,),
+    )
+    row = cursor.fetchone()
+    return _row_to_dict(cursor, row) if row else None
+
+
+def accept_clinic_invitation(cursor, invitation_id: str) -> None:
+    cursor.execute(
+        """
+        UPDATE clinic_invitations
+        SET status = 'accepted', accepted_at = NOW()
+        WHERE id = %s
+        """,
+        (invitation_id,),
+    )
 
 
 def find_affiliate_by_code(cursor, code: str) -> dict[str, Any] | None:

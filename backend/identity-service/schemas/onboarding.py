@@ -23,7 +23,12 @@ class ClinicApplicationRequest(BaseModel):
     account_type: str = Field("checking", pattern="^(checking|savings)$")
 
     # Affiliate + licenses
-    affiliate_code: str | None = Field(None, min_length=8, max_length=8, pattern=r"^\d{8}$")
+    affiliate_code: str | None = Field(
+        None,
+        min_length=8,
+        max_length=8,
+        pattern=r"^[A-Za-z0-9\-_!@#$*]{8}$",
+    )
     npi_number: str | None = None
     dea_number: str | None = None
     state_license_number: str | None = None

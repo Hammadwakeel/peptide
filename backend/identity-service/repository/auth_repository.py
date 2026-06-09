@@ -22,6 +22,7 @@ from database.models import (  # noqa: E402
     Session as RefreshSession,
     User,
 )
+from database.models.clinic import Affiliate  # noqa: E402
 
 
 def find_user_by_email(db: Session, email: str) -> User | None:
@@ -243,5 +244,14 @@ def consume_reset_token(db: Session, token: PasswordResetToken, password_hash: s
     user.password_hash = password_hash
     user.email_verified = True
     user.last_otp_verified_at = now
+    user.status = AccountStatus.active
     token.used_at = now
+
+    if user.role == UserRole.affiliate:
+        affiliate = db.execute(
+            select(Affiliate).where(Affiliate.user_id == user.id).limit(1)
+        ).scalar_one_or_none()
+        if affiliate is not None and affiliate.status != AccountStatus.active:
+            affiliate.status = AccountStatus.active
+
     return user

@@ -27,7 +27,9 @@ from repository.affiliate_repository import (
     create_main_affiliate as db_create_main_affiliate,
     get_affiliate_by_id,
     list_all_affiliates,
+    update_affiliate_max_sub_affiliates as db_update_affiliate_max_sub_affiliates,
     update_affiliate_profit_margin as db_update_affiliate_profit_margin,
+    update_sub_affiliates_profit_margin as db_update_sub_affiliates_profit_margin,
 )
 from repository.clinic_repository import (
     approve_clinic,
@@ -58,6 +60,7 @@ from schemas.admin import (
     CreateAffiliateRequest,
     ReviewApplicationRequest,
     UpdateAffiliateProfitMarginRequest,
+    UpdateAffiliateSubAffiliateLimitRequest,
 )
 from schemas.pagination import PaginationQuery, paginated_response
 
@@ -406,8 +409,10 @@ def list_affiliates(pagination: PaginationQuery) -> dict:
                 "affiliate_type": a["affiliate_type"],
                 "status": a["status"],
                 "profit_margin_percent": float(a.get("profit_margin_percent") or 0),
+                "max_sub_affiliates": a.get("max_sub_affiliates"),
+                "sub_affiliate_count": int(a.get("sub_affiliate_count") or 0),
                 "parent_affiliate_code": a.get("parent_affiliate_code"),
-                "clinic_referral_count": a.get("clinic_referral_count", 0),
+                "clinic_referral_count": int(a.get("clinic_referral_count") or 0),
                 "created_at": str(a["created_at"]),
             }
             for a in affiliates
@@ -428,22 +433,88 @@ def update_affiliate_profit_margin(
         existing = get_affiliate_by_id(cursor, affiliate_id)
         if not existing:
             raise HTTPException(status_code=404, detail="Affiliate not found")
+        if existing["affiliate_type"] == "sub":
+            raise HTTPException(
+                status_code=400,
+                detail="Sub-affiliate profit margin is inherited from the main affiliate. Update the main affiliate instead.",
+            )
 
         updated = db_update_affiliate_profit_margin(
             cursor,
             affiliate_id,
             body.profit_margin_percent,
         )
+        subs_updated = db_update_sub_affiliates_profit_margin(
+            cursor,
+            affiliate_id,
+            body.profit_margin_percent,
+        )
         conn.commit()
+
+        message = f"Profit margin updated for main affiliate."
+        if subs_updated:
+            message += f" {subs_updated} sub-affiliate(s) updated to match."
+
         return {
             "status": True,
-            "message": f"Profit margin updated for {updated['affiliate_type']} affiliate.",
+            "message": message,
             "affiliate": {
                 "id": str(updated["id"]),
                 "email": existing["email"],
                 "affiliate_code": updated["affiliate_code"],
                 "affiliate_type": updated["affiliate_type"],
                 "profit_margin_percent": float(updated["profit_margin_percent"]),
+                "status": updated["status"],
+            },
+            "sub_affiliates_updated": subs_updated,
+        }
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception as exc:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def update_affiliate_sub_affiliate_limit(
+    affiliate_id: str,
+    body: UpdateAffiliateSubAffiliateLimitRequest,
+) -> dict:
+    conn = connect()
+    cursor = conn.cursor()
+    try:
+        existing = get_affiliate_by_id(cursor, affiliate_id)
+        if not existing:
+            raise HTTPException(status_code=404, detail="Affiliate not found")
+        if existing["affiliate_type"] != "main":
+            raise HTTPException(
+                status_code=400,
+                detail="Sub-affiliate limit can only be set on main affiliates",
+            )
+
+        updated = db_update_affiliate_max_sub_affiliates(
+            cursor,
+            affiliate_id,
+            body.max_sub_affiliates,
+        )
+        conn.commit()
+        limit_label = (
+            "unlimited"
+            if body.max_sub_affiliates is None
+            else str(body.max_sub_affiliates)
+        )
+        return {
+            "status": True,
+            "message": f"Sub-affiliate invite limit set to {limit_label}.",
+            "affiliate": {
+                "id": str(updated["id"]),
+                "email": existing["email"],
+                "affiliate_code": updated["affiliate_code"],
+                "affiliate_type": updated["affiliate_type"],
+                "max_sub_affiliates": updated["max_sub_affiliates"],
                 "status": updated["status"],
             },
         }
