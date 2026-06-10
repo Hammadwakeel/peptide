@@ -24,10 +24,20 @@ from ..enums import ProductType, StockStatus, pg_enum
 
 class Category(UUIDMixin, CreatedAtMixin, Base):
     __tablename__ = "categories"
+    __table_args__ = (
+        UniqueConstraint("name", "product_type", name="uq_categories_name_product_type"),
+        UniqueConstraint("slug", "product_type", name="uq_categories_slug_product_type"),
+        Index("ix_categories_product_type", "product_type"),
+    )
 
-    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    slug: Mapped[str | None] = mapped_column(String(255), unique=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    slug: Mapped[str | None] = mapped_column(String(255))
     description: Mapped[str | None] = mapped_column(Text)
+    product_type: Mapped[ProductType] = mapped_column(
+        pg_enum(ProductType, "product_type"),
+        nullable=False,
+        server_default=ProductType.peptides.value,
+    )
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("TRUE"))
 
@@ -46,6 +56,7 @@ class Product(UUIDMixin, TimestampMixin, Base):
     )
 
     sku: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    slug: Mapped[str | None] = mapped_column(String(255), unique=True)
     product_name: Mapped[str] = mapped_column(String(255), nullable=False)
     category_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("categories.id", ondelete="SET NULL"), index=True
@@ -53,7 +64,7 @@ class Product(UUIDMixin, TimestampMixin, Base):
     product_type: Mapped[ProductType] = mapped_column(
         pg_enum(ProductType, "product_type"),
         nullable=False,
-        server_default=ProductType.ruo.value,
+        server_default=ProductType.peptides.value,
     )
     description: Mapped[str | None] = mapped_column(Text)
     directions: Mapped[str | None] = mapped_column(Text)
@@ -163,6 +174,7 @@ class ClinicStoreProduct(UUIDMixin, TimestampMixin, Base):
     )
     retail_price: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("TRUE"))
+    is_visible: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("TRUE"))
 
 
 class ProductFavorite(UUIDMixin, CreatedAtMixin, Base):

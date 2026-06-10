@@ -8,12 +8,17 @@ import type {
   AdminPagination,
   ChangePatientPasswordPayload,
   CreateAffiliatePayload,
+  UpdateAffiliateProfitMarginPayload,
+  UpdateAffiliateSubAffiliateLimitPayload,
   PaginatedAffiliatesResponse,
   PaginatedApplicationsResponse,
   PaginatedClinicsResponse,
   PaginatedPatientsResponse,
+  PlatformSettingsResponse,
   ReviewApplicationPayload,
   ReviewApplicationResponse,
+  UpdatePlatformSettingsPayload,
+  UpdatePlatformSettingsResponse,
 } from "@/lib/admin/types";
 
 type ListParams = {
@@ -82,10 +87,69 @@ export async function createAffiliate(body: CreateAffiliatePayload) {
   return adminFetch<{
     status: boolean;
     message: string;
-    affiliate: AdminAffiliate;
+    affiliate: Pick<
+      AdminAffiliate,
+      "id" | "email" | "affiliate_code" | "affiliate_type"
+    >;
     email_sent_to: string;
   }>(ADMIN_ENDPOINTS.affiliates, {
     method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function updateAffiliateProfitMargin(
+  affiliateId: string,
+  body: UpdateAffiliateProfitMarginPayload,
+) {
+  return adminFetch<{
+    status: boolean;
+    message: string;
+    affiliate: Pick<
+      AdminAffiliate,
+      | "id"
+      | "email"
+      | "affiliate_code"
+      | "affiliate_type"
+      | "profit_margin_percent"
+      | "status"
+    >;
+    sub_affiliates_updated: number;
+  }>(ADMIN_ENDPOINTS.affiliateProfitMargin(affiliateId), {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function updateAffiliateSubAffiliateLimit(
+  affiliateId: string,
+  body: UpdateAffiliateSubAffiliateLimitPayload,
+) {
+  return adminFetch<{
+    status: boolean;
+    message: string;
+    affiliate: Pick<
+      AdminAffiliate,
+      | "id"
+      | "email"
+      | "affiliate_code"
+      | "affiliate_type"
+      | "max_sub_affiliates"
+      | "status"
+    >;
+  }>(ADMIN_ENDPOINTS.affiliateSubAffiliateLimit(affiliateId), {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function getPlatformSettings() {
+  return adminFetch<PlatformSettingsResponse>(ADMIN_ENDPOINTS.settings);
+}
+
+export async function updatePlatformSettings(body: UpdatePlatformSettingsPayload) {
+  return adminFetch<UpdatePlatformSettingsResponse>(ADMIN_ENDPOINTS.settings, {
+    method: "PATCH",
     body: JSON.stringify(body),
   });
 }

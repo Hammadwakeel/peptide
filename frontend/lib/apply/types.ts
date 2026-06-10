@@ -1,9 +1,4 @@
-export type ApplicationDocumentKey =
-  | "deaLicense"
-  | "npiCertificate"
-  | "stateLicense"
-  | "businessRegistration"
-  | "clinicLogo";
+export type ApplicationDocumentKey = "resellerPermit" | "clinicLogo";
 
 export type UploadedFileMeta = {
   name: string;
@@ -16,7 +11,12 @@ export type UploadedFileMeta = {
 };
 
 export type PracticeInfo = {
+  firstName: string;
+  lastName: string;
   clinicName: string;
+  website: string;
+  taxId: string;
+  resellerPermitNumber: string;
   npi: string;
   dea: string;
   stateLicense: string;
@@ -25,12 +25,8 @@ export type PracticeInfo = {
   city: string;
   state: string;
   zip: string;
-  country: string;
   phone: string;
-  contactName: string;
   email: string;
-  password: string;
-  confirmPassword: string;
   affiliateCode: string;
 };
 
@@ -38,7 +34,6 @@ export type ApplicationDocuments = Record<ApplicationDocumentKey, UploadedFileMe
 
 export type BankingInfo = {
   bankName: string;
-  routingNumber: string;
   accountNumber: string;
   accountType: "checking" | "savings";
 };
@@ -47,11 +42,15 @@ export type ApplicationWizardState = {
   practice: PracticeInfo;
   documents: ApplicationDocuments;
   banking: BankingInfo;
-  eSignCompleted: boolean;
 };
 
 export const INITIAL_PRACTICE: PracticeInfo = {
+  firstName: "",
+  lastName: "",
   clinicName: "",
+  website: "",
+  taxId: "",
+  resellerPermitNumber: "",
   npi: "",
   dea: "",
   stateLicense: "",
@@ -60,55 +59,34 @@ export const INITIAL_PRACTICE: PracticeInfo = {
   city: "",
   state: "",
   zip: "",
-  country: "US",
   phone: "",
-  contactName: "",
   email: "",
-  password: "",
-  confirmPassword: "",
   affiliateCode: "",
 };
 
 export const INITIAL_DOCUMENTS: ApplicationDocuments = {
-  deaLicense: null,
-  npiCertificate: null,
-  stateLicense: null,
-  businessRegistration: null,
+  resellerPermit: null,
   clinicLogo: null,
 };
 
 export const INITIAL_BANKING: BankingInfo = {
   bankName: "",
-  routingNumber: "",
   accountNumber: "",
   accountType: "checking",
 };
 
 export const WIZARD_STEPS = [
   { id: 1, label: "Practice Info", short: "Practice" },
-  { id: 2, label: "Licenses & Documents", short: "Documents" },
-  { id: 3, label: "Banking Info", short: "Banking" },
-  { id: 4, label: "E-Sign & Submit", short: "E-Sign" },
+  { id: 2, label: "Documents", short: "Documents" },
+  { id: 3, label: "Banking & Submit", short: "Banking" },
 ] as const;
-
-export type OrgUserRole = "admin" | "staff" | "associate_provider";
-
-export type OrgUserStatus = "active" | "pending";
-
-export type OrgUser = {
-  id: string;
-  name: string;
-  email: string;
-  role: OrgUserRole;
-  status: OrgUserStatus;
-  accessEnabled: boolean;
-};
 
 export type ClinicApplicationSummary = {
   id: string;
   clinic_name: string;
   email: string;
-  primary_contact_name: string;
+  first_name: string;
+  last_name: string;
   application_status: string;
 };
 
@@ -116,6 +94,12 @@ export type ApplyClinicResponse = {
   status: boolean;
   message: string;
   application: ClinicApplicationSummary;
+  affiliate_referral?: {
+    referring_affiliate_id: string;
+    main_affiliate_id: string;
+    referral_code: string;
+    status: string;
+  };
 };
 
 export type UploadedClinicDocument = {
@@ -136,8 +120,6 @@ export type UploadDocumentsResponse = {
   documents: UploadedClinicDocument[];
 };
 
-export const ORG_ROLE_LABELS: Record<OrgUserRole, string> = {
-  admin: "Admin",
-  staff: "Staff",
-  associate_provider: "Associate Provider",
-};
+export function formatApplicantName(application: Pick<ClinicApplicationSummary, "first_name" | "last_name">) {
+  return [application.first_name, application.last_name].filter(Boolean).join(" ");
+}

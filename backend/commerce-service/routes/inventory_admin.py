@@ -21,7 +21,7 @@ async def create_product(
     sku: str = Form(..., min_length=2, max_length=100),
     product_name: str = Form(..., min_length=2),
     category_id: str | None = Form(None),
-    product_type: str = Form("ruo"),
+    product_type: str = Form("peptides"),
     description: str | None = Form(None),
     directions: str | None = Form(None),
     stock_count: int = Form(0),
@@ -34,7 +34,7 @@ async def create_product(
     image: UploadFile | None = File(None),
     _: dict = Depends(admin_user),
 ) -> dict:
-    """M3.3 — Create product with optional primary image upload to GCS."""
+    """Create a peptides or pharmacy catalog product."""
     body = CreateProductRequest(
         sku=sku,
         product_name=product_name,
@@ -56,13 +56,13 @@ async def create_product(
 @router.get("/products")
 def list_products(
     pagination: PaginationQuery = Depends(),
-    product_type: str | None = Query(None, pattern="^(ruo|pharmacy)$"),
+    product_type: str | None = Query(None, pattern="^(peptides|pharmacy)$"),
     category_id: str | None = None,
     search: str | None = None,
     stock_status: str | None = Query(None, pattern="^(in_stock|low|out_of_stock)$"),
     _: dict = Depends(admin_user),
 ) -> dict:
-    """M3 — Admin lists master catalog (paginated, filterable)."""
+    """Admin lists master catalog (paginated, filterable by peptides or pharmacy)."""
     return admin_inventory.list_inventory(
         pagination, product_type, category_id, search, stock_status,
     )
@@ -91,7 +91,6 @@ async def update_product(
     image: UploadFile | None = File(None),
     _: dict = Depends(admin_user),
 ) -> dict:
-    """M3.4 — Update product."""
     body = UpdateProductRequest(
         product_name=product_name,
         category_id=category_id,
@@ -115,7 +114,6 @@ def update_stock(
     body: UpdateStockRequest,
     _: dict = Depends(admin_user),
 ) -> dict:
-    """M3.7 — Set stock quantity and low-stock threshold."""
     return admin_inventory.update_stock(product_id, body)
 
 
@@ -125,20 +123,21 @@ async def upload_images(
     images: list[UploadFile] = File(...),
     _: dict = Depends(admin_user),
 ) -> dict:
-    """M3.8 — Upload one or more product images to GCS."""
     return await admin_inventory.upload_product_images(product_id, images)
 
 
 @router.delete("/products/{product_id}")
 def delete_product(product_id: str, _: dict = Depends(admin_user)) -> dict:
-    """M3.5 — Soft deactivate product."""
     return admin_inventory.deactivate_product(product_id)
 
 
 @router.get("/categories")
-def categories(_: dict = Depends(admin_user)) -> dict:
-    """M3.14 — List product categories."""
-    return admin_inventory.get_categories()
+def categories(
+    product_type: str | None = Query(None, pattern="^(peptides|pharmacy)$"),
+    _: dict = Depends(admin_user),
+) -> dict:
+    """List categories scoped to peptides or pharmacy."""
+    return admin_inventory.get_categories(product_type)
 
 
 @router.post("/categories")
@@ -146,5 +145,5 @@ def create_category(
     body: CreateCategoryRequest,
     _: dict = Depends(admin_user),
 ) -> dict:
-    """M3.14 — Create a product category."""
+    """Create a category for peptides or pharmacy products."""
     return admin_inventory.create_category_entry(body)

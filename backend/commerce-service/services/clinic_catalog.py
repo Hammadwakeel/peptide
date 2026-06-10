@@ -6,7 +6,9 @@ from db import connect
 from repository.clinic_context import get_clinic_for_user
 from repository.clinic_store import (
     add_to_store,
+    batch_add_to_store,
     count_store_products,
+    get_store_product,
     is_in_store,
     list_store_products,
     remove_all_from_store,
@@ -20,9 +22,15 @@ from repository.products import (
     list_product_images,
     list_products,
 )
-from schemas.inventory_clinic import AddToStoreRequest, SetRetailPriceRequest, UpdateStorePriceRequest
+from schemas.inventory_clinic import (
+    AddToStoreRequest,
+    BatchAddToStoreRequest,
+    SetRetailPriceRequest,
+    UpdateStorePriceRequest,
+    UpdateStoreVisibilityRequest,
+)
 from schemas.pagination import PaginationQuery, paginated_response
-from services.admin_inventory import _fmt_product
+from services.product_response import fmt_product, fmt_store_product
 
 
 def _require_clinic(cursor, user: dict) -> dict:
@@ -45,16 +53,18 @@ def list_provider_catalog(
     try:
         clinic = _require_clinic(cursor, user)
         offset = (pagination.page - 1) * pagination.limit
-        total = count_products(cursor, product_type=product_type, category_id=category_id,
-                               search=search, active_only=True)
-        rows = list_products(cursor, pagination.limit, offset,
-                             product_type=product_type, category_id=category_id,
-                             search=search, active_only=True)
+        filters = {
+            "product_type": product_type,
+            "category_id": category_id,
+            "search": search,
+            "active_only": True,
+            "stock_status": stock_status,
+        }
+        total = count_products(cursor, **filters)
+        rows = list_products(cursor, pagination.limit, offset, **filters)
         items = []
         for r in rows:
-            if stock_status and r.get("stock_status") != stock_status:
-                continue
-            item = _fmt_product(r, admin=True)
+            item = fmt_product(r, include_cost=True)
             item["in_my_store"] = is_in_store(cursor, str(clinic["id"]), str(r["id"]))
             items.append(item)
         return paginated_response(items, total, pagination.page, pagination.limit, key="products")
@@ -76,7 +86,7 @@ def get_provider_catalog_product(user: dict, slug: str) -> dict:
 
         images = list_product_images(cursor, str(product["id"]))
         product["images"] = [{"url": i["image_url"], "is_primary": i["is_primary"]} for i in images]
-        item = _fmt_product(product, admin=True)
+        item = fmt_product(product, include_cost=True)
         item["in_my_store"] = is_in_store(cursor, str(clinic["id"]), str(product["id"]))
         return {"status": True, "product": item}
     except HTTPException:
@@ -130,24 +140,7 @@ def list_my_store(user: dict, pagination: PaginationQuery, search: str | None = 
         offset = (pagination.page - 1) * pagination.limit
         total = count_store_products(cursor, clinic_id, search)
         rows = list_store_products(cursor, clinic_id, pagination.limit, offset, search, include_cost=True)
-        items = [
-            {
-                "store_id": str(r["store_id"]),
-                "product_id": str(r["product_id"]),
-                "name": r["product_name"],
-                "sku": r["sku"],
-                "description": r.get("description"),
-                "product_type": r.get("product_type"),
-                "category_name": r.get("category_name"),
-                "stock_status": r.get("stock_status"),
-                "stock_count": r.get("stock_count"),
-                "clinic_cost": float(r["clinic_cost"]) if r.get("clinic_cost") else None,
-                "retail_price": float(r["retail_price"]),
-                "image_url": r.get("image_url"),
-                "is_visible": r.get("active", True),
-            }
-            for r in rows
-        ]
+        items = [fmt_store_product(r) for r in rows]
         response = paginated_response(items, total, pagination.page, pagination.limit, key="products")
         response["clinic_id"] = clinic_id
         response["clinic_name"] = clinic["clinic_name"]
@@ -168,16 +161,15 @@ def add_product_to_store(user: dict, body: AddToStoreRequest) -> dict:
         if not product or not product.get("active", True):
             raise HTTPException(status_code=404, detail="Product not found or inactive")
 
-        store_item = add_to_store(
-            cursor, str(clinic["id"]), body.product_id,
-            body.variant_id or (str(product["variant_id"]) if product.get("variant_id") else None),
-            body.retail_price,
-        )
+        clinic_id = str(clinic["id"])
+        variant_id = body.variant_id or (str(product["variant_id"]) if product.get("variant_id") else None)
+        store_item = add_to_store(cursor, clinic_id, body.product_id, variant_id, body.retail_price)
         conn.commit()
+        row = get_store_product(cursor, clinic_id, str(store_item["id"]), include_cost=True)
         return {
             "status": True,
             "message": "Product added to My Store",
-            "store_item": {
+            "store_item": fmt_store_product(row) if row else {
                 "store_id": str(store_item["id"]),
                 "product_id": str(store_item["product_id"]),
                 "retail_price": float(store_item["retail_price"]),
@@ -199,24 +191,105 @@ def update_store_product_price(user: dict, store_id: str, body: UpdateStorePrice
     cursor = conn.cursor()
     try:
         clinic = _require_clinic(cursor, user)
+        existing = get_store_product(cursor, str(clinic["id"]), store_id, include_cost=True)
+        if not existing:
+            raise HTTPException(status_code=404, detail="Store product not found")
         updated = update_store_price(
-            cursor, store_id, str(clinic["id"]), body.retail_price, body.active,
+            cursor, store_id, str(clinic["id"]), body.retail_price,
         )
         if not updated:
             raise HTTPException(status_code=404, detail="Store product not found")
         conn.commit()
+        existing["retail_price"] = updated["retail_price"]
         return {
             "status": True,
             "message": "Price updated",
-            "store_item": {
-                "store_id": str(updated["id"]),
-                "retail_price": float(updated["retail_price"]),
-                "active": updated["active"],
-            },
+            "store_item": fmt_store_product(existing),
         }
     except HTTPException:
         conn.rollback()
         raise
+    except Exception as exc:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def update_store_product_visibility(user: dict, store_id: str, body: UpdateStoreVisibilityRequest) -> dict:
+    conn = connect()
+    cursor = conn.cursor()
+    try:
+        clinic = _require_clinic(cursor, user)
+        existing = get_store_product(cursor, str(clinic["id"]), store_id, include_cost=True)
+        if not existing:
+            raise HTTPException(status_code=404, detail="Store product not found")
+        updated = update_store_price(
+            cursor,
+            store_id,
+            str(clinic["id"]),
+            existing["retail_price"],
+            body.is_visible,
+        )
+        if not updated:
+            raise HTTPException(status_code=404, detail="Store product not found")
+        conn.commit()
+        existing["is_visible"] = updated["is_visible"]
+        return {
+            "status": True,
+            "message": "Visibility updated",
+            "store_item": fmt_store_product(existing),
+        }
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception as exc:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def batch_add_products_to_store(user: dict, body: BatchAddToStoreRequest) -> dict:
+    conn = connect()
+    cursor = conn.cursor()
+    try:
+        clinic = _require_clinic(cursor, user)
+        clinic_id = str(clinic["id"])
+        store_items = []
+        for item in body.items:
+            product = get_product_by_id(cursor, item.product_id)
+            if not product or not product.get("active", True):
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Product not found or inactive: {item.product_id}",
+                )
+            store_item = add_to_store(
+                cursor,
+                clinic_id,
+                item.product_id,
+                item.variant_id or (str(product["variant_id"]) if product.get("variant_id") else None),
+                item.retail_price,
+            )
+            store_items.append({
+                "store_id": str(store_item["id"]),
+                "product_id": str(store_item["product_id"]),
+                "retail_price": float(store_item["retail_price"]),
+            })
+        conn.commit()
+        return {
+            "status": True,
+            "message": f"Added {len(store_items)} products to My Store",
+            "store_items": store_items,
+        }
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception as exc:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
     finally:
         cursor.close()
         conn.close()

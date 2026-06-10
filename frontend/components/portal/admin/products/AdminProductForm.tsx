@@ -33,7 +33,7 @@ export function AdminProductForm({ productId }: ProductFormProps) {
   const [sku, setSku] = useState("");
   const [productName, setProductName] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [productType, setProductType] = useState<ProductType>("ruo");
+  const [productType, setProductType] = useState<ProductType>("peptides");
   const [active, setActive] = useState(true);
   const [clinicCost, setClinicCost] = useState("");
   const [stockCount, setStockCount] = useState("0");
@@ -49,13 +49,13 @@ export function AdminProductForm({ productId }: ProductFormProps) {
   const [existingImages, setExistingImages] = useState<{ url: string; is_primary?: boolean }[]>([]);
 
   useEffect(() => {
-    async function loadFormData() {
+    async function loadProduct() {
+      if (!productId) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        const categoriesResponse = await listCategories();
-        setCategories(categoriesResponse.categories);
-
-        if (!productId) return;
-
         const productResponse = await getProduct(productId);
         const product = productResponse.product;
         setSku(product.sku);
@@ -80,8 +80,21 @@ export function AdminProductForm({ productId }: ProductFormProps) {
       }
     }
 
-    void loadFormData();
+    void loadProduct();
   }, [productId]);
+
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const categoriesResponse = await listCategories(productType);
+        setCategories(categoriesResponse.categories);
+      } catch (error) {
+        showError(error, "Unable to load categories.");
+      }
+    }
+
+    void loadCategories();
+  }, [productType]);
 
   async function handleSave(event: React.FormEvent) {
     event.preventDefault();
@@ -127,7 +140,7 @@ export function AdminProductForm({ productId }: ProductFormProps) {
         toast.dismiss(toastId);
         toast.success("Product updated.");
       } else {
-        await createProduct(
+        const createResponse = await createProduct(
           {
             sku: sku.trim(),
             product_name: productName.trim(),
@@ -146,8 +159,12 @@ export function AdminProductForm({ productId }: ProductFormProps) {
           primaryImage,
         );
 
+        if (extraImages.length > 0) {
+          await uploadProductImages(createResponse.product.id, extraImages);
+        }
+
         toast.dismiss(toastId);
-        toast.success("Product created.");
+        toast.success(createResponse.message ?? "Product created.");
       }
 
       router.push("/portal/admin/catalog");
@@ -175,24 +192,27 @@ export function AdminProductForm({ productId }: ProductFormProps) {
           <input required value={sku} onChange={(e) => setSku(e.target.value)} disabled={isEditing} className={authInputClassName} />
         </div>
         <div>
+          <label className={authLabelClassName}>Product type</label>
+          <select
+            value={productType}
+            onChange={(e) => {
+              setProductType(e.target.value as ProductType);
+              setCategoryId("");
+            }}
+            disabled={isEditing}
+            className={authInputClassName}
+          >
+            <option value="peptides">Peptides</option>
+            <option value="pharmacy">Pharmacy</option>
+          </select>
+        </div>
+        <div>
           <label className={authLabelClassName}>Category</label>
           <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className={authInputClassName}>
             <option value="">No category</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>{category.name}</option>
             ))}
-          </select>
-        </div>
-        <div>
-          <label className={authLabelClassName}>Product type</label>
-          <select
-            value={productType}
-            onChange={(e) => setProductType(e.target.value as ProductType)}
-            disabled={isEditing}
-            className={authInputClassName}
-          >
-            <option value="ruo">Research (RUO)</option>
-            <option value="pharmacy">Pharmacy</option>
           </select>
         </div>
         {isEditing ? (
@@ -220,22 +240,27 @@ export function AdminProductForm({ productId }: ProductFormProps) {
           <label className={authLabelClassName}>Low stock threshold</label>
           <input type="number" min="0" value={lowStockThreshold} onChange={(e) => setLowStockThreshold(e.target.value)} className={authInputClassName} />
         </div>
-        <div>
-          <label className={authLabelClassName}>Strength</label>
-          <input value={strength} onChange={(e) => setStrength(e.target.value)} className={authInputClassName} />
-        </div>
-        <div>
-          <label className={authLabelClassName}>Form</label>
-          <input value={form} onChange={(e) => setForm(e.target.value)} className={authInputClassName} />
-        </div>
-        <div>
-          <label className={authLabelClassName}>Best use within</label>
-          <input value={bestUseWithin} onChange={(e) => setBestUseWithin(e.target.value)} className={authInputClassName} />
-        </div>
-        <div>
-          <label className={authLabelClassName}>DEA schedule</label>
-          <input value={deaSchedule} onChange={(e) => setDeaSchedule(e.target.value)} className={authInputClassName} />
-        </div>
+        {productType === "peptides" ? (
+          <>
+            <div>
+              <label className={authLabelClassName}>Strength</label>
+              <input value={strength} onChange={(e) => setStrength(e.target.value)} className={authInputClassName} />
+            </div>
+            <div>
+              <label className={authLabelClassName}>Form</label>
+              <input value={form} onChange={(e) => setForm(e.target.value)} className={authInputClassName} />
+            </div>
+            <div>
+              <label className={authLabelClassName}>Best use within</label>
+              <input value={bestUseWithin} onChange={(e) => setBestUseWithin(e.target.value)} className={authInputClassName} />
+            </div>
+          </>
+        ) : (
+          <div>
+            <label className={authLabelClassName}>DEA schedule</label>
+            <input value={deaSchedule} onChange={(e) => setDeaSchedule(e.target.value)} className={authInputClassName} />
+          </div>
+        )}
       </div>
 
       <div>
@@ -253,18 +278,16 @@ export function AdminProductForm({ productId }: ProductFormProps) {
         <input type="file" accept="image/*" onChange={(e) => setPrimaryImage(e.target.files?.[0] ?? null)} className="text-sm" />
       </div>
 
-      {isEditing ? (
-        <div>
-          <label className={authLabelClassName}>Upload additional images</label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={(e) => setExtraImages(Array.from(e.target.files ?? []))}
-            className="text-sm"
-          />
-        </div>
-      ) : null}
+      <div>
+        <label className={authLabelClassName}>Additional images</label>
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={(e) => setExtraImages(Array.from(e.target.files ?? []))}
+          className="text-sm"
+        />
+      </div>
 
       {existingImages.length > 0 ? (
         <div>

@@ -41,11 +41,11 @@ function buildCreateProductFormData(payload: CreateProductPayload, image?: File 
   const formData = new FormData();
   formData.append("sku", payload.sku.trim());
   formData.append("product_name", payload.product_name.trim());
-  formData.append("product_type", payload.product_type ?? "ruo");
+  formData.append("product_type", payload.product_type ?? "peptides");
+  appendOptional(formData, "category_id", payload.category_id);
   formData.append("clinic_cost", String(payload.clinic_cost));
   formData.append("stock_count", String(payload.stock_count ?? 0));
   formData.append("low_stock_threshold", String(payload.low_stock_threshold ?? 10));
-  appendOptional(formData, "category_id", payload.category_id);
   appendOptional(formData, "description", payload.description?.trim());
   appendOptional(formData, "directions", payload.directions?.trim());
   appendOptional(formData, "strength", payload.strength?.trim());
@@ -87,7 +87,7 @@ export async function getProduct(productId: string): Promise<ProductResponse> {
 }
 
 export async function createProduct(payload: CreateProductPayload, image?: File | null) {
-  return adminFetch<ProductResponse>(INVENTORY_ADMIN_ENDPOINTS.products, {
+  return adminFetch<ProductResponse & { message: string }>(INVENTORY_ADMIN_ENDPOINTS.products, {
     method: "POST",
     body: buildCreateProductFormData(payload, image),
   });
@@ -130,8 +130,10 @@ export async function uploadProductImages(productId: string, images: File[]) {
   );
 }
 
-export async function listCategories(): Promise<CategoriesResponse> {
-  return adminFetch<CategoriesResponse>(INVENTORY_ADMIN_ENDPOINTS.categories);
+export async function listCategories(productType?: ProductType): Promise<CategoriesResponse> {
+  return adminFetch<CategoriesResponse>(
+    `${INVENTORY_ADMIN_ENDPOINTS.categories}${buildQuery({ product_type: productType })}`,
+  );
 }
 
 export async function createCategory(payload: CreateCategoryPayload) {

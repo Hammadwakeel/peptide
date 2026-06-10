@@ -16,7 +16,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..base import Base, CreatedAtMixin, TimestampMixin, UUIDMixin
-from ..enums import OrderType, PaymentStatus, ShipmentStatus, pg_enum
+from ..enums import OrderType, PaymentStatus, RequestStatus, ShipmentStatus, pg_enum
 
 
 class Order(UUIDMixin, TimestampMixin, Base):
@@ -53,6 +53,20 @@ class Order(UUIDMixin, TimestampMixin, Base):
     profit: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, server_default=text("0"))
     notes: Mapped[str | None] = mapped_column(Text)
     payment_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    review_status: Mapped[RequestStatus] = mapped_column(
+        pg_enum(RequestStatus, "request_status"),
+        nullable=False,
+        server_default=RequestStatus.pending_review.value,
+    )
+    reviewed_by: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), index=True
+    )
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    rejection_reason: Mapped[str | None] = mapped_column(Text)
+    patient_address_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("patient_addresses.id", ondelete="SET NULL")
+    )
+    shipping_carrier: Mapped[str | None] = mapped_column(String(50))
 
 
 class OrderItem(UUIDMixin, CreatedAtMixin, Base):

@@ -1,4 +1,6 @@
-export type OrderTab = "customer" | "clinic" | "pending_payment";
+export type OrderTab = "pending_review" | "approved" | "rejected" | "all";
+
+export type ReviewStatus = "pending_review" | "approved" | "rejected" | "cancelled";
 
 export type PaymentStatus = "paid" | "pending" | "failed" | "refunded" | "partial_refund";
 
@@ -37,7 +39,9 @@ export type OrderTracking = {
 
 export type Order = {
   id: string;
+  orderNumber?: string;
   orderType: OrderType;
+  reviewStatus?: ReviewStatus;
   customerId?: string;
   customerName?: string;
   doctorName: string;
@@ -56,6 +60,8 @@ export type Order = {
   clinicId: string;
   clinicName: string;
   flagged?: boolean;
+  notes?: string;
+  rejectionReason?: string;
 };
 
 export type CartLineItem = {
@@ -77,9 +83,17 @@ export type TrackingCsvRow = {
 };
 
 export const ORDER_TAB_LABELS: Record<OrderTab, string> = {
-  customer: "Customer Orders",
-  clinic: "Clinic Orders",
-  pending_payment: "Pending Payment Orders",
+  pending_review: "Pending Review",
+  approved: "Approved",
+  rejected: "Rejected",
+  all: "All Orders",
+};
+
+export const REVIEW_STATUS_LABELS: Record<ReviewStatus, string> = {
+  pending_review: "Pending Review",
+  approved: "Approved",
+  rejected: "Rejected",
+  cancelled: "Cancelled",
 };
 
 export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
@@ -122,7 +136,7 @@ export function ordersToCsv(orders: Order[]): string {
   const header = "Order ID,Customer,Doctor,Payment Date,Payment Status,Shipment Status,Items,Total,Net Cost,Profit";
   const rows = orders.map(
     (order) =>
-      `${order.id},"${order.customerName ?? "Clinic"}",${order.doctorName},${order.paymentDate ?? ""},${order.paymentStatus},${order.shipmentStatus},${order.itemsCount},${order.total},${order.netCost},${order.profit}`,
+      `${order.orderNumber ?? order.id},"${order.customerName ?? "Clinic"}",${order.doctorName},${order.paymentDate ?? ""},${order.paymentStatus},${order.shipmentStatus},${order.itemsCount},${order.total},${order.netCost},${order.profit}`,
   );
   return [header, ...rows].join("\n");
 }

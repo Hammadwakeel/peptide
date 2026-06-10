@@ -11,8 +11,7 @@ const LoginForm = dynamic(
 
 export const metadata = {
   title: "Sign in — Frontier Biomed",
-  description:
-    "Partner portal sign in for affiliates, admins, patients, and doctors.",
+  description: "Sign in as a doctor or patient.",
 };
 
 export default function LoginPage() {

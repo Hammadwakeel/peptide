@@ -17,9 +17,18 @@ export const PORTAL_PATHS = {
   doctor: "/portal/doctor",
 } as const;
 
+export const LOGIN_PATHS = {
+  affiliate: "/login/affiliate",
+  admin: "/login/admin",
+  patient: "/login",
+  doctor: "/login",
+} as const;
+
 export const PUBLIC_ROUTES = [
   "/",
   "/login",
+  "/login/admin",
+  "/login/affiliate",
   "/login/send-otp",
   "/login/verify-otp",
   "/forgot-password",
@@ -27,3 +36,24 @@ export const PUBLIC_ROUTES = [
   "/apply",
   "/apply/submitted",
 ] as const;
+
+export function loginPathForRole(role: keyof typeof LOGIN_PATHS) {
+  return LOGIN_PATHS[role];
+}
+
+export function loginPathForPortalPath(pathname: string) {
+  if (pathname.startsWith("/portal/patient")) return "/login?role=patient";
+  if (pathname.startsWith("/portal/admin")) return LOGIN_PATHS.admin;
+  if (pathname.startsWith("/portal/affiliate")) return LOGIN_PATHS.affiliate;
+  return LOGIN_PATHS.doctor;
+}
+
+export function isLoginRoute(pathname: string) {
+  return (
+    pathname === LOGIN_PATHS.doctor ||
+    pathname === LOGIN_PATHS.admin ||
+    pathname === LOGIN_PATHS.affiliate ||
+    pathname === "/login/send-otp" ||
+    pathname === "/login/verify-otp"
+  );
+}

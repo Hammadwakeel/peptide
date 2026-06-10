@@ -79,14 +79,23 @@ def find_affiliate_by_code_full(cursor, code: str) -> dict[str, Any] | None:
     return _row_to_dict(cursor, row) if row else None
 
 
-def create_main_affiliate(cursor, user_id: str, affiliate_code: str) -> dict[str, Any]:
+def create_main_affiliate(
+    cursor,
+    user_id: str,
+    affiliate_code: str,
+    *,
+    profit_margin_percent: float = 0,
+) -> dict[str, Any]:
     cursor.execute(
         """
-        INSERT INTO affiliates (user_id, affiliate_code, affiliate_type, status)
-        VALUES (%s, %s, 'main', 'active')
-        RETURNING id, user_id, affiliate_code, affiliate_type::text AS affiliate_type, status::text AS status
+        INSERT INTO affiliates (
+            user_id, affiliate_code, affiliate_type, status, profit_margin_percent
+        )
+        VALUES (%s, %s, 'main', 'active', %s)
+        RETURNING id, user_id, affiliate_code, affiliate_type::text AS affiliate_type,
+                  status::text AS status, profit_margin_percent
         """,
-        (user_id, affiliate_code),
+        (user_id, affiliate_code, profit_margin_percent),
     )
     return _row_to_dict(cursor, cursor.fetchone())
 

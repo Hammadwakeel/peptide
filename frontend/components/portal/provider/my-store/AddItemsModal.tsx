@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { listCatalog } from "@/lib/products/api";
+import { useMemo, useState } from "react";
+import { useProviderPortal } from "@/context/ProviderPortalProvider";
 import type { CatalogProduct, CatalogProductType } from "@/lib/products/catalog-types";
 import {
   CATALOG_PRODUCT_TYPE_LABELS,
@@ -18,47 +18,34 @@ type AddItemsModalProps = {
 };
 
 export function AddItemsModal({ open, onClose, excludedIds, onAddSelected }: AddItemsModalProps) {
+  const { fullCatalogProducts, isCatalogLoading } = useProviderPortal();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<"" | CatalogProductType>("");
   const [selected, setSelected] = useState<Map<string, number>>(new Map());
-  const [catalog, setCatalog] = useState<CatalogProduct[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState("all");
 
-  const loadCatalog = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await listCatalog({
-        page: 1,
-        limit: 100,
-        search: search.trim() || undefined,
-        product_type: typeFilter || undefined,
-      });
-      setCatalog(response.products.filter((product) => !excludedIds.has(product.id)));
-    } catch {
-      setCatalog([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [search, typeFilter, excludedIds]);
-
-  useEffect(() => {
-    if (!open) return;
-    void loadCatalog();
-  }, [open, loadCatalog]);
+  const catalog = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return fullCatalogProducts.filter((product) => {
+      if (excludedIds.has(product.id)) return false;
+      if (typeFilter && product.product_type !== typeFilter) return false;
+      if (categoryFilter !== "all" && product.category.name !== categoryFilter) return false;
+      if (!query) return true;
+      return (
+        product.name.toLowerCase().includes(query) ||
+        product.sku.toLowerCase().includes(query) ||
+        (product.category.name?.toLowerCase().includes(query) ?? false)
+      );
+    });
+  }, [fullCatalogProducts, excludedIds, search, typeFilter, categoryFilter]);
 
   const categories = useMemo(
     () =>
       Array.from(
-        new Set(catalog.map((product) => product.category.name).filter(Boolean) as string[]),
+        new Set(fullCatalogProducts.map((product) => product.category.name).filter(Boolean) as string[]),
       ).sort(),
-    [catalog],
+    [fullCatalogProducts],
   );
-  const [categoryFilter, setCategoryFilter] = useState("all");
-
-  const filteredCatalog = useMemo(() => {
-    if (categoryFilter === "all") return catalog;
-    return catalog.filter((product) => product.category.name === categoryFilter);
-  }, [catalog, categoryFilter]);
 
   if (!open) return null;
 
@@ -120,7 +107,7 @@ export function AddItemsModal({ open, onClose, excludedIds, onAddSelected }: Add
             className="rounded-xl border border-deep-teal/15 px-3 py-2 text-sm"
           >
             <option value="">All types</option>
-            <option value="ruo">{CATALOG_PRODUCT_TYPE_LABELS.ruo}</option>
+            <option value="peptides">{CATALOG_PRODUCT_TYPE_LABELS.peptides}</option>
             <option value="pharmacy">{CATALOG_PRODUCT_TYPE_LABELS.pharmacy}</option>
           </select>
           <select
@@ -138,15 +125,15 @@ export function AddItemsModal({ open, onClose, excludedIds, onAddSelected }: Add
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-4 sm:px-6">
-          {isLoading ? (
+          {isCatalogLoading && catalog.length === 0 ? (
             <p className="py-8 text-center text-sm text-deep-teal/50">Loading catalog…</p>
-          ) : filteredCatalog.length === 0 ? (
+          ) : catalog.length === 0 ? (
             <p className="py-8 text-center text-sm text-deep-teal/50">
               No products match your filters.
             </p>
           ) : (
             <ul className="space-y-2">
-              {filteredCatalog.map((product) => {
+              {catalog.map((product) => {
                 const imageUrl = getPrimaryImage(product) ?? "/brand/product-vial-2x-blend-hero.png";
                 const isSelected = selected.has(product.id);
                 return (
@@ -159,12 +146,20 @@ export function AddItemsModal({ open, onClose, excludedIds, onAddSelected }: Add
                         className="size-4 shrink-0 rounded border-deep-teal/20 text-pacific-teal"
                       />
                       <div className="relative size-12 shrink-0 overflow-hidden rounded-lg">
-                        <Image src={imageUrl} alt="" fill className="object-cover" sizes="48px" unoptimized={imageUrl.startsWith("http")} />
+                        <Image
+                          src={imageUrl}
+                          alt=""
+                          fill
+                          className="object-cover"
+                          sizes="48px"
+                          unoptimized={imageUrl.startsWith("http")}
+                        />
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium text-deep-teal">{product.name}</p>
                         <p className="text-xs text-deep-teal/50">
-                          {product.category.name ?? "Uncategorized"} · {CATALOG_PRODUCT_TYPE_LABELS[product.product_type]} · Clinic $
+                          {product.category.name ?? "Uncategorized"} ·{" "}
+                          {CATALOG_PRODUCT_TYPE_LABELS[product.product_type]} · Clinic $
                           {product.clinic_cost?.toFixed(2) ?? "—"}
                         </p>
                         {isSelected ? (

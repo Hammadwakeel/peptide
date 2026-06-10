@@ -34,3 +34,13 @@ class UpdateAffiliateSubAffiliateLimitRequest(BaseModel):
         ge=0,
         description="Maximum sub-affiliates this main affiliate may invite. Omit or null for unlimited.",
     )
+
+
+class UpdatePlatformSettingsRequest(BaseModel):
+    default_profit_margin_percent: float | None = Field(None, ge=0, le=100)
+    platform_commission_percent: float | None = Field(None, ge=0, le=100)
+    affiliate_referral_fee_percent: float | None = Field(None, ge=0, le=100)
+    payout_frequency: str | None = Field(None, pattern="^(weekly|biweekly|monthly)$")
+    minimum_payout_threshold: float | None = Field(None, ge=0)
+    default_shipping_rate: float | None = Field(None, ge=0)
+    tax_calculation: str | None = Field(None, pattern="^(auto|manual)$")

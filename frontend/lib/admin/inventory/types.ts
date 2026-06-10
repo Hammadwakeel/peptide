@@ -1,4 +1,4 @@
-export type ProductType = "ruo" | "pharmacy";
+export type ProductType = "peptides" | "pharmacy";
 
 export type StockStatus = "in_stock" | "low" | "out_of_stock";
 
@@ -6,6 +6,7 @@ export type InventoryCategory = {
   id: string;
   name: string;
   slug: string | null;
+  product_type: ProductType;
   description?: string | null;
   sort_order?: number;
 };
@@ -21,13 +22,8 @@ export type InventoryProduct = {
   name: string;
   slug: string | null;
   sku: string;
-  description: string | null;
-  short_description: string | null;
   product_type: ProductType;
-  form: string | null;
-  strength: string | null;
-  best_use_within: string | null;
-  dea_schedule: string | null;
+  description: string | null;
   directions: string | null;
   stock_status: StockStatus;
   stock_count: number;
@@ -38,11 +34,13 @@ export type InventoryProduct = {
     name: string | null;
     slug: string | null;
   };
-  variant_id: string | null;
   images: InventoryProductImage[];
-  coa_doc_url: string | null;
   created_at: string;
   clinic_cost: number | null;
+  strength?: string | null;
+  form?: string | null;
+  best_use_within?: string | null;
+  dea_schedule?: string | null;
 };
 
 export type AdminPagination = {
@@ -73,6 +71,7 @@ export type CategoriesResponse = {
 
 export type CreateCategoryPayload = {
   name: string;
+  product_type: ProductType;
   description?: string;
   sort_order?: number;
 };
@@ -114,7 +113,7 @@ export type UpdateStockPayload = {
 };
 
 export const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
-  ruo: "Research (RUO)",
+  peptides: "Peptides",
   pharmacy: "Pharmacy",
 };
 

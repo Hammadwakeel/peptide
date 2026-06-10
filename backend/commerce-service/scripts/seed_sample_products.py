@@ -10,12 +10,12 @@ from db import close_connector, connect
 
 SAMPLE_PRODUCTS = [
     {
-        "sku": "RUO-BPC157-5MG", "product_name": "BPC-157 5mg", "product_type": "ruo",
+        "sku": "PEP-BPC157-5MG", "product_name": "BPC-157 5mg", "product_type": "peptides",
         "description": "Body protection compound peptide", "clinic_cost": 82.50,
         "stock_count": 100, "category": "Wellness", "strength": "5mg", "form": "Vial",
     },
     {
-        "sku": "RUO-TB500-5MG", "product_name": "TB-500 5mg", "product_type": "ruo",
+        "sku": "PEP-TB500-5MG", "product_name": "TB-500 5mg", "product_type": "peptides",
         "description": "Thymosin beta-4 peptide", "clinic_cost": 94.00,
         "stock_count": 80, "category": "Wellness", "strength": "5mg", "form": "Vial",
     },

@@ -26,7 +26,13 @@ def _row(cursor, row: tuple) -> dict[str, Any]:
     return dict(zip([d[0] for d in cursor.description], row))
 
 
-def _filters(product_type: str | None, category_id: str | None, search: str | None, active_only: bool) -> tuple[str, list]:
+def _filters(
+    product_type: str | None,
+    category_id: str | None,
+    search: str | None,
+    active_only: bool,
+    stock_status: str | None = None,
+) -> tuple[str, list]:
     clauses, params = [], []
     if active_only:
         clauses.append("p.active = TRUE")
@@ -36,6 +42,9 @@ def _filters(product_type: str | None, category_id: str | None, search: str | No
     if category_id:
         clauses.append("p.category_id = %s")
         params.append(category_id)
+    if stock_status:
+        clauses.append("p.stock_status = %s::stock_status")
+        params.append(stock_status)
     if search:
         clauses.append("(p.product_name ILIKE %s OR p.sku ILIKE %s OR p.description ILIKE %s)")
         params.extend([f"%{search}%"] * 3)
@@ -53,16 +62,17 @@ def list_products(cursor, limit: int, offset: int, **filters) -> list[dict[str, 
     where, params = _filters(**filters)
     cursor.execute(
         f"""
-        SELECT p.id, p.sku, p.product_name, p.product_type::text AS product_type,
-               p.description, p.directions, p.stock_status::text AS stock_status,
-               p.stock_count, p.active, p.created_at,
-               c.id AS category_id, c.name AS category_name,
-               pv.id AS variant_id, pv.strength, pv.form, pv.clinic_cost,
-               pi.image_url
+        SELECT p.id, p.sku, p.slug, p.product_name, p.product_type::text AS product_type,
+               p.description, p.directions,
+               p.stock_status::text AS stock_status, p.stock_count, p.active, p.created_at,
+               c.id AS category_id, c.name AS category_name, c.slug AS category_slug,
+               pv.id AS variant_id, pv.strength, pv.form, pv.best_use_within,
+               pv.dea_schedule, pv.clinic_cost, pi.image_url,
+               COALESCE(inv.reorder_level, 10) AS low_stock_threshold
         FROM products p
         LEFT JOIN categories c ON c.id = p.category_id
         LEFT JOIN LATERAL (
-            SELECT id, strength, form, clinic_cost
+            SELECT id, strength, form, best_use_within, dea_schedule, clinic_cost
             FROM product_variants WHERE product_id = p.id AND active = TRUE
             ORDER BY created_at LIMIT 1
         ) pv ON TRUE
@@ -70,6 +80,10 @@ def list_products(cursor, limit: int, offset: int, **filters) -> list[dict[str, 
             SELECT image_url FROM product_images
             WHERE product_id = p.id ORDER BY is_primary DESC, sort_order LIMIT 1
         ) pi ON TRUE
+        LEFT JOIN LATERAL (
+            SELECT reorder_level FROM product_inventory
+            WHERE product_id = p.id ORDER BY updated_at DESC LIMIT 1
+        ) inv ON TRUE
         {where}
         ORDER BY p.product_name
         LIMIT %s OFFSET %s
@@ -152,15 +166,28 @@ def list_product_images(cursor, product_id: str) -> list[dict[str, Any]]:
     return _rows(cursor, cursor.fetchall())
 
 
+def _unique_product_slug(cursor, base_slug: str, sku: str) -> str:
+    slug = base_slug or _slugify(sku)
+    cursor.execute("SELECT 1 FROM products WHERE slug = %s LIMIT 1", (slug,))
+    if cursor.fetchone() is None:
+        return slug
+    suffix = re.sub(r"[^a-zA-Z0-9]+", "-", sku.strip().lower()).strip("-") or "item"
+    return f"{slug}-{suffix}"
+
+
 def create_product(cursor, data: dict) -> dict[str, Any]:
-    slug = data.get("slug") or _slugify(data["product_name"])
+    slug = _unique_product_slug(
+        cursor,
+        data.get("slug") or _slugify(data["product_name"]),
+        data["sku"],
+    )
     stock_status = _compute_stock_status(
         data["stock_count"], data.get("low_stock_threshold", 10),
     )
     cursor.execute(
         """
-        INSERT INTO products (sku, slug, product_name, category_id, product_type, description,
-                              directions, stock_count, stock_status, active)
+        INSERT INTO products (sku, slug, product_name, category_id, product_type,
+                              description, directions, stock_count, stock_status, active)
         VALUES (%s, %s, %s, %s, %s::product_type, %s, %s, %s, %s::stock_status, TRUE)
         RETURNING id, sku, slug, product_name, product_type::text AS product_type,
                   stock_count, stock_status::text AS stock_status, active
@@ -208,7 +235,9 @@ def create_product(cursor, data: dict) -> dict[str, Any]:
 
 def update_product(cursor, product_id: str, data: dict) -> dict[str, Any] | None:
     fields, params = [], []
-    for col in ("product_name", "category_id", "description", "directions", "stock_count", "active"):
+    for col in (
+        "product_name", "category_id", "description", "directions", "stock_count", "active",
+    ):
         if col in data and data[col] is not None:
             fields.append(f"{col} = %s")
             params.append(data[col])
@@ -216,7 +245,9 @@ def update_product(cursor, product_id: str, data: dict) -> dict[str, Any] | None
         threshold = data.get("low_stock_threshold", 10)
         fields.append("stock_status = %s::stock_status")
         params.append(_compute_stock_status(data["stock_count"], threshold))
-    if not fields and "clinic_cost" not in data:
+    variant_cols = ("strength", "form", "best_use_within", "dea_schedule", "clinic_cost")
+    has_variant_update = any(data.get(col) is not None for col in variant_cols)
+    if not fields and not has_variant_update and data.get("low_stock_threshold") is None:
         return get_product_by_id(cursor, product_id)
     if fields:
         fields.append("updated_at = NOW()")
@@ -224,14 +255,6 @@ def update_product(cursor, product_id: str, data: dict) -> dict[str, Any] | None
         cursor.execute(f"UPDATE products SET {', '.join(fields)} WHERE id = %s RETURNING id", params)
         if not cursor.fetchone():
             return None
-    if data.get("clinic_cost") is not None:
-        cursor.execute(
-            """
-            UPDATE product_variants SET clinic_cost = %s
-            WHERE product_id = %s AND active = TRUE
-            """,
-            (data["clinic_cost"], product_id),
-        )
     if data.get("low_stock_threshold") is not None:
         cursor.execute(
             """
@@ -239,6 +262,21 @@ def update_product(cursor, product_id: str, data: dict) -> dict[str, Any] | None
             WHERE product_id = %s
             """,
             (data["low_stock_threshold"], product_id),
+        )
+    variant_fields, variant_params = [], []
+    for col in variant_cols:
+        if col in data and data[col] is not None:
+            variant_fields.append(f"{col} = %s")
+            variant_params.append(data[col])
+    if variant_fields:
+        variant_params.append(product_id)
+        cursor.execute(
+            f"""
+            UPDATE product_variants
+            SET {", ".join(variant_fields)}
+            WHERE product_id = %s AND active = TRUE
+            """,
+            variant_params,
         )
     return get_product_by_id(cursor, product_id)
 
@@ -301,10 +339,27 @@ def add_product_image(cursor, product_id: str, image_url: str, *, is_primary: bo
     return _row(cursor, cursor.fetchone())
 
 
-def find_category_by_name(cursor, name: str) -> dict[str, Any] | None:
+def get_category_by_id(cursor, category_id: str) -> dict[str, Any] | None:
     cursor.execute(
-        "SELECT id, name, slug, sort_order, active FROM categories WHERE LOWER(name) = LOWER(%s) LIMIT 1",
-        (name,),
+        """
+        SELECT id, name, slug, product_type::text AS product_type, sort_order, active
+        FROM categories WHERE id = %s
+        """,
+        (category_id,),
+    )
+    row = cursor.fetchone()
+    return _row(cursor, row) if row else None
+
+
+def find_category_by_name(cursor, name: str, product_type: str) -> dict[str, Any] | None:
+    cursor.execute(
+        """
+        SELECT id, name, slug, product_type::text AS product_type, sort_order, active
+        FROM categories
+        WHERE LOWER(name) = LOWER(%s) AND product_type = %s::product_type
+        LIMIT 1
+        """,
+        (name, product_type),
     )
     row = cursor.fetchone()
     return _row(cursor, row) if row else None
@@ -314,17 +369,36 @@ def create_category(cursor, data: dict) -> dict[str, Any]:
     slug = data.get("slug") or _slugify(data["name"])
     cursor.execute(
         """
-        INSERT INTO categories (name, slug, description, sort_order, active)
-        VALUES (%s, %s, %s, %s, TRUE)
-        RETURNING id, name, slug, description, sort_order, active
+        INSERT INTO categories (name, slug, product_type, description, sort_order, active)
+        VALUES (%s, %s, %s::product_type, %s, %s, TRUE)
+        RETURNING id, name, slug, product_type::text AS product_type, description, sort_order, active
         """,
-        (data["name"], slug, data.get("description"), data.get("sort_order", 0)),
+        (
+            data["name"], slug, data["product_type"],
+            data.get("description"), data.get("sort_order", 0),
+        ),
     )
     return _row(cursor, cursor.fetchone())
 
 
-def list_categories(cursor) -> list[dict[str, Any]]:
-    cursor.execute(
-        "SELECT id, name, slug, sort_order FROM categories WHERE active = TRUE ORDER BY sort_order"
-    )
+def list_categories(cursor, product_type: str | None = None) -> list[dict[str, Any]]:
+    if product_type:
+        cursor.execute(
+            """
+            SELECT id, name, slug, product_type::text AS product_type, sort_order
+            FROM categories
+            WHERE active = TRUE AND product_type = %s::product_type
+            ORDER BY sort_order, name
+            """,
+            (product_type,),
+        )
+    else:
+        cursor.execute(
+            """
+            SELECT id, name, slug, product_type::text AS product_type, sort_order
+            FROM categories
+            WHERE active = TRUE
+            ORDER BY product_type, sort_order, name
+            """
+        )
     return _rows(cursor, cursor.fetchall())

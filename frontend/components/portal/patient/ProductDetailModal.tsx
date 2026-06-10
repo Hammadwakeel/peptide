@@ -8,9 +8,10 @@ type ProductDetailModalProps = {
   open: boolean;
   onClose: () => void;
   onRequest: () => void;
+  onOrder: () => void;
 };
 
-export function ProductDetailModal({ product, open, onClose, onRequest }: ProductDetailModalProps) {
+export function ProductDetailModal({ product, open, onClose, onRequest, onOrder }: ProductDetailModalProps) {
   if (!open || !product) return null;
 
   return (
@@ -22,7 +23,14 @@ export function ProductDetailModal({ product, open, onClose, onRequest }: Produc
         className="relative z-10 max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-[1.5rem] border border-deep-teal/10 bg-pure-white shadow-xl"
       >
         <div className="relative aspect-[4/3]">
-          <Image src={product.image} alt="" fill className="object-cover" sizes="512px" />
+          <Image
+            src={product.image}
+            alt=""
+            fill
+            className="object-cover"
+            sizes="512px"
+            unoptimized={product.image.startsWith("http")}
+          />
         </div>
         <div className="p-6">
           <span className="rounded-full bg-deep-teal/5 px-2 py-0.5 text-[10px] font-medium text-deep-teal/60">
@@ -41,11 +49,22 @@ export function ProductDetailModal({ product, open, onClose, onRequest }: Produc
             </button>
             <button
               type="button"
+              disabled={product.stockStatus === "out_of_stock"}
+              onClick={() => {
+                onClose();
+                onOrder();
+              }}
+              className="rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-50"
+            >
+              Place order
+            </button>
+            <button
+              type="button"
               onClick={() => {
                 onClose();
                 onRequest();
               }}
-              className="rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal"
+              className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm text-deep-teal"
             >
               Request from Doctor
             </button>

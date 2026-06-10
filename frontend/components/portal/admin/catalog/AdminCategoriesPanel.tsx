@@ -6,12 +6,14 @@ import {
   authLabelClassName,
 } from "@/components/auth/AuthShell";
 import { createCategory, listCategories } from "@/lib/admin/inventory/api";
-import type { InventoryCategory } from "@/lib/admin/inventory/types";
+import type { InventoryCategory, ProductType } from "@/lib/admin/inventory/types";
+import { PRODUCT_TYPE_LABELS } from "@/lib/admin/inventory/types";
 import { showError, toast } from "@/lib/toast";
 
 export function AdminCategoriesPanel() {
   const [categories, setCategories] = useState<InventoryCategory[]>([]);
   const [name, setName] = useState("");
+  const [productType, setProductType] = useState<ProductType>("peptides");
   const [description, setDescription] = useState("");
   const [sortOrder, setSortOrder] = useState("0");
   const [isLoading, setIsLoading] = useState(true);
@@ -45,6 +47,7 @@ export function AdminCategoriesPanel() {
     try {
       const result = await createCategory({
         name: name.trim(),
+        product_type: productType,
         description: description.trim() || undefined,
         sort_order: Number(sortOrder) || 0,
       });
@@ -89,6 +92,18 @@ export function AdminCategoriesPanel() {
           />
         </div>
         <div>
+          <label htmlFor="category-type" className={authLabelClassName}>Product type</label>
+          <select
+            id="category-type"
+            value={productType}
+            onChange={(e) => setProductType(e.target.value as ProductType)}
+            className={authInputClassName}
+          >
+            <option value="peptides">Peptides</option>
+            <option value="pharmacy">Pharmacy</option>
+          </select>
+        </div>
+        <div>
           <label htmlFor="category-sort" className={authLabelClassName}>Sort order</label>
           <input
             id="category-sort"
@@ -124,19 +139,20 @@ export function AdminCategoriesPanel() {
           <thead className="border-b border-deep-teal/10 text-xs uppercase tracking-wide text-deep-teal/45">
             <tr>
               <th className="px-3 py-2">Name</th>
+              <th className="px-3 py-2">Type</th>
               <th className="px-3 py-2">Slug</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={2} className="px-3 py-6 text-center text-deep-teal/50">
+                <td colSpan={3} className="px-3 py-6 text-center text-deep-teal/50">
                   Loading categories…
                 </td>
               </tr>
             ) : categories.length === 0 ? (
               <tr>
-                <td colSpan={2} className="px-3 py-6 text-center text-deep-teal/50">
+                <td colSpan={3} className="px-3 py-6 text-center text-deep-teal/50">
                   No categories yet.
                 </td>
               </tr>
@@ -144,6 +160,7 @@ export function AdminCategoriesPanel() {
               categories.map((category) => (
                 <tr key={category.id} className="border-b border-deep-teal/5">
                   <td className="px-3 py-2 font-medium text-deep-teal">{category.name}</td>
+                  <td className="px-3 py-2 text-deep-teal/60">{PRODUCT_TYPE_LABELS[category.product_type]}</td>
                   <td className="px-3 py-2 text-deep-teal/60">{category.slug ?? "—"}</td>
                 </tr>
               ))

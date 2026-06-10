@@ -1,7 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { AdminProductStockModal } from "@/components/portal/admin/products/AdminProductStockModal";
 import { deleteProduct, listCategories, listProducts } from "@/lib/admin/inventory/api";
 import {
   PRODUCT_TYPE_LABELS,
@@ -22,6 +24,7 @@ export function AdminProductList() {
   const [stockFilter, setStockFilter] = useState<"" | StockStatus>("");
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [stockProductId, setStockProductId] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -95,7 +98,7 @@ export function AdminProductList() {
           className="rounded-lg border border-deep-teal/15 px-3 py-2 text-sm"
         >
           <option value="">All types</option>
-          <option value="ruo">Research (RUO)</option>
+          <option value="peptides">Peptides</option>
           <option value="pharmacy">Pharmacy</option>
         </select>
         <select
@@ -133,7 +136,7 @@ export function AdminProductList() {
         <table className="min-w-full text-left text-sm">
           <thead className="border-b border-deep-teal/10 bg-deep-teal/[0.02] text-xs uppercase tracking-wide text-deep-teal/45">
             <tr>
-              <th className="px-4 py-3">Name</th>
+              <th className="px-4 py-3">Product</th>
               <th className="px-4 py-3">SKU</th>
               <th className="px-4 py-3">Category</th>
               <th className="px-4 py-3">Type</th>
@@ -159,7 +162,25 @@ export function AdminProductList() {
             ) : (
               sortedProducts.map((product) => (
                 <tr key={product.id} className="border-b border-deep-teal/5 last:border-0">
-                  <td className="px-4 py-3 font-medium">{product.name}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      {product.images[0]?.url ? (
+                        <div className="relative size-10 shrink-0 overflow-hidden rounded-lg border border-deep-teal/10">
+                          <Image
+                            src={product.images[0].url}
+                            alt=""
+                            fill
+                            className="object-cover"
+                            sizes="40px"
+                            unoptimized
+                          />
+                        </div>
+                      ) : (
+                        <div className="size-10 shrink-0 rounded-lg bg-deep-teal/5" />
+                      )}
+                      <span className="font-medium">{product.name}</span>
+                    </div>
+                  </td>
                   <td className="px-4 py-3 font-mono text-xs">{product.sku}</td>
                   <td className="px-4 py-3">{product.category.name ?? "—"}</td>
                   <td className="px-4 py-3">{PRODUCT_TYPE_LABELS[product.product_type]}</td>
@@ -178,12 +199,13 @@ export function AdminProductList() {
                       >
                         Edit
                       </Link>
-                      <Link
-                        href={`/portal/admin/products/${product.id}/stock`}
+                      <button
+                        type="button"
+                        onClick={() => setStockProductId(product.id)}
                         className="text-xs font-medium text-deep-teal/60 hover:underline"
                       >
                         Stock
-                      </Link>
+                      </button>
                       <button
                         type="button"
                         disabled={deletingId === product.id}
@@ -200,6 +222,14 @@ export function AdminProductList() {
           </tbody>
         </table>
       </div>
+
+      {stockProductId ? (
+        <AdminProductStockModal
+          productId={stockProductId}
+          onClose={() => setStockProductId(null)}
+          onSaved={() => void loadData()}
+        />
+      ) : null}
     </div>
   );
 }

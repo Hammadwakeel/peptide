@@ -55,12 +55,17 @@ from repository.user_repository import (
     get_user_by_id,
     update_user_password,
 )
+from repository.platform_settings_repository import (
+    get_platform_settings as db_get_platform_settings,
+    update_platform_settings as db_update_platform_settings,
+)
 from schemas.admin import (
     ChangePatientPasswordRequest,
     CreateAffiliateRequest,
     ReviewApplicationRequest,
     UpdateAffiliateProfitMarginRequest,
     UpdateAffiliateSubAffiliateLimitRequest,
+    UpdatePlatformSettingsRequest,
 )
 from schemas.pagination import PaginationQuery, paginated_response
 
@@ -329,6 +334,59 @@ def list_clinic_patients(clinic_id: str, pagination: PaginationQuery) -> dict:
         conn.close()
 
 
+def _format_platform_settings(row: dict) -> dict:
+    return {
+        "default_profit_margin_percent": float(row["default_profit_margin_percent"]),
+        "platform_commission_percent": float(row["platform_commission_percent"]),
+        "affiliate_referral_fee_percent": float(row["affiliate_referral_fee_percent"]),
+        "payout_frequency": row["payout_frequency"],
+        "minimum_payout_threshold": float(row["minimum_payout_threshold"]),
+        "default_shipping_rate": float(row["default_shipping_rate"]),
+        "tax_calculation": row["tax_calculation"],
+        "updated_at": str(row["updated_at"]),
+    }
+
+
+def get_platform_settings() -> dict:
+    conn = connect()
+    cursor = conn.cursor()
+    try:
+        settings = db_get_platform_settings(cursor)
+        return {
+            "status": True,
+            "settings": _format_platform_settings(settings),
+        }
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def update_platform_settings(body: UpdatePlatformSettingsRequest) -> dict:
+    updates = body.model_dump(exclude_unset=True)
+    if not updates:
+        raise HTTPException(status_code=400, detail="No settings provided to update")
+
+    conn = connect()
+    cursor = conn.cursor()
+    try:
+        settings = db_update_platform_settings(cursor, updates)
+        conn.commit()
+        return {
+            "status": True,
+            "message": "Platform settings updated.",
+            "settings": _format_platform_settings(settings),
+        }
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception as exc:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    finally:
+        cursor.close()
+        conn.close()
+
+
 def _generate_unique_affiliate_code(cursor) -> str:
     from repository.clinic_repository import find_affiliate_by_code
 
@@ -359,7 +417,14 @@ def create_affiliate(body: CreateAffiliateRequest) -> dict:
             "affiliate",
             email_verified=False,
         )
-        affiliate = db_create_main_affiliate(cursor, str(user["id"]), affiliate_code)
+        platform_settings = db_get_platform_settings(cursor)
+        default_margin = float(platform_settings.get("default_profit_margin_percent") or 0)
+        affiliate = db_create_main_affiliate(
+            cursor,
+            str(user["id"]),
+            affiliate_code,
+            profit_margin_percent=default_margin,
+        )
 
         setup_link = _issue_password_setup_link(cursor, str(user["id"]))
         conn.commit()

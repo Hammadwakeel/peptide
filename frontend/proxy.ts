@@ -1,6 +1,8 @@
 import {
   AUTH_ROLE_COOKIE,
   AUTH_TOKEN_COOKIE,
+  isLoginRoute,
+  loginPathForPortalPath,
   PORTAL_PATHS,
 } from "@/lib/auth/constants";
 import type { UserRole } from "@/lib/auth/types";
@@ -34,34 +36,27 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  if (pathname === "/patient/login") {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("role", "patient");
+    return NextResponse.redirect(loginUrl);
+  }
+
   const token = request.cookies.get(AUTH_TOKEN_COOKIE)?.value;
   const role = request.cookies.get(AUTH_ROLE_COOKIE)?.value as UserRole | undefined;
   const isAuthenticated = Boolean(token && role);
 
-  const isExactLoginPage = pathname === "/login";
-
-  if (isAuthenticated && isExactLoginPage) {
+  if (isAuthenticated && isLoginRoute(pathname)) {
     return NextResponse.redirect(new URL(portalForRole(role!), request.url));
   }
 
-  if (!isAuthenticated && (pathname === "/login/send-otp" || pathname === "/login/verify-otp")) {
-    return NextResponse.next();
-  }
-
-  if (isAuthenticated && pathname === "/patient/login") {
-    return NextResponse.redirect(new URL(PORTAL_PATHS.patient, request.url));
-  }
-
   if (!isAuthenticated && pathname.startsWith("/portal")) {
-    const loginUrl = new URL(
-      pathname.startsWith("/portal/patient") ? "/patient/login" : "/login",
-      request.url,
-    );
+    const loginUrl = new URL(loginPathForPortalPath(pathname), request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  if (!isAuthenticated && pathname === "/patient/login") {
+  if (!isAuthenticated && isLoginRoute(pathname)) {
     return NextResponse.next();
   }
 

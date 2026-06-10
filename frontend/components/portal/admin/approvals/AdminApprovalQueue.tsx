@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { listApplications, reviewApplication } from "@/lib/admin/api";
 import {
   DOCUMENT_TYPE_LABELS,
+  formatPrimaryContactName,
   isReviewableApplication,
   mapApplicationStatus,
   type AdminApplication,
@@ -78,7 +79,7 @@ function ApplicationCard({
         </div>
         <div>
           <dt className="text-deep-teal/45">Applicant</dt>
-          <dd className="text-deep-teal">{application.primary_contact_name ?? "—"}</dd>
+          <dd className="text-deep-teal">{formatPrimaryContactName(application) ?? "—"}</dd>
         </div>
         <div>
           <dt className="text-deep-teal/45">Email</dt>

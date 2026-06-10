@@ -24,13 +24,35 @@ import { storePendingLogin } from "@/lib/auth/storage";
 import type { UserRole } from "@/lib/auth/types";
 import { showError, toast } from "@/lib/toast";
 
-export function LoginForm() {
+type LoginFormProps = {
+  fixedRole?: Extract<UserRole, "admin" | "affiliate" | "doctor">;
+};
+
+const ROLE_HEADINGS: Record<
+  Extract<UserRole, "admin" | "affiliate" | "doctor">,
+  { title: string; description: string }
+> = {
+  admin: {
+    title: "Admin sign in",
+    description: "Sign in to manage platform inventory, clinics, and users.",
+  },
+  affiliate: {
+    title: "Affiliate sign in",
+    description: "Sign in to manage referrals, commissions, and sub-affiliates.",
+  },
+  doctor: {
+    title: "Welcome back",
+    description: "Sign in as a doctor or patient to access your portal.",
+  },
+};
+
+export function LoginForm({ fixedRole }: LoginFormProps = {}) {
   const { login } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<UserRole>("doctor");
+  const [role, setRole] = useState<UserRole>(fixedRole ?? "doctor");
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -38,7 +60,10 @@ export function LoginForm() {
     if (searchParams.get("verified") === "1") {
       toast.success("Email verified. You can sign in now.");
     }
-  }, [searchParams]);
+    if (!fixedRole && searchParams.get("role") === "patient") {
+      setRole("patient");
+    }
+  }, [searchParams, fixedRole]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -66,6 +91,7 @@ export function LoginForm() {
   }
 
   const redirectTarget = searchParams.get("redirect");
+  const heading = ROLE_HEADINGS[fixedRole ?? "doctor"];
 
   return (
     <AuthShell background="hands">
@@ -89,14 +115,14 @@ export function LoginForm() {
               variants={fadeInUp}
               transition={transition}
             >
-              Welcome back
+              {heading.title}
             </motion.h1>
             <motion.p
               className="mt-2 text-sm leading-relaxed text-deep-teal/60"
               variants={fadeInUp}
               transition={transition}
             >
-              Enter your credentials and select your role to continue.
+              {heading.description}
             </motion.p>
             {redirectTarget ? (
               <motion.p
@@ -156,9 +182,11 @@ export function LoginForm() {
               />
             </motion.div>
 
-            <motion.div variants={fadeInUp} transition={transition}>
-              <RoleToggle value={role} onChange={setRole} />
-            </motion.div>
+            {!fixedRole ? (
+              <motion.div variants={fadeInUp} transition={transition}>
+                <RoleToggle value={role} onChange={setRole} roles={["doctor", "patient"]} />
+              </motion.div>
+            ) : null}
 
             <motion.label
               variants={fadeInUp}

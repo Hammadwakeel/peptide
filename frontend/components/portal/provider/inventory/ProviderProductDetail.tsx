@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { authInputClassName, authLabelClassName } from "@/components/auth/AuthShell";
 import { useProviderPortal } from "@/context/ProviderPortalProvider";
-import { getCatalogProduct, setCatalogRetailPrice } from "@/lib/products/api";
 import type { CatalogProduct } from "@/lib/products/catalog-types";
 import {
   CATALOG_PRODUCT_TYPE_LABELS,
@@ -20,30 +19,68 @@ type ProviderProductDetailProps = {
 };
 
 export function ProviderProductDetail({ productId }: ProviderProductDetailProps) {
-  const { refreshMyStore } = useProviderPortal();
-  const [product, setProduct] = useState<CatalogProduct | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    getCachedProduct,
+    resolveProduct,
+    getStoreProduct,
+    isInMyStore,
+    addToMyStore,
+    updateRetailPrice,
+    getStoreIdForProduct,
+  } = useProviderPortal();
+
+  const cached = getCachedProduct(productId);
+  const [product, setProduct] = useState<CatalogProduct | null>(cached ?? null);
+  const [isRefreshing, setIsRefreshing] = useState(!cached);
   const [isSaving, setIsSaving] = useState(false);
-  const [mainImage, setMainImage] = useState("");
-  const [retailPrice, setRetailPrice] = useState("");
+  const [mainImage, setMainImage] = useState(cached ? (getPrimaryImage(cached) ?? "") : "");
+  const [retailPrice, setRetailPrice] = useState(() => {
+    const storeEntry = getStoreProduct(cached?.id ?? productId);
+    if (storeEntry) return String(storeEntry.retail_price);
+    if (cached) return String(defaultRetailPrice(cached.clinic_cost));
+    return "";
+  });
 
   useEffect(() => {
-    async function loadProduct() {
-      setIsLoading(true);
+    const initial = getCachedProduct(productId);
+    if (initial) {
+      setProduct(initial);
+      setMainImage(getPrimaryImage(initial) ?? "");
+      const storeEntry = getStoreProduct(initial.id);
+      setRetailPrice(
+        storeEntry
+          ? String(storeEntry.retail_price)
+          : String(defaultRetailPrice(initial.clinic_cost)),
+      );
+      setIsRefreshing(false);
+    }
+
+    let cancelled = false;
+    async function refreshProduct() {
+      if (!initial) setIsRefreshing(true);
       try {
-        const response = await getCatalogProduct(productId);
-        setProduct(response.product);
-        setMainImage(getPrimaryImage(response.product) ?? "");
-        setRetailPrice(String(defaultRetailPrice(response.product.clinic_cost)));
+        const resolved = await resolveProduct(productId);
+        if (cancelled) return;
+        setProduct(resolved);
+        setMainImage(getPrimaryImage(resolved) ?? "");
+        const storeEntry = getStoreProduct(resolved.id);
+        setRetailPrice(
+          storeEntry
+            ? String(storeEntry.retail_price)
+            : String(defaultRetailPrice(resolved.clinic_cost)),
+        );
       } catch (error) {
-        showError(error, "Unable to load product.");
+        if (!cancelled && !initial) showError(error, "Unable to load product.");
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsRefreshing(false);
       }
     }
 
-    void loadProduct();
-  }, [productId]);
+    void refreshProduct();
+    return () => {
+      cancelled = true;
+    };
+  }, [productId, getCachedProduct, resolveProduct, getStoreProduct]);
 
   async function handleSaveRetailPrice() {
     if (!product) return;
@@ -56,10 +93,16 @@ export function ProviderProductDetail({ productId }: ProviderProductDetailProps)
 
     setIsSaving(true);
     try {
-      const result = await setCatalogRetailPrice(product.id, parsed);
-      toast.success(result.message);
+      if (isInMyStore(product.id)) {
+        const storeId = getStoreIdForProduct(product.id);
+        if (!storeId) throw new Error("Store entry not found.");
+        await updateRetailPrice(storeId, parsed);
+        toast.success("Retail price updated.");
+      } else {
+        await addToMyStore([{ productId: product.id, retailPrice: parsed }]);
+        toast.success("Product added to My Store.");
+      }
       setProduct({ ...product, in_my_store: true });
-      await refreshMyStore();
     } catch (error) {
       showError(error, "Unable to save retail price.");
     } finally {
@@ -67,7 +110,7 @@ export function ProviderProductDetail({ productId }: ProviderProductDetailProps)
     }
   }
 
-  if (isLoading) {
+  if (!product && isRefreshing) {
     return <p className="text-sm text-deep-teal/60">Loading product…</p>;
   }
 
@@ -76,6 +119,7 @@ export function ProviderProductDetail({ productId }: ProviderProductDetailProps)
   }
 
   const imageUrl = mainImage || getPrimaryImage(product) || "/brand/product-vial-2x-blend-hero.png";
+  const inStore = product.in_my_store ?? isInMyStore(product.id);
 
   return (
     <div className="space-y-6">
@@ -93,7 +137,9 @@ export function ProviderProductDetail({ productId }: ProviderProductDetailProps)
                   type="button"
                   onClick={() => setMainImage(image.url)}
                   className={`relative size-16 overflow-hidden rounded-lg border ${
-                    mainImage === image.url ? "border-pacific-teal ring-2 ring-pacific-teal/25" : "border-deep-teal/10"
+                    mainImage === image.url
+                      ? "border-pacific-teal ring-2 ring-pacific-teal/25"
+                      : "border-deep-teal/10"
                   }`}
                 >
                   <Image src={image.url} alt="" fill className="object-cover" sizes="64px" unoptimized />
@@ -102,7 +148,15 @@ export function ProviderProductDetail({ productId }: ProviderProductDetailProps)
             </div>
           ) : null}
           <div className="relative min-h-[320px] flex-1 overflow-hidden rounded-2xl border border-deep-teal/10">
-            <Image src={imageUrl} alt="" fill className="object-cover" sizes="(max-width:1024px) 100vw, 50vw" priority unoptimized={imageUrl.startsWith("http")} />
+            <Image
+              src={imageUrl}
+              alt=""
+              fill
+              className="object-cover"
+              sizes="(max-width:1024px) 100vw, 50vw"
+              priority
+              unoptimized={imageUrl.startsWith("http")}
+            />
           </div>
         </div>
 
@@ -112,21 +166,23 @@ export function ProviderProductDetail({ productId }: ProviderProductDetailProps)
               {product.category.name ?? "Uncategorized"}
             </p>
             <h2 className="mt-1 font-serif text-3xl font-light text-deep-teal">{product.name}</h2>
-            <p className="mt-2 text-sm text-deep-teal/65">
-              {product.short_description ?? product.description ?? "—"}
-            </p>
+            <p className="mt-2 text-sm text-deep-teal/65">{product.description ?? "—"}</p>
           </div>
 
           <div className="grid gap-3 rounded-2xl border border-deep-teal/10 p-4 sm:grid-cols-2">
             {[
               ["SKU", product.sku],
-              ["Form", product.form ?? "—"],
-              ["Strength", product.strength ?? "—"],
-              ["Best use within", product.best_use_within ?? "—"],
-              ["DEA schedule", product.dea_schedule ?? "—"],
               ["Product type", CATALOG_PRODUCT_TYPE_LABELS[product.product_type]],
+              ["Category", product.category.name ?? "—"],
               ["Stock", `${product.stock_count} · ${CATALOG_STOCK_STATUS_LABELS[product.stock_status]}`],
               ["Clinic cost", product.clinic_cost != null ? `$${product.clinic_cost.toFixed(2)}` : "—"],
+              ...(product.product_type === "peptides"
+                ? [
+                    ["Strength", product.strength ?? "—"],
+                    ["Form", product.form ?? "—"],
+                    ["Best use within", product.best_use_within ?? "—"],
+                  ]
+                : [["DEA schedule", product.dea_schedule ?? "—"]]),
             ].map(([label, value]) => (
               <div key={label}>
                 <p className="text-[11px] uppercase tracking-wide text-deep-teal/45">{label}</p>
@@ -134,17 +190,6 @@ export function ProviderProductDetail({ productId }: ProviderProductDetailProps)
               </div>
             ))}
           </div>
-
-          {product.coa_doc_url ? (
-            <a
-              href={product.coa_doc_url}
-              target="_blank"
-              rel="noreferrer"
-              className="text-sm font-medium text-pacific-teal hover:underline"
-            >
-              Download COA
-            </a>
-          ) : null}
 
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex-1">
@@ -164,7 +209,7 @@ export function ProviderProductDetail({ productId }: ProviderProductDetailProps)
               onClick={() => void handleSaveRetailPrice()}
               className="rounded-full bg-deep-teal px-5 py-3 text-sm font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-60"
             >
-              {isSaving ? "Saving…" : product.in_my_store ? "Update My Store price" : "Add to My Store"}
+              {isSaving ? "Saving…" : inStore ? "Update My Store price" : "Add to My Store"}
             </button>
           </div>
 

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import os
+import uuid
+
 from fastapi import HTTPException, UploadFile
 
 from db import connect
@@ -9,6 +12,7 @@ from repository.products import (
     create_category,
     create_product,
     find_category_by_name,
+    get_category_by_id,
     get_product_by_id,
     list_categories,
     list_product_images,
@@ -24,63 +28,48 @@ from schemas.inventory_admin import (
     UpdateStockRequest,
 )
 from schemas.pagination import PaginationQuery, paginated_response
-from services.gcs_storage import gcs
+from services.product_response import fmt_product
+from services.storage import public_url, s3
 from services.upload_utils import read_image_upload
 
 
-def _fmt_product(p: dict, admin: bool = True) -> dict:
-    images = p.get("images") or []
-    if not images and p.get("image_url"):
-        images = [{"url": p["image_url"], "is_primary": True}]
-    item = {
-        "id": str(p["id"]),
-        "name": p["product_name"],
-        "slug": p.get("slug"),
-        "sku": p["sku"],
-        "description": p.get("description"),
-        "short_description": (p.get("description") or "")[:160] or None,
-        "product_type": p.get("product_type"),
-        "form": p.get("form"),
-        "strength": p.get("strength"),
-        "best_use_within": p.get("best_use_within"),
-        "dea_schedule": p.get("dea_schedule"),
-        "directions": p.get("directions"),
-        "stock_status": p.get("stock_status"),
-        "stock_count": p.get("stock_count"),
-        "low_stock_threshold": p.get("low_stock_threshold", 10),
-        "status": "ACTIVE" if p.get("active", True) else "INACTIVE",
-        "category": {
-            "id": str(p["category_id"]) if p.get("category_id") else None,
-            "name": p.get("category_name"),
-            "slug": p.get("category_slug"),
-        },
-        "variant_id": str(p["variant_id"]) if p.get("variant_id") else None,
-        "images": images,
-        "coa_doc_url": p.get("coa_doc_url"),
-        "created_at": str(p.get("created_at", "")),
-    }
-    if admin:
-        item["clinic_cost"] = float(p["clinic_cost"]) if p.get("clinic_cost") is not None else None
-    return item
+def _strip_fields_for_product_type(product_type: str, data: dict) -> dict:
+    """Drop variant fields that do not apply to the selected product type."""
+    cleaned = dict(data)
+    if product_type == "peptides":
+        cleaned.pop("dea_schedule", None)
+    else:
+        for key in ("strength", "form", "best_use_within"):
+            cleaned.pop(key, None)
+    return cleaned
+
+
+def _require_matching_category(cursor, category_id: str, product_type: str) -> None:
+    category = get_category_by_id(cursor, category_id)
+    if not category or not category.get("active", True):
+        raise HTTPException(status_code=400, detail="Category not found")
+    if category.get("product_type") != product_type:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Category belongs to {category.get('product_type')} products, not {product_type}",
+        )
 
 
 async def _upload_product_image(product_id: str, image: UploadFile) -> str:
     data, content_type = await read_image_upload(image)
-    result = gcs.upload_bytes(
-        data,
-        filename=image.filename or "product.jpg",
-        folder=f"inventory/images/{product_id}",
-        content_type=content_type,
-        make_public=True,
-    )
-    return result["url"]
+    ext = os.path.splitext(image.filename or "product.jpg")[1] or ".jpg"
+    key = f"inventory/images/{product_id}/{uuid.uuid4().hex}{ext}"
+    s3.upload_bytes(data, key, content_type=content_type)
+    return public_url(key)
 
 
 async def create_inventory(body: CreateProductRequest, image: UploadFile | None = None) -> dict:
     conn = connect()
     cursor = conn.cursor()
     try:
-        payload = body.model_dump()
+        if body.category_id:
+            _require_matching_category(cursor, body.category_id, body.product_type)
+        payload = _strip_fields_for_product_type(body.product_type, body.model_dump())
         product = create_product(cursor, payload)
         if image and image.filename:
             image_url = await _upload_product_image(str(product["id"]), image)
@@ -88,7 +77,10 @@ async def create_inventory(body: CreateProductRequest, image: UploadFile | None 
             product["image_url"] = image_url
         conn.commit()
         product = get_product_by_id(cursor, str(product["id"]))
-        return {"status": True, "message": "Product added to catalog", "product": _fmt_product(product)}
+        return {"status": True, "message": "Product added to catalog", "product": fmt_product(product, include_cost=True)}
+    except HTTPException:
+        conn.rollback()
+        raise
     except Exception as exc:
         conn.rollback()
         if "unique" in str(exc).lower() or "duplicate" in str(exc).lower():
@@ -110,12 +102,16 @@ def list_inventory(
     cursor = conn.cursor()
     try:
         offset = (pagination.page - 1) * pagination.limit
-        total = count_products(cursor, product_type=product_type, category_id=category_id,
-                               search=search, active_only=False)
-        rows = list_products(cursor, pagination.limit, offset,
-                             product_type=product_type, category_id=category_id,
-                             search=search, active_only=False)
-        items = [_fmt_product(r) for r in rows if not stock_status or r.get("stock_status") == stock_status]
+        filters = {
+            "product_type": product_type,
+            "category_id": category_id,
+            "search": search,
+            "active_only": False,
+            "stock_status": stock_status,
+        }
+        total = count_products(cursor, **filters)
+        rows = list_products(cursor, pagination.limit, offset, **filters)
+        items = [fmt_product(r, include_cost=True) for r in rows]
         return paginated_response(items, total, pagination.page, pagination.limit, key="products")
     finally:
         cursor.close()
@@ -131,7 +127,7 @@ def get_inventory_product(product_id: str) -> dict:
             raise HTTPException(status_code=404, detail="Product not found")
         images = list_product_images(cursor, product_id)
         product["images"] = [{"url": i["image_url"], "is_primary": i["is_primary"]} for i in images]
-        return {"status": True, "product": _fmt_product(product)}
+        return {"status": True, "product": fmt_product(product, include_cost=True)}
     finally:
         cursor.close()
         conn.close()
@@ -145,7 +141,17 @@ async def update_inventory(
     conn = connect()
     cursor = conn.cursor()
     try:
-        data = {k: v for k, v in body.model_dump().items() if v is not None}
+        existing = get_product_by_id(cursor, product_id)
+        if not existing:
+            raise HTTPException(status_code=404, detail="Product not found")
+
+        data = _strip_fields_for_product_type(
+            existing["product_type"],
+            {k: v for k, v in body.model_dump().items() if v is not None},
+        )
+        if data.get("category_id"):
+            _require_matching_category(cursor, data["category_id"], existing["product_type"])
+
         product = update_product(cursor, product_id, data)
         if not product:
             raise HTTPException(status_code=404, detail="Product not found")
@@ -155,7 +161,7 @@ async def update_inventory(
             product["image_url"] = image_url
         conn.commit()
         product = get_product_by_id(cursor, product_id)
-        return {"status": True, "message": "Product updated", "product": _fmt_product(product)}
+        return {"status": True, "message": "Product updated", "product": fmt_product(product, include_cost=True)}
     except HTTPException:
         conn.rollback()
         raise
@@ -177,7 +183,7 @@ def update_stock(product_id: str, body: UpdateStockRequest) -> dict:
         if not product:
             raise HTTPException(status_code=404, detail="Product not found")
         conn.commit()
-        return {"status": True, "message": "Stock updated", "product": _fmt_product(product)}
+        return {"status": True, "message": "Stock updated", "product": fmt_product(product, include_cost=True)}
     except HTTPException:
         conn.rollback()
         raise
@@ -235,15 +241,21 @@ def deactivate_product(product_id: str) -> dict:
         conn.close()
 
 
-def get_categories() -> dict:
+def get_categories(product_type: str | None = None) -> dict:
     conn = connect()
     cursor = conn.cursor()
     try:
-        cats = list_categories(cursor)
+        cats = list_categories(cursor, product_type)
         return {
             "status": True,
             "categories": [
-                {"id": str(c["id"]), "name": c["name"], "slug": c.get("slug")}
+                {
+                    "id": str(c["id"]),
+                    "name": c["name"],
+                    "slug": c.get("slug"),
+                    "product_type": c.get("product_type"),
+                    "sort_order": c.get("sort_order"),
+                }
                 for c in cats
             ],
         }
@@ -256,8 +268,11 @@ def create_category_entry(body: CreateCategoryRequest) -> dict:
     conn = connect()
     cursor = conn.cursor()
     try:
-        if find_category_by_name(cursor, body.name):
-            raise HTTPException(status_code=409, detail="Category name already exists")
+        if find_category_by_name(cursor, body.name, body.product_type):
+            raise HTTPException(
+                status_code=409,
+                detail=f"Category '{body.name}' already exists for {body.product_type} products",
+            )
 
         category = create_category(cursor, body.model_dump())
         conn.commit()
@@ -268,6 +283,7 @@ def create_category_entry(body: CreateCategoryRequest) -> dict:
                 "id": str(category["id"]),
                 "name": category["name"],
                 "slug": category.get("slug"),
+                "product_type": category.get("product_type"),
                 "description": category.get("description"),
                 "sort_order": category.get("sort_order"),
             },

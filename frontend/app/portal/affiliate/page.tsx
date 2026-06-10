@@ -1,16 +1,9 @@
-import { PortalShell } from "@/components/portal/PortalShell";
+import { AffiliateDashboard } from "@/components/portal/affiliate/AffiliateDashboard";
 
 export const metadata = {
-  title: "Affiliate portal — Frontier Biomed",
-  description: "Affiliate workspace for Frontier Biomed partners.",
+  title: "Dashboard — Affiliate portal",
 };
 
-export default function AffiliatePortalPage() {
-  return (
-    <PortalShell
-      role="affiliate"
-      title="Affiliate workspace"
-      description="This is the affiliate portal shell. Referrals, commissions, and partner resources will live here once backend services are connected."
-    />
-  );
+export default function AffiliateDashboardPage() {
+  return <AffiliateDashboard />;
 }

@@ -9,11 +9,17 @@ const DOCUMENT_FIELDS: {
   description: string;
   required?: boolean;
 }[] = [
-  { key: "deaLicense", label: "DEA license", description: "Current DEA registration certificate.", required: true },
-  { key: "npiCertificate", label: "NPI certificate", description: "NPI verification or CMS documentation.", required: true },
-  { key: "stateLicense", label: "State license", description: "Active state medical or pharmacy license.", required: true },
-  { key: "businessRegistration", label: "Business registration", description: "Articles of incorporation or business filing.", required: true },
-  { key: "clinicLogo", label: "Clinic logo (optional)", description: "PNG, JPEG, or WebP logo for your storefront." },
+  {
+    key: "resellerPermit",
+    label: "Reseller permit document",
+    description: "Upload your reseller permit as PDF or image.",
+    required: true,
+  },
+  {
+    key: "clinicLogo",
+    label: "Clinic logo (optional)",
+    description: "PNG, JPEG, or WebP logo for your storefront.",
+  },
 ];
 
 type StepDocumentsProps = {

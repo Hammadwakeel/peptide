@@ -2,24 +2,32 @@
 
 import type { UserRole } from "@/lib/auth/types";
 
-const ROLES: { value: UserRole; label: string }[] = [
-  { value: "affiliate", label: "Affiliate" },
-  { value: "admin", label: "Admin" },
-  { value: "patient", label: "Patient" },
-  { value: "doctor", label: "Doctor" },
-];
+const ROLE_LABELS: Record<UserRole, string> = {
+  doctor: "Doctor",
+  patient: "Patient",
+  admin: "Admin",
+  affiliate: "Affiliate",
+};
+
+export const DEFAULT_LOGIN_ROLES: UserRole[] = ["doctor", "patient"];
 
 type RoleToggleProps = {
   value: UserRole;
   onChange: (role: UserRole) => void;
+  roles?: UserRole[];
 };
 
-export function RoleToggle({ value, onChange }: RoleToggleProps) {
+export function RoleToggle({
+  value,
+  onChange,
+  roles = DEFAULT_LOGIN_ROLES,
+}: RoleToggleProps) {
   return (
     <fieldset>
       <legend className="mb-3 block text-sm font-medium text-deep-teal">Role</legend>
       <div className="grid grid-cols-2 gap-2">
-        {ROLES.map(({ value: roleValue, label }) => {
+        {roles.map((roleValue) => {
+          const label = ROLE_LABELS[roleValue];
           const isSelected = value === roleValue;
           return (
             <label

@@ -21,7 +21,7 @@ export function StepBanking({ value, onChange }: StepBankingProps) {
       <div className="rounded-xl border border-pacific-teal/15 bg-pacific-teal/5 p-4">
         <p className="text-sm font-medium text-deep-teal">Bank account details</p>
         <p className="mt-1 text-xs text-deep-teal/60">
-          Routing and account numbers are encrypted before storage.
+          Account numbers are encrypted before storage. No password is required during onboarding.
         </p>
       </div>
 
@@ -31,12 +31,8 @@ export function StepBanking({ value, onChange }: StepBankingProps) {
           <input id="bankName" required value={value.bankName} onChange={(e) => update("bankName", e.target.value)} className={authInputCompactClassName} />
         </div>
         <div>
-          <label htmlFor="routingNumber" className={authLabelCompactClassName}>Routing number</label>
-          <input id="routingNumber" required inputMode="numeric" maxLength={9} value={value.routingNumber} onChange={(e) => update("routingNumber", e.target.value.replace(/\D/g, "").slice(0, 9))} className={authInputCompactClassName} />
-        </div>
-        <div>
           <label htmlFor="accountNumber" className={authLabelCompactClassName}>Account number</label>
-          <input id="accountNumber" required value={value.accountNumber} onChange={(e) => update("accountNumber", e.target.value)} className={authInputCompactClassName} />
+          <input id="accountNumber" required minLength={4} value={value.accountNumber} onChange={(e) => update("accountNumber", e.target.value)} className={authInputCompactClassName} />
         </div>
         <div>
           <label htmlFor="accountType" className={authLabelCompactClassName}>Account type</label>

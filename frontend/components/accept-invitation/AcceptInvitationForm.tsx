@@ -11,7 +11,7 @@ import {
   authLinkClassName,
 } from "@/components/auth/AuthShell";
 import { fadeInUp, motion, scaleIn, staggerContainer, transition } from "@/components/motion";
-import { acceptInvitation, type AcceptInvitationResponse } from "@/lib/invitation/api";
+import { acceptInvitation, type AcceptInvitationResponse } from "@/lib/patient/api";
 import { showError } from "@/lib/toast";
 
 export function AcceptInvitationForm() {
@@ -95,10 +95,10 @@ export function AcceptInvitationForm() {
                 <p className="mt-2">{result.message}</p>
               </div>
               <Link
-                href="/login"
+                href="/login?role=patient"
                 className="block w-full rounded-full bg-deep-teal px-6 py-3.5 text-center text-sm font-medium text-pure-white transition-all duration-300 hover:bg-pacific-teal"
               >
-                Go to sign in
+                Go to patient sign in
               </Link>
             </div>
           ) : (
@@ -147,7 +147,7 @@ export function AcceptInvitationForm() {
             transition={{ ...transition, delay: 0.45 }}
           >
             Already have an account?{" "}
-            <Link href="/login" className={authLinkClassName}>
+            <Link href="/login?role=patient" className={authLinkClassName}>
               Sign in.
             </Link>
           </motion.p>

@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AuthCard, AuthShell, authLinkClassName } from "@/components/auth/AuthShell";
 import { readApplicationSummary } from "@/lib/apply/storage";
-import type { ClinicApplicationSummary } from "@/lib/apply/types";
+import { formatApplicantName, type ClinicApplicationSummary } from "@/lib/apply/types";
 
 export function ApplicationSubmitted() {
   const searchParams = useSearchParams();
@@ -24,7 +24,8 @@ export function ApplicationSubmitted() {
         id: ref,
         clinic_name: "",
         email: "",
-        primary_contact_name: "",
+        first_name: "",
+        last_name: "",
         application_status: "pending_review",
       });
     }
@@ -56,6 +57,12 @@ export function ApplicationSubmitted() {
             {application.email ? (
               <p className="mt-1">
                 <span className="font-medium text-deep-teal">Email:</span> {application.email}
+              </p>
+            ) : null}
+            {formatApplicantName(application) ? (
+              <p className="mt-1">
+                <span className="font-medium text-deep-teal">Applicant:</span>{" "}
+                {formatApplicantName(application)}
               </p>
             ) : null}
             <p className="mt-1">

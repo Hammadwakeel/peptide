@@ -3,17 +3,20 @@
 import { useMemo, useState } from "react";
 import { PatientProductCard } from "@/components/portal/patient/PatientProductCard";
 import { ProductDetailModal } from "@/components/portal/patient/ProductDetailModal";
+import { PlaceOrderModal } from "@/components/portal/patient/PlaceOrderModal";
 import { RequestFromDoctorModal } from "@/components/portal/patient/RequestFromDoctorModal";
 import { usePatientPortal } from "@/context/PatientPortalProvider";
 import type { BrowseProduct } from "@/lib/patient-portal/types";
 import { toast } from "@/lib/toast";
 
 export function BrowseProductsTab() {
-  const { products, submitProductRequest } = usePatientPortal();
+  const { products, productsLoading, productsError, clinicName, submitProductRequest } =
+    usePatientPortal();
   const [search, setSearch] = useState("");
   const [view, setView] = useState<"grid" | "list">("grid");
   const [detailProduct, setDetailProduct] = useState<BrowseProduct | null>(null);
   const [requestProduct, setRequestProduct] = useState<BrowseProduct | null>(null);
+  const [orderProduct, setOrderProduct] = useState<BrowseProduct | null>(null);
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -31,7 +34,10 @@ export function BrowseProductsTab() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="font-serif text-2xl font-light text-deep-teal">Browse Products</h1>
-          <p className="mt-1 text-sm text-deep-teal/55">{filtered.length} products</p>
+          <p className="mt-1 text-sm text-deep-teal/55">
+            {clinicName ? `${clinicName} · ` : ""}
+            {productsLoading ? "Loading…" : `${filtered.length} products`}
+          </p>
         </div>
         <input
           type="search"
@@ -57,6 +63,18 @@ export function BrowseProductsTab() {
         ))}
       </div>
 
+      {productsError ? (
+        <p className="rounded-xl border border-coral-blush bg-coral-blush/30 px-4 py-3 text-sm text-deep-teal/70">
+          {productsError}
+        </p>
+      ) : null}
+
+      {!productsLoading && !productsError && filtered.length === 0 ? (
+        <p className="rounded-xl border border-deep-teal/10 bg-deep-teal/[0.03] px-4 py-8 text-center text-sm text-deep-teal/60">
+          No products are available in your clinic store yet.
+        </p>
+      ) : null}
+
       <div className={view === "grid" ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-3" : "space-y-3"}>
         {filtered.map((product) => (
           <PatientProductCard
@@ -65,6 +83,7 @@ export function BrowseProductsTab() {
             view={view}
             onInfo={() => setDetailProduct(product)}
             onRequest={() => setRequestProduct(product)}
+            onOrder={() => setOrderProduct(product)}
           />
         ))}
       </div>
@@ -74,6 +93,13 @@ export function BrowseProductsTab() {
         open={Boolean(detailProduct)}
         onClose={() => setDetailProduct(null)}
         onRequest={() => detailProduct && setRequestProduct(detailProduct)}
+        onOrder={() => detailProduct && setOrderProduct(detailProduct)}
+      />
+
+      <PlaceOrderModal
+        product={orderProduct}
+        open={Boolean(orderProduct)}
+        onClose={() => setOrderProduct(null)}
       />
 
       <RequestFromDoctorModal

@@ -4,24 +4,22 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
+import {
+  approveClinicOrder,
+  fetchAllClinicOrders,
+  getClinicOrder,
+  rejectClinicOrder,
+} from "@/lib/orders/api";
+import { mapClinicOrderToUi } from "@/lib/orders/map-clinic-order";
 import { MOCK_ORDERS } from "@/lib/orders/mock-data";
-import type {
-  CartLineItem,
-  Order,
-  OrderTimelineEntry,
-  OrderTracking,
-  OrderType,
-  PaymentStatus,
-  ShipmentStatus,
-} from "@/lib/orders/types";
+import type { Order, OrderTracking, ShipmentStatus } from "@/lib/orders/types";
 import { buildTrackingUrl } from "@/lib/orders/types";
-
-const CLINIC_ID = "clinic-001";
-const CLINIC_NAME = "Frontier Wellness Clinic";
+import { showError } from "@/lib/toast";
 
 function cloneOrders(data: Order[]): Order[] {
   return data.map((order) => ({
@@ -32,23 +30,15 @@ function cloneOrders(data: Order[]): Order[] {
   }));
 }
 
-type CreateOrderPayload = {
-  orderType: OrderType;
-  customerId?: string;
-  customerName?: string;
-  doctorName: string;
-  cart: CartLineItem[];
-  patientEmail?: string;
-  patientPhone?: string;
-};
-
 type OrdersContextValue = {
   orders: Order[];
   clinicOrders: Order[];
+  isLoading: boolean;
+  refreshOrders: () => Promise<void>;
   getOrder: (id: string) => Order | undefined;
-  createOrder: (payload: CreateOrderPayload) => Order;
-  updateTracking: (orderId: string, tracking: OrderTracking) => void;
-  applyRefund: (orderId: string, amount: number, reason: string, full: boolean) => void;
+  fetchOrder: (id: string) => Promise<Order>;
+  approveOrder: (orderId: string) => Promise<Order>;
+  rejectOrder: (orderId: string, reason: string) => Promise<Order>;
   applyTrackingImport: (
     rows: { orderId: string; carrier: string; trackingNumber: string; shippedDate: string }[],
   ) => { updated: number; failed: number };
@@ -57,108 +47,74 @@ type OrdersContextValue = {
 const OrdersContext = createContext<OrdersContextValue | null>(null);
 
 export function OrdersProvider({ children }: { children: ReactNode }) {
-  const [orders, setOrders] = useState<Order[]>(() => cloneOrders(MOCK_ORDERS));
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const clinicOrders = useMemo(
-    () => orders.filter((order) => order.clinicId === CLINIC_ID),
-    [orders],
-  );
+  const refreshOrders = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const rows = await fetchAllClinicOrders();
+      setOrders(rows.map(mapClinicOrderToUi));
+    } catch (error) {
+      showError(error, "Unable to load clinic orders.");
+      setOrders([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshOrders();
+  }, [refreshOrders]);
+
+  const clinicOrders = useMemo(() => orders, [orders]);
 
   const getOrder = useCallback(
-    (id: string) => orders.find((order) => order.id === id),
+    (id: string) =>
+      orders.find((order) => order.id === id || order.orderNumber === id),
     [orders],
   );
 
-  const createOrder = useCallback((payload: CreateOrderPayload) => {
-    const id = `ORD-${Date.now().toString().slice(-4)}`;
-    const lineItems = payload.cart.map((item, index) => ({
-      id: `li-new-${index}`,
-      productId: item.productId,
-      productName: item.productName,
-      sku: item.sku,
-      qty: item.qty,
-      unitPrice: item.unitPrice,
-      total: item.qty * item.unitPrice,
-    }));
-    const total = lineItems.reduce((sum, item) => sum + item.total, 0);
-    const netCost = Math.round(total * 0.62);
-    const profit = total - netCost;
-    const timeline: OrderTimelineEntry[] = [
-      {
-        id: `tl-${Date.now()}`,
-        date: new Date().toISOString(),
-        status: "Created",
-        note: `Order created for ${payload.orderType === "clinic" ? "clinic" : payload.customerName ?? "customer"}.`,
-      },
-    ];
-
-    const order: Order = {
-      id,
-      orderType: payload.orderType,
-      customerId: payload.customerId,
-      customerName: payload.customerName,
-      doctorName: payload.doctorName,
-      paymentDate: payload.orderType === "clinic" ? new Date().toISOString().slice(0, 10) : null,
-      paymentStatus: payload.orderType === "clinic" ? "paid" : "pending",
-      shipmentStatus: "not_shipped",
-      itemsCount: lineItems.reduce((sum, item) => sum + item.qty, 0),
-      total,
-      netCost,
-      profit,
-      lineItems,
-      patientEmail: payload.patientEmail,
-      patientPhone: payload.patientPhone,
-      timeline,
-      clinicId: CLINIC_ID,
-      clinicName: CLINIC_NAME,
-    };
-
-    setOrders((current) => [order, ...current]);
-    return order;
+  const upsertOrder = useCallback((order: Order) => {
+    setOrders((current) => {
+      const index = current.findIndex((entry) => entry.id === order.id);
+      if (index === -1) return [order, ...current];
+      const next = [...current];
+      next[index] = order;
+      return next;
+    });
   }, []);
 
-  const updateTracking = useCallback((orderId: string, tracking: OrderTracking) => {
-    setOrders((current) =>
-      current.map((order) => {
-        if (order.id !== orderId) return order;
-        const trackingUrl = buildTrackingUrl(tracking.carrier, tracking.trackingNumber);
-        const entry: OrderTimelineEntry = {
-          id: `tl-${Date.now()}`,
-          date: new Date().toISOString(),
-          status: "Shipped",
-          note: `${tracking.carrier} ${tracking.trackingNumber}`,
-        };
-        return {
-          ...order,
-          tracking: { ...tracking, trackingUrl },
-          shipmentStatus: "shipped" as ShipmentStatus,
-          timeline: [entry, ...order.timeline],
-        };
-      }),
-    );
-  }, []);
-
-  const applyRefund = useCallback(
-    (orderId: string, amount: number, reason: string, full: boolean) => {
-      setOrders((current) =>
-        current.map((order) => {
-          if (order.id !== orderId) return order;
-          const paymentStatus: PaymentStatus = full ? "refunded" : "partial_refund";
-          const entry: OrderTimelineEntry = {
-            id: `tl-${Date.now()}`,
-            date: new Date().toISOString(),
-            status: full ? "Full Refund" : "Partial Refund",
-            note: `$${amount} — ${reason}`,
-          };
-          return {
-            ...order,
-            paymentStatus,
-            timeline: [entry, ...order.timeline],
-          };
-        }),
-      );
+  const fetchOrder = useCallback(
+    async (id: string) => {
+      const cached = getOrder(id);
+      if (cached?.lineItems.length) return cached;
+      const row = await getClinicOrder(id);
+      const mapped = mapClinicOrderToUi(row);
+      upsertOrder(mapped);
+      return mapped;
     },
-    [],
+    [getOrder, upsertOrder],
+  );
+
+  const approveOrder = useCallback(
+    async (orderId: string) => {
+      const response = await approveClinicOrder(orderId);
+      const mapped = mapClinicOrderToUi(response.order);
+      upsertOrder(mapped);
+      return mapped;
+    },
+    [upsertOrder],
+  );
+
+  const rejectOrder = useCallback(
+    async (orderId: string, reason: string) => {
+      const response = await rejectClinicOrder(orderId, reason);
+      const mapped = mapClinicOrderToUi(response.order);
+      upsertOrder(mapped);
+      return mapped;
+    },
+    [upsertOrder],
   );
 
   const applyTrackingImport = useCallback(
@@ -166,20 +122,14 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
       rows: { orderId: string; carrier: string; trackingNumber: string; shippedDate: string }[],
     ) => {
       let updated = 0;
-      let failed = 0;
-
       setOrders((current) =>
         current.map((order) => {
-          const row = rows.find((item) => item.orderId === order.id);
+          const row = rows.find(
+            (entry) => entry.orderId === order.id || entry.orderId === order.orderNumber,
+          );
           if (!row) return order;
           updated += 1;
           const trackingUrl = buildTrackingUrl(row.carrier, row.trackingNumber);
-          const entry: OrderTimelineEntry = {
-            id: `tl-import-${order.id}-${Date.now()}`,
-            date: new Date().toISOString(),
-            status: "Shipped",
-            note: `Tracking imported: ${row.carrier} ${row.trackingNumber}`,
-          };
           return {
             ...order,
             tracking: {
@@ -189,13 +139,10 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
               trackingUrl,
             },
             shipmentStatus: "shipped" as ShipmentStatus,
-            timeline: [entry, ...order.timeline],
           };
         }),
       );
-
-      failed = rows.length - updated;
-      return { updated, failed };
+      return { updated, failed: rows.length - updated };
     },
     [],
   );
@@ -204,13 +151,25 @@ export function OrdersProvider({ children }: { children: ReactNode }) {
     () => ({
       orders,
       clinicOrders,
+      isLoading,
+      refreshOrders,
       getOrder,
-      createOrder,
-      updateTracking,
-      applyRefund,
+      fetchOrder,
+      approveOrder,
+      rejectOrder,
       applyTrackingImport,
     }),
-    [orders, clinicOrders, getOrder, createOrder, updateTracking, applyRefund, applyTrackingImport],
+    [
+      orders,
+      clinicOrders,
+      isLoading,
+      refreshOrders,
+      getOrder,
+      fetchOrder,
+      approveOrder,
+      rejectOrder,
+      applyTrackingImport,
+    ],
   );
 
   return <OrdersContext.Provider value={value}>{children}</OrdersContext.Provider>;
@@ -224,7 +183,6 @@ export function useOrders() {
   return context;
 }
 
-// Admin uses all orders with separate state for flags/bulk updates
 type AdminOrdersContextValue = {
   allOrders: Order[];
   toggleFlag: (orderId: string) => void;
@@ -261,17 +219,10 @@ export function AdminOrdersProvider({ children }: { children: ReactNode }) {
       current.map((order) => {
         if (order.id !== orderId) return order;
         const trackingUrl = buildTrackingUrl(tracking.carrier, tracking.trackingNumber);
-        const entry: OrderTimelineEntry = {
-          id: `t-import-${Date.now()}`,
-          date: new Date().toISOString(),
-          status: "Shipped",
-          note: `Tracking updated: ${tracking.carrier} ${tracking.trackingNumber}`,
-        };
         return {
           ...order,
           tracking: { ...tracking, trackingUrl },
           shipmentStatus: "shipped" as ShipmentStatus,
-          timeline: [entry, ...order.timeline],
         };
       }),
     );
@@ -286,12 +237,6 @@ export function AdminOrdersProvider({ children }: { children: ReactNode }) {
           if (!row) return order;
           updated += 1;
           const trackingUrl = buildTrackingUrl(row.carrier, row.trackingNumber);
-          const entry: OrderTimelineEntry = {
-            id: `t-bulk-${Date.now()}-${order.id}`,
-            date: new Date().toISOString(),
-            status: "Shipped",
-            note: `Tracking imported: ${row.carrier} ${row.trackingNumber}`,
-          };
           return {
             ...order,
             tracking: {
@@ -301,7 +246,6 @@ export function AdminOrdersProvider({ children }: { children: ReactNode }) {
               trackingUrl,
             },
             shipmentStatus: "shipped" as ShipmentStatus,
-            timeline: [entry, ...order.timeline],
           };
         }),
       );

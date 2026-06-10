@@ -7,6 +7,7 @@ from schemas.admin import (
     ReviewApplicationRequest,
     UpdateAffiliateProfitMarginRequest,
     UpdateAffiliateSubAffiliateLimitRequest,
+    UpdatePlatformSettingsRequest,
 )
 from schemas.pagination import PaginationQuery
 from services import admin_service
@@ -94,6 +95,21 @@ def update_affiliate_sub_affiliate_limit(
 ) -> dict:
     """Admin sets how many sub-affiliates a main affiliate may invite (null = unlimited)."""
     return admin_service.update_affiliate_sub_affiliate_limit(affiliate_id, body)
+
+
+@router.get("/settings")
+def get_platform_settings(_: dict = Depends(admin_user)) -> dict:
+    """Admin reads platform-wide commission, payout, and shipping settings."""
+    return admin_service.get_platform_settings()
+
+
+@router.patch("/settings")
+def update_platform_settings(
+    body: UpdatePlatformSettingsRequest,
+    _: dict = Depends(admin_user),
+) -> dict:
+    """Admin updates platform-wide settings such as default profit margin."""
+    return admin_service.update_platform_settings(body)
 
 
 @router.delete("/users/{user_id}")

@@ -1,5 +1,6 @@
 import { MOCK_PRODUCTS } from "@/lib/products/mock-data";
 import { buildTrackingUrl } from "@/lib/orders/types";
+import { getStockStatus } from "@/lib/products/types";
 import type {
   BrowseProduct,
   PatientHistoryOrder,
@@ -140,6 +141,7 @@ export const BROWSE_PRODUCTS: BrowseProduct[] = MOCK_PRODUCTS.filter(
   (product) => product.status === "active",
 ).map((product) => ({
   id: product.id,
+  productId: product.id,
   name: product.name,
   category: product.category,
   shortDescription: product.shortDescription,
@@ -149,6 +151,8 @@ export const BROWSE_PRODUCTS: BrowseProduct[] = MOCK_PRODUCTS.filter(
   price: Math.ceil(product.clinicPrice * 1.35),
   stock: product.stock,
   lowStockThreshold: product.lowStockThreshold,
+  stockStatus: getStockStatus(product),
+  productType: product.type === "research" ? "peptides" : "pharmacy",
 }));
 
 export function getHistoryOrderById(id: string): PatientHistoryOrder | undefined {

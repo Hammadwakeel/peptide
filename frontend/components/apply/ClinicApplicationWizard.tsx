@@ -10,7 +10,6 @@ import {
 } from "@/components/auth/AuthShell";
 import { StepBanking } from "@/components/apply/wizard/StepBanking";
 import { StepDocuments } from "@/components/apply/wizard/StepDocuments";
-import { StepESign } from "@/components/apply/wizard/StepESign";
 import { StepPracticeInfo } from "@/components/apply/wizard/StepPracticeInfo";
 import { WizardStepper } from "@/components/apply/wizard/WizardStepper";
 import { submitClinicApplication, uploadClinicDocuments } from "@/lib/apply/api";
@@ -29,6 +28,8 @@ import {
 } from "@/lib/apply/validation";
 import { showError, toast } from "@/lib/toast";
 
+const FINAL_STEP = 3;
+
 export function ClinicApplicationWizard() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -41,7 +42,6 @@ export function ClinicApplicationWizard() {
     },
     documents: INITIAL_DOCUMENTS,
     banking: INITIAL_BANKING,
-    eSignCompleted: false,
   });
 
   useEffect(() => {
@@ -62,11 +62,7 @@ export function ClinicApplicationWizard() {
       const error = validateDocumentsStep(state.documents);
       if (error) return showError(new Error(error));
     }
-    if (step === 3) {
-      const error = validateBankingStep(state.banking);
-      if (error) return showError(new Error(error));
-    }
-    setStep((current) => Math.min(current + 1, 4));
+    setStep((current) => Math.min(current + 1, FINAL_STEP));
   }
 
   function goBack() {
@@ -142,14 +138,6 @@ export function ClinicApplicationWizard() {
             onChange={(banking) => setState((current) => ({ ...current, banking }))}
           />
         ) : null}
-        {step === 4 ? (
-          <StepESign
-            completed={state.eSignCompleted}
-            onComplete={() => setState((current) => ({ ...current, eSignCompleted: true }))}
-            clinicName={state.practice.clinicName}
-            contactName={state.practice.contactName}
-          />
-        ) : null}
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
           {step > 1 ? (
@@ -166,7 +154,7 @@ export function ClinicApplicationWizard() {
             </Link>
           )}
 
-          {step < 4 ? (
+          {step < FINAL_STEP ? (
             <button
               type="button"
               onClick={goNext}
@@ -178,7 +166,7 @@ export function ClinicApplicationWizard() {
             <button
               type="button"
               onClick={() => void handleSubmit()}
-              disabled={isSubmitting || !state.eSignCompleted}
+              disabled={isSubmitting}
               className="ml-auto rounded-full bg-deep-teal px-5 py-2.5 text-sm font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-60"
             >
               {isSubmitting ? "Submitting…" : "Submit application"}

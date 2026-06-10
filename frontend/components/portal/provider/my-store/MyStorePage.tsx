@@ -30,7 +30,7 @@ export function MyStorePage() {
       (product) =>
         product.name.toLowerCase().includes(query) ||
         product.sku.toLowerCase().includes(query) ||
-        (product.category_name?.toLowerCase().includes(query) ?? false),
+        (product.category.name?.toLowerCase().includes(query) ?? false),
     );
   }, [myStore, search]);
 

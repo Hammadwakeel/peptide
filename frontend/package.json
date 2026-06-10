@@ -32,8 +32,8 @@
     "@types/three": "^0.184.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.7",
+    "@swc/helpers": "^0.5.17",
     "lightningcss": "^1.32.0",
-    "lightningcss-win32-x64-msvc": "^1.32.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

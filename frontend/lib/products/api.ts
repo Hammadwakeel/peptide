@@ -1,11 +1,13 @@
 import { adminFetch } from "@/lib/admin/client";
 import { PROVIDER_INVENTORY_ENDPOINTS } from "@/lib/products/endpoints";
 import type {
+  CatalogProduct,
   CatalogProductResponse,
   CatalogProductType,
   CatalogStockStatus,
   PaginatedCatalogResponse,
   PaginatedStoreResponse,
+  StoreProduct,
 } from "@/lib/products/catalog-types";
 
 type ListCatalogParams = {
@@ -34,6 +36,17 @@ function buildQuery(params: Record<string, string | number | undefined>) {
   return query ? `?${query}` : "";
 }
 
+export function normalizeStoreProduct(item: StoreProduct): StoreProduct {
+  return {
+    ...item,
+    category: item.category ?? {
+      id: null,
+      name: (item as StoreProduct & { category_name?: string }).category_name ?? null,
+      slug: null,
+    },
+  };
+}
+
 export async function listCatalog(
   params: ListCatalogParams = {},
 ): Promise<PaginatedCatalogResponse> {
@@ -42,23 +55,27 @@ export async function listCatalog(
   );
 }
 
-export async function getCatalogProduct(slugOrId: string): Promise<CatalogProductResponse> {
-  try {
-    return await adminFetch<CatalogProductResponse>(
-      PROVIDER_INVENTORY_ENDPOINTS.catalogProduct(slugOrId),
-    );
-  } catch {
-    const response = await listCatalog({ page: 1, limit: 100 });
-    const match = response.products.find(
-      (product) => product.id === slugOrId || product.slug === slugOrId,
-    );
-    if (!match?.slug) {
-      throw new Error("Product not found.");
-    }
-    return adminFetch<CatalogProductResponse>(
-      PROVIDER_INVENTORY_ENDPOINTS.catalogProduct(match.slug),
-    );
+export async function fetchAllCatalog(
+  params: Omit<ListCatalogParams, "page" | "limit"> = {},
+): Promise<CatalogProduct[]> {
+  const limit = 500;
+  let page = 1;
+  const products: CatalogProduct[] = [];
+
+  while (true) {
+    const response = await listCatalog({ ...params, page, limit });
+    products.push(...response.products);
+    if (!response.pagination.has_next) break;
+    page += 1;
   }
+
+  return products;
+}
+
+export async function getCatalogProduct(slugOrId: string): Promise<CatalogProductResponse> {
+  return adminFetch<CatalogProductResponse>(
+    PROVIDER_INVENTORY_ENDPOINTS.catalogProduct(slugOrId),
+  );
 }
 
 export async function setCatalogRetailPrice(productId: string, retailPrice: number) {
@@ -77,16 +94,35 @@ export async function setCatalogRetailPrice(productId: string, retailPrice: numb
 export async function listMyStore(
   params: ListStoreParams = {},
 ): Promise<PaginatedStoreResponse> {
-  return adminFetch<PaginatedStoreResponse>(
+  const response = await adminFetch<PaginatedStoreResponse>(
     `${PROVIDER_INVENTORY_ENDPOINTS.storeProducts}${buildQuery(params)}`,
   );
+  return {
+    ...response,
+    products: response.products.map(normalizeStoreProduct),
+  };
+}
+
+export async function fetchAllMyStore(search?: string): Promise<StoreProduct[]> {
+  const limit = 500;
+  let page = 1;
+  const products: StoreProduct[] = [];
+
+  while (true) {
+    const response = await listMyStore({ page, limit, search });
+    products.push(...response.products);
+    if (!response.pagination.has_next) break;
+    page += 1;
+  }
+
+  return products;
 }
 
 export async function addToMyStore(productId: string, retailPrice: number, variantId?: string) {
-  return adminFetch<{
+  const response = await adminFetch<{
     status: boolean;
     message: string;
-    store_item: { store_id: string; product_id: string; retail_price: number };
+    store_item: StoreProduct;
   }>(PROVIDER_INVENTORY_ENDPOINTS.storeProducts, {
     method: "POST",
     body: JSON.stringify({
@@ -95,24 +131,54 @@ export async function addToMyStore(productId: string, retailPrice: number, varia
       variant_id: variantId ?? null,
     }),
   });
+  return {
+    ...response,
+    store_item: normalizeStoreProduct(response.store_item),
+  };
 }
 
-export async function updateStoreProductPrice(
-  storeId: string,
-  retailPrice: number,
-  active?: boolean,
+export async function batchAddToMyStore(
+  items: { product_id: string; retail_price: number; variant_id?: string }[],
 ) {
-  return adminFetch<{
+  const response = await adminFetch<{
     status: boolean;
     message: string;
-    store_item: { store_id: string; retail_price: number; active: boolean };
+    store_items: { store_id: string; product_id: string; retail_price: number }[];
+  }>(PROVIDER_INVENTORY_ENDPOINTS.storeProductsBatch, {
+    method: "POST",
+    body: JSON.stringify({ items }),
+  });
+  return response;
+}
+
+export async function updateStoreProductPrice(storeId: string, retailPrice: number) {
+  const response = await adminFetch<{
+    status: boolean;
+    message: string;
+    store_item: StoreProduct;
   }>(PROVIDER_INVENTORY_ENDPOINTS.storeProduct(storeId), {
     method: "PUT",
-    body: JSON.stringify({
-      retail_price: retailPrice,
-      ...(active !== undefined ? { active } : {}),
-    }),
+    body: JSON.stringify({ retail_price: retailPrice }),
   });
+  return {
+    ...response,
+    store_item: normalizeStoreProduct(response.store_item),
+  };
+}
+
+export async function updateStoreProductVisibility(storeId: string, isVisible: boolean) {
+  const response = await adminFetch<{
+    status: boolean;
+    message: string;
+    store_item: StoreProduct;
+  }>(PROVIDER_INVENTORY_ENDPOINTS.storeProductVisibility(storeId), {
+    method: "PATCH",
+    body: JSON.stringify({ is_visible: isVisible }),
+  });
+  return {
+    ...response,
+    store_item: normalizeStoreProduct(response.store_item),
+  };
 }
 
 export async function removeFromStore(storeId: string) {

@@ -62,7 +62,7 @@ export function ProductGridCard({
             </div>
           </div>
           <p className="mt-2 line-clamp-2 text-sm text-deep-teal/60">
-            {product.short_description ?? product.description ?? "—"}
+            {product.description ?? "—"}
           </p>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm font-medium text-deep-teal">
@@ -108,7 +108,7 @@ export function ProductGridCard({
           {product.name}
         </Link>
         <p className="mt-2 line-clamp-2 flex-1 text-xs leading-relaxed text-deep-teal/60">
-          {product.short_description ?? product.description ?? "—"}
+          {product.description ?? "—"}
         </p>
         <p className="mt-3 text-sm font-medium text-deep-teal">
           {product.clinic_cost != null ? `$${product.clinic_cost.toFixed(2)}` : "—"}

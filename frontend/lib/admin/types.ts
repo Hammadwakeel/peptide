@@ -22,7 +22,8 @@ export type AdminApplication = {
   clinic_name: string;
   email: string;
   phone: string | null;
-  primary_contact_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
   npi_number: string | null;
   dea_number: string | null;
   state_license_number: string | null;
@@ -89,6 +90,9 @@ export type AdminAffiliate = {
   affiliate_code: string;
   affiliate_type: string;
   status: string;
+  profit_margin_percent: number;
+  max_sub_affiliates: number | null;
+  sub_affiliate_count: number;
   parent_affiliate_code: string | null;
   clinic_referral_count: number;
   created_at: string;
@@ -102,8 +106,14 @@ export type ReviewApplicationPayload = {
 
 export type CreateAffiliatePayload = {
   email: string;
-  password?: string;
-  auto_generate_password?: boolean;
+};
+
+export type UpdateAffiliateProfitMarginPayload = {
+  profit_margin_percent: number;
+};
+
+export type UpdateAffiliateSubAffiliateLimitPayload = {
+  max_sub_affiliates: number | null;
 };
 
 export type ChangePatientPasswordPayload = {
@@ -174,6 +184,11 @@ export function isReviewableApplication(application: AdminApplication) {
   return REVIEWABLE_APPLICATION_STATUSES.includes(
     application.application_status as (typeof REVIEWABLE_APPLICATION_STATUSES)[number],
   );
+}
+
+export function formatPrimaryContactName(application: AdminApplication): string | null {
+  const parts = [application.first_name, application.last_name].filter(Boolean);
+  return parts.length > 0 ? parts.join(" ") : null;
 }
 
 export type PendingApplication = {
@@ -272,12 +287,41 @@ export const ALL_PERMISSIONS = [
 
 export type Permission = (typeof ALL_PERMISSIONS)[number];
 
-export const SETTINGS_TABS = [
-  "Commission & Fees",
-  "Payout Schedule",
-  "Shipping & Tax",
-  "Email Templates",
-  "Staff Roles & Permissions",
-] as const;
+export const SETTINGS_TABS = ["Commission & Fees"] as const;
 
 export type SettingsTab = (typeof SETTINGS_TABS)[number];
+
+export type PlatformSettings = {
+  default_profit_margin_percent: number;
+  platform_commission_percent: number;
+  affiliate_referral_fee_percent: number;
+  payout_frequency: "weekly" | "biweekly" | "monthly";
+  minimum_payout_threshold: number;
+  default_shipping_rate: number;
+  tax_calculation: "auto" | "manual";
+  updated_at: string;
+};
+
+export type UpdatePlatformSettingsPayload = Partial<
+  Pick<
+    PlatformSettings,
+    | "default_profit_margin_percent"
+    | "platform_commission_percent"
+    | "affiliate_referral_fee_percent"
+    | "payout_frequency"
+    | "minimum_payout_threshold"
+    | "default_shipping_rate"
+    | "tax_calculation"
+  >
+>;
+
+export type PlatformSettingsResponse = {
+  status: boolean;
+  settings: PlatformSettings;
+};
+
+export type UpdatePlatformSettingsResponse = {
+  status: boolean;
+  message: string;
+  settings: PlatformSettings;
+};

@@ -8,6 +8,11 @@ export const ADMIN_ENDPOINTS = {
   clinicPatients: (clinicId: string) =>
     `${IDENTITY_API_URL}/admin/clinics/${clinicId}/patients`,
   affiliates: `${IDENTITY_API_URL}/admin/affiliates`,
+  affiliateProfitMargin: (affiliateId: string) =>
+    `${IDENTITY_API_URL}/admin/affiliates/${affiliateId}/profit-margin`,
+  affiliateSubAffiliateLimit: (affiliateId: string) =>
+    `${IDENTITY_API_URL}/admin/affiliates/${affiliateId}/sub-affiliate-limit`,
+  settings: `${IDENTITY_API_URL}/admin/settings`,
   deleteUser: (userId: string) => `${IDENTITY_API_URL}/admin/users/${userId}`,
   changePatientPassword: (patientId: string) =>
     `${IDENTITY_API_URL}/admin/patients/${patientId}/password`,

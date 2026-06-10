@@ -1,10 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ProductGridCard } from "@/components/portal/provider/inventory/ProductGridCard";
 import { useProviderPortal } from "@/context/ProviderPortalProvider";
-import { listCatalog } from "@/lib/products/api";
-import type { CatalogProduct, CatalogProductType } from "@/lib/products/catalog-types";
+import type { CatalogProductType } from "@/lib/products/catalog-types";
 import {
   CATALOG_PRODUCT_TYPE_LABELS,
   defaultRetailPrice,
@@ -15,49 +14,37 @@ type InventoryFilter = "all" | "category" | "favorites" | "stock";
 type InventoryView = "grid" | "list";
 
 export function ProviderInventoryBrowser() {
-  const { isInMyStore, addToMyStore, removeFromMyStoreByProductId } = useProviderPortal();
-  const [products, setProducts] = useState<CatalogProduct[]>([]);
-  const [tab, setTab] = useState<CatalogProductType>("ruo");
-  const [search, setSearch] = useState("");
+  const {
+    catalogProducts,
+    isCatalogLoading,
+    catalogTab,
+    setCatalogTab,
+    catalogSearch,
+    setCatalogSearch,
+    loadCatalog,
+    isInMyStore,
+    addToMyStore,
+    removeFromMyStoreByProductId,
+  } = useProviderPortal();
+
   const [filter, setFilter] = useState<InventoryFilter>("all");
   const [view, setView] = useState<InventoryView>("grid");
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [category, setCategory] = useState("all");
-  const [isLoading, setIsLoading] = useState(true);
   const [updatingProductId, setUpdatingProductId] = useState<string | null>(null);
-
-  const loadCatalog = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await listCatalog({
-        page: 1,
-        limit: 100,
-        product_type: tab,
-        search: search.trim() || undefined,
-      });
-      setProducts(response.products);
-    } catch (error) {
-      showError(error, "Unable to load catalog.");
-      setProducts([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [tab, search]);
-
-  useEffect(() => {
-    void loadCatalog();
-  }, [loadCatalog]);
 
   const categories = useMemo(
     () =>
       Array.from(
-        new Set(products.map((product) => product.category.name).filter(Boolean) as string[]),
+        new Set(
+          catalogProducts.map((product) => product.category.name).filter(Boolean) as string[],
+        ),
       ).sort(),
-    [products],
+    [catalogProducts],
   );
 
   const filteredProducts = useMemo(() => {
-    let list = [...products];
+    let list = [...catalogProducts];
     if (filter === "favorites") {
       list = list.filter((product) => favorites.has(product.id));
     }
@@ -68,20 +55,18 @@ export function ProviderInventoryBrowser() {
       list = list.filter((product) => product.category.name === category);
     }
     return list;
-  }, [products, filter, favorites, category]);
+  }, [catalogProducts, filter, favorites, category]);
 
-  async function handleToggleStore(product: CatalogProduct) {
+  async function handleToggleStore(productId: string, productName: string, clinicCost: number | null) {
     if (updatingProductId) return;
-    setUpdatingProductId(product.id);
+    setUpdatingProductId(productId);
     try {
-      if (isInMyStore(product.id)) {
-        await removeFromMyStoreByProductId(product.id);
-        toast.success(`${product.name} removed from My Store.`);
+      if (isInMyStore(productId)) {
+        await removeFromMyStoreByProductId(productId);
+        toast.success(`${productName} removed from My Store.`);
       } else {
-        await addToMyStore([
-          { productId: product.id, retailPrice: defaultRetailPrice(product.clinic_cost) },
-        ]);
-        toast.success(`${product.name} added to My Store.`);
+        await addToMyStore([{ productId, retailPrice: defaultRetailPrice(clinicCost) }]);
+        toast.success(`${productName} added to My Store.`);
       }
     } catch (error) {
       showError(error, "Unable to update My Store.");
@@ -108,7 +93,7 @@ export function ProviderInventoryBrowser() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `inventory-${tab}.csv`;
+    link.download = `inventory-${catalogTab}.csv`;
     link.click();
     URL.revokeObjectURL(url);
     toast.success("Inventory exported as CSV.");
@@ -118,13 +103,13 @@ export function ProviderInventoryBrowser() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-2">
-          {(["ruo", "pharmacy"] as CatalogProductType[]).map((type) => (
+          {(["peptides", "pharmacy"] as CatalogProductType[]).map((type) => (
             <button
               key={type}
               type="button"
-              onClick={() => setTab(type)}
+              onClick={() => setCatalogTab(type)}
               className={`rounded-full px-4 py-2 text-sm font-medium ${
-                tab === type
+                catalogTab === type
                   ? "bg-deep-teal text-pure-white"
                   : "border border-deep-teal/15 text-deep-teal/70"
               }`}
@@ -145,8 +130,8 @@ export function ProviderInventoryBrowser() {
       <div className="flex flex-wrap gap-3">
         <input
           type="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={catalogSearch}
+          onChange={(e) => setCatalogSearch(e.target.value)}
           placeholder="Search inventory…"
           className="min-w-[220px] flex-1 rounded-xl border border-deep-teal/15 px-3 py-2 text-sm outline-none focus:border-pacific-teal"
         />
@@ -161,10 +146,16 @@ export function ProviderInventoryBrowser() {
           <option value="stock">Stock Status</option>
         </select>
         {filter === "category" ? (
-          <select value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-xl border border-deep-teal/15 px-3 py-2 text-sm">
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="rounded-xl border border-deep-teal/15 px-3 py-2 text-sm"
+          >
             <option value="all">All categories</option>
             {categories.map((item) => (
-              <option key={item} value={item}>{item}</option>
+              <option key={item} value={item}>
+                {item}
+              </option>
             ))}
           </select>
         ) : null}
@@ -184,14 +175,14 @@ export function ProviderInventoryBrowser() {
         </div>
         <button
           type="button"
-          onClick={() => void loadCatalog()}
+          onClick={() => void loadCatalog(true)}
           className="rounded-xl border border-deep-teal/15 px-3 py-2 text-sm text-deep-teal hover:border-pacific-teal"
         >
           Refresh
         </button>
       </div>
 
-      {isLoading ? (
+      {isCatalogLoading && catalogProducts.length === 0 ? (
         <p className="py-12 text-center text-sm text-deep-teal/50">Loading catalog…</p>
       ) : filteredProducts.length === 0 ? (
         <p className="py-12 text-center text-sm text-deep-teal/50">No products found.</p>
@@ -203,7 +194,7 @@ export function ProviderInventoryBrowser() {
               product={product}
               view={view}
               isFavorite={favorites.has(product.id)}
-              inMyStore={isInMyStore(product.id)}
+              inMyStore={product.in_my_store ?? isInMyStore(product.id)}
               isStoreUpdating={updatingProductId === product.id}
               onToggleFavorite={() =>
                 setFavorites((current) => {
@@ -213,7 +204,9 @@ export function ProviderInventoryBrowser() {
                   return next;
                 })
               }
-              onToggleStore={() => void handleToggleStore(product)}
+              onToggleStore={() =>
+                void handleToggleStore(product.id, product.name, product.clinic_cost)
+              }
             />
           ))}
         </div>

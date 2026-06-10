@@ -1,7 +1,13 @@
 from fastapi import APIRouter, Depends, Query
 
 from middleware.auth import require_roles
-from schemas.inventory_clinic import AddToStoreRequest, SetRetailPriceRequest, UpdateStorePriceRequest
+from schemas.inventory_clinic import (
+    AddToStoreRequest,
+    BatchAddToStoreRequest,
+    SetRetailPriceRequest,
+    UpdateStorePriceRequest,
+    UpdateStoreVisibilityRequest,
+)
 from schemas.pagination import PaginationQuery
 from services import clinic_catalog
 
@@ -12,7 +18,7 @@ provider_user = require_roles("clinic_owner", "clinic_staff")
 @router.get("/catalog")
 def browse_catalog(
     pagination: PaginationQuery = Depends(),
-    product_type: str | None = Query(None, pattern="^(ruo|pharmacy)$"),
+    product_type: str | None = Query(None, pattern="^(peptides|pharmacy)$"),
     category_id: str | None = None,
     search: str | None = None,
     stock_status: str | None = Query(None, pattern="^(in_stock|low|out_of_stock)$"),
@@ -69,6 +75,15 @@ def update_store_price(
     user: dict = Depends(provider_user),
 ) -> dict:
     return clinic_catalog.update_store_product_price(user, store_id, body)
+
+
+@router.patch("/store/products/{store_id}/visibility")
+def update_store_visibility(
+    store_id: str,
+    body: UpdateStoreVisibilityRequest,
+    user: dict = Depends(provider_user),
+) -> dict:
+    return clinic_catalog.update_store_product_visibility(user, store_id, body)
 
 
 @router.delete("/store/products/{store_id}")

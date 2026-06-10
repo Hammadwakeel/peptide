@@ -20,18 +20,24 @@ export function MyStoreProductCard({
   isUpdating = false,
 }: MyStoreProductCardProps) {
   const [draftPrice, setDraftPrice] = useState(String(product.retail_price));
+  const [priceDirty, setPriceDirty] = useState(false);
 
   useEffect(() => {
     setDraftPrice(String(product.retail_price));
+    setPriceDirty(false);
   }, [product.retail_price]);
 
   function commitPrice() {
     const parsed = Number(draftPrice);
     if (!Number.isFinite(parsed) || parsed < 0) {
       setDraftPrice(String(product.retail_price));
+      setPriceDirty(false);
       return;
     }
-    onRetailPriceChange(parsed);
+    if (parsed !== product.retail_price) {
+      onRetailPriceChange(parsed);
+    }
+    setPriceDirty(false);
   }
 
   const imageUrl = product.image_url ?? "/brand/product-vial-2x-blend-hero.png";
@@ -64,7 +70,7 @@ export function MyStoreProductCard({
       </div>
       <div className="flex flex-1 flex-col p-4">
         <span className="w-fit rounded-full bg-deep-teal/5 px-2 py-0.5 text-[10px] font-medium text-deep-teal/60">
-          {product.category_name ?? "Uncategorized"}
+          {product.category.name ?? "Uncategorized"}
         </span>
         <h3 className="mt-2 font-medium text-deep-teal">{product.name}</h3>
         <p className="mt-2 text-xs text-deep-teal/50">
@@ -81,23 +87,35 @@ export function MyStoreProductCard({
           <span className="text-[10px] font-medium uppercase tracking-wide text-deep-teal/45">
             Retail price
           </span>
-          <div className="mt-1 flex items-center rounded-xl border border-deep-teal/15 px-3 py-2 focus-within:border-pacific-teal">
-            <span className="text-sm text-deep-teal/50">$</span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={draftPrice}
-              disabled={isUpdating}
-              onChange={(e) => setDraftPrice(e.target.value)}
-              onBlur={commitPrice}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.currentTarget.blur();
-                }
-              }}
-              className="w-full bg-transparent pl-1 text-sm text-deep-teal outline-none disabled:opacity-60"
-            />
+          <div className="mt-1 flex items-center gap-2">
+            <div className="flex flex-1 items-center rounded-xl border border-deep-teal/15 px-3 py-2 focus-within:border-pacific-teal">
+              <span className="text-sm text-deep-teal/50">$</span>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={draftPrice}
+                disabled={isUpdating}
+                onChange={(e) => {
+                  setDraftPrice(e.target.value);
+                  setPriceDirty(true);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") commitPrice();
+                }}
+                className="w-full bg-transparent pl-1 text-sm text-deep-teal outline-none disabled:opacity-60"
+              />
+            </div>
+            {priceDirty ? (
+              <button
+                type="button"
+                disabled={isUpdating}
+                onClick={commitPrice}
+                className="rounded-full bg-deep-teal px-3 py-2 text-xs font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-60"
+              >
+                Save
+              </button>
+            ) : null}
           </div>
         </label>
         <label className="mt-4 flex items-center justify-between gap-2 text-xs text-deep-teal/70">

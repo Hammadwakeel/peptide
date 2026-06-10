@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { usePatientPortal } from "@/context/PatientPortalProvider";
 
 const STATUS_LABELS = {
-  paid: "Paid",
+  paid: "Approved",
   shipped: "Shipped",
   delivered: "Delivered",
 } as const;
@@ -19,7 +19,7 @@ function formatDate(value: string) {
 }
 
 export function OrderHistoryTab() {
-  const { historyOrders } = usePatientPortal();
+  const { historyOrders, ordersLoading, refreshOrders } = usePatientPortal();
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
@@ -28,7 +28,8 @@ export function OrderHistoryTab() {
     return historyOrders.filter(
       (order) =>
         order.orderId.toLowerCase().includes(query) ||
-        STATUS_LABELS[order.status].toLowerCase().includes(query),
+        STATUS_LABELS[order.status].toLowerCase().includes(query) ||
+        (order.reviewStatus?.toLowerCase().includes(query) ?? false),
     );
   }, [historyOrders, search]);
 
@@ -39,26 +40,32 @@ export function OrderHistoryTab() {
           <h1 className="font-serif text-2xl font-light text-deep-teal">Your Order History</h1>
           <p className="mt-1 text-sm text-deep-teal/55">{historyOrders.length} orders</p>
         </div>
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search orders…"
-          className="w-full rounded-xl border border-deep-teal/15 px-3 py-2 text-sm outline-none focus:border-pacific-teal sm:max-w-xs"
-        />
+        <div className="flex gap-2">
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search orders…"
+            className="w-full rounded-xl border border-deep-teal/15 px-3 py-2 text-sm outline-none focus:border-pacific-teal sm:max-w-xs"
+          />
+          <button
+            type="button"
+            onClick={() => void refreshOrders()}
+            className="rounded-xl border border-deep-teal/15 px-3 py-2 text-sm text-deep-teal hover:border-pacific-teal"
+          >
+            Refresh
+          </button>
+        </div>
       </div>
 
-      {filtered.length === 0 ? (
+      {ordersLoading ? (
+        <p className="py-12 text-center text-sm text-deep-teal/50">Loading orders…</p>
+      ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center rounded-2xl border border-dashed border-deep-teal/15 px-6 py-16 text-center">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" className="text-deep-teal/25" aria-hidden="true">
-            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" stroke="currentColor" strokeWidth="1.5" />
-            <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M9 12h6M9 16h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-          <p className="mt-4 font-medium text-deep-teal">No data found</p>
+          <p className="font-medium text-deep-teal">No orders found</p>
           <p className="mt-1 text-sm text-deep-teal/50">
             {historyOrders.length === 0
-              ? "Your completed orders will appear here."
+              ? "Approved and completed orders will appear here."
               : "Try a different search term."}
           </p>
         </div>
@@ -80,13 +87,25 @@ export function OrderHistoryTab() {
                   <td className="px-4 py-3 font-mono text-xs text-deep-teal">{order.orderId}</td>
                   <td className="px-4 py-3 text-deep-teal/70">{formatDate(order.date)}</td>
                   <td className="px-4 py-3">
-                    <span className="rounded-full bg-pacific-teal/10 px-2 py-0.5 text-xs font-medium text-pacific-teal">
-                      {STATUS_LABELS[order.status]}
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        order.reviewStatus === "rejected"
+                          ? "bg-coral-blush text-deep-teal/70"
+                          : "bg-pacific-teal/10 text-pacific-teal"
+                      }`}
+                    >
+                      {order.reviewStatus === "rejected"
+                        ? "Rejected"
+                        : STATUS_LABELS[order.status]}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-deep-teal">${order.total}</td>
+                  <td className="px-4 py-3 text-deep-teal">${order.total.toFixed(2)}</td>
                   <td className="px-4 py-3 text-right">
-                    <Link href={`/portal/patient/orders/${order.id}`} className="text-pacific-teal hover:text-deep-teal" aria-label={`View ${order.orderId}`}>
+                    <Link
+                      href={`/portal/patient/orders/${order.id}`}
+                      className="text-pacific-teal hover:text-deep-teal"
+                      aria-label={`View ${order.orderId}`}
+                    >
                       →
                     </Link>
                   </td>

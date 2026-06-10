@@ -4,16 +4,20 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
 import {
-  BROWSE_PRODUCTS,
-  DEMO_PATIENT_PROFILE,
-  INITIAL_HISTORY_ORDERS,
-  INITIAL_PENDING_ORDERS,
-} from "@/lib/patient-portal/mock-data";
+  fetchAllPatientHistoryOrders,
+  getPatientOrder,
+  listPatientPendingOrders,
+  listPatientStoreProducts,
+  placePatientOrder,
+} from "@/lib/patient-portal/api";
+import { getPatientSettings, mapSettingsToProfile } from "@/lib/patient/api";
+import { mapPatientStoreProduct } from "@/lib/patient-portal/map-store-product";
 import { addStoredPatientRequest } from "@/lib/patient-portal/request-store";
 import type {
   BrowseProduct,
@@ -22,15 +26,22 @@ import type {
   PatientProfile,
   PatientShippingAddress,
   PatientPaymentMethod,
+  PlacePatientOrderPayload,
 } from "@/lib/patient-portal/types";
+import { showError } from "@/lib/toast";
 
 type PatientPortalContextValue = {
   profile: PatientProfile;
   pendingOrders: PatientPendingOrder[];
   historyOrders: PatientHistoryOrder[];
   products: BrowseProduct[];
-  removePendingOrder: (id: string) => void;
-  markOrderPaid: (pending: PatientPendingOrder) => void;
+  productsLoading: boolean;
+  productsError: string | null;
+  clinicName: string | null;
+  ordersLoading: boolean;
+  refreshOrders: () => Promise<void>;
+  placeOrder: (payload: PlacePatientOrderPayload) => Promise<PatientPendingOrder>;
+  fetchOrderDetail: (orderId: string) => Promise<PatientHistoryOrder>;
   submitProductRequest: (product: BrowseProduct, reason: string) => void;
   updateProfile: (patch: Partial<Pick<PatientProfile, "name" | "email" | "phone" | "dateOfBirth">>) => void;
   updateAddresses: (addresses: PatientShippingAddress[]) => void;
@@ -41,33 +52,117 @@ type PatientPortalContextValue = {
 const PatientPortalContext = createContext<PatientPortalContextValue | null>(null);
 
 export function PatientPortalProvider({ children }: { children: ReactNode }) {
-  const [profile, setProfile] = useState<PatientProfile>(DEMO_PATIENT_PROFILE);
-  const [pendingOrders, setPendingOrders] = useState(INITIAL_PENDING_ORDERS);
-  const [historyOrders, setHistoryOrders] = useState(INITIAL_HISTORY_ORDERS);
+  const [profile, setProfile] = useState<PatientProfile>({
+    id: "",
+    name: "",
+    email: "",
+    phone: "",
+    dateOfBirth: "",
+    shippingAddresses: [],
+    paymentMethods: [],
+    subscriptions: [],
+  });
+  const [pendingOrders, setPendingOrders] = useState<PatientPendingOrder[]>([]);
+  const [historyOrders, setHistoryOrders] = useState<PatientHistoryOrder[]>([]);
+  const [products, setProducts] = useState<BrowseProduct[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [productsError, setProductsError] = useState<string | null>(null);
+  const [clinicName, setClinicName] = useState<string | null>(null);
+  const [ordersLoading, setOrdersLoading] = useState(true);
 
-  const removePendingOrder = useCallback((id: string) => {
-    setPendingOrders((current) => current.filter((order) => order.id !== id));
+  const refreshOrders = useCallback(async () => {
+    setOrdersLoading(true);
+    try {
+      const doctorName = clinicName ?? "Your physician";
+      const [pending, history] = await Promise.all([
+        listPatientPendingOrders(doctorName),
+        fetchAllPatientHistoryOrders(),
+      ]);
+      setPendingOrders(pending);
+      setHistoryOrders(history);
+    } catch (error) {
+      showError(error, "Unable to load orders.");
+      setPendingOrders([]);
+      setHistoryOrders([]);
+    } finally {
+      setOrdersLoading(false);
+    }
+  }, [clinicName]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadPortalData() {
+      setProductsLoading(true);
+      setProductsError(null);
+      setOrdersLoading(true);
+      try {
+        const settingsRes = await getPatientSettings();
+        if (cancelled) return;
+
+        const doctorName = settingsRes.settings.clinic.name ?? "Your physician";
+        setProfile(mapSettingsToProfile(settingsRes.settings));
+        setClinicName(settingsRes.settings.clinic.name);
+
+        const [pending, history, storeRes] = await Promise.all([
+          listPatientPendingOrders(doctorName),
+          fetchAllPatientHistoryOrders(),
+          listPatientStoreProducts({ page: 1, limit: 500 }),
+        ]);
+        if (cancelled) return;
+
+        setPendingOrders(pending);
+        setHistoryOrders(history);
+        setProducts(storeRes.products.map(mapPatientStoreProduct));
+      } catch (error) {
+        if (cancelled) return;
+        setProducts([]);
+        setProductsError(error instanceof Error ? error.message : "Failed to load patient portal.");
+      } finally {
+        if (!cancelled) {
+          setProductsLoading(false);
+          setOrdersLoading(false);
+        }
+      }
+    }
+
+    void loadPortalData();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const markOrderPaid = useCallback((pending: PatientPendingOrder) => {
-    setPendingOrders((current) => current.filter((order) => order.id !== pending.id));
-    const history: PatientHistoryOrder = {
-      id: `hist-${Date.now()}`,
-      orderId: pending.orderId,
-      date: new Date().toISOString().slice(0, 10),
-      status: "paid",
-      total: pending.total,
-      lineItems: pending.lineItems.map((item) => ({ ...item })),
-      receiptUrl: `#receipt-${pending.orderId}`,
-    };
-    setHistoryOrders((current) => [history, ...current]);
+  const placeOrder = useCallback(
+    async (payload: PlacePatientOrderPayload) => {
+      const response = await placePatientOrder(payload);
+      const pending: PatientPendingOrder = {
+        ...response.pending,
+        doctorName: clinicName ?? response.pending.doctorName,
+      };
+      setPendingOrders((current) => [pending, ...current]);
+      return pending;
+    },
+    [clinicName],
+  );
+
+  const fetchOrderDetail = useCallback(async (orderId: string) => {
+    const order = await getPatientOrder(orderId);
+    setHistoryOrders((current) => {
+      const exists = current.some((entry) => entry.id === order.id);
+      if (exists) {
+        return current.map((entry) => (entry.id === order.id ? order : entry));
+      }
+      return [order, ...current];
+    });
+    setPendingOrders((current) => current.filter((entry) => entry.id !== order.id));
+    return order;
   }, []);
 
   const submitProductRequest = useCallback(
     (product: BrowseProduct, reason: string) => {
       addStoredPatientRequest({
         patientId: profile.id,
-        productId: product.id,
+        productId: product.productId,
         productName: product.name,
         description: product.shortDescription,
         category: product.category,
@@ -95,8 +190,9 @@ export function PatientPortalProvider({ children }: { children: ReactNode }) {
 
   const getHistoryOrder = useCallback(
     (id: string) =>
-      historyOrders.find((order) => order.id === id || order.orderId === id),
-    [historyOrders],
+      historyOrders.find((order) => order.id === id || order.orderId === id) ??
+      pendingOrders.find((order) => order.id === id || order.orderId === id),
+    [historyOrders, pendingOrders],
   );
 
   const value = useMemo(
@@ -104,9 +200,14 @@ export function PatientPortalProvider({ children }: { children: ReactNode }) {
       profile,
       pendingOrders,
       historyOrders,
-      products: BROWSE_PRODUCTS,
-      removePendingOrder,
-      markOrderPaid,
+      products,
+      productsLoading,
+      productsError,
+      clinicName,
+      ordersLoading,
+      refreshOrders,
+      placeOrder,
+      fetchOrderDetail,
       submitProductRequest,
       updateProfile,
       updateAddresses,
@@ -117,8 +218,14 @@ export function PatientPortalProvider({ children }: { children: ReactNode }) {
       profile,
       pendingOrders,
       historyOrders,
-      removePendingOrder,
-      markOrderPaid,
+      products,
+      productsLoading,
+      productsError,
+      clinicName,
+      ordersLoading,
+      refreshOrders,
+      placeOrder,
+      fetchOrderDetail,
       submitProductRequest,
       updateProfile,
       updateAddresses,

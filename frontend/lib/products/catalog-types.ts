@@ -1,4 +1,4 @@
-export type CatalogProductType = "ruo" | "pharmacy";
+export type CatalogProductType = "peptides" | "pharmacy";
 
 export type CatalogStockStatus = "in_stock" | "low" | "out_of_stock";
 
@@ -7,13 +7,8 @@ export type CatalogProduct = {
   name: string;
   slug: string | null;
   sku: string;
-  description: string | null;
-  short_description: string | null;
   product_type: CatalogProductType;
-  form: string | null;
-  strength: string | null;
-  best_use_within: string | null;
-  dea_schedule: string | null;
+  description: string | null;
   directions: string | null;
   stock_status: CatalogStockStatus;
   stock_count: number;
@@ -24,12 +19,14 @@ export type CatalogProduct = {
     name: string | null;
     slug: string | null;
   };
-  variant_id: string | null;
   images: { url: string; is_primary?: boolean }[];
-  coa_doc_url: string | null;
   created_at: string;
   clinic_cost: number | null;
   in_my_store?: boolean;
+  strength?: string | null;
+  form?: string | null;
+  best_use_within?: string | null;
+  dea_schedule?: string | null;
 };
 
 export type StoreProduct = {
@@ -37,15 +34,22 @@ export type StoreProduct = {
   product_id: string;
   name: string;
   sku: string;
+  product_type: CatalogProductType | null;
   description: string | null;
-  product_type: string | null;
-  category_name: string | null;
+  category: {
+    id: string | null;
+    name: string | null;
+    slug: string | null;
+  };
   stock_status: CatalogStockStatus | null;
   stock_count: number | null;
   clinic_cost: number | null;
   retail_price: number;
   image_url: string | null;
   is_visible: boolean;
+  strength?: string | null;
+  form?: string | null;
+  dea_schedule?: string | null;
 };
 
 export type CatalogPagination = {
@@ -77,7 +81,7 @@ export type PaginatedStoreResponse = {
 };
 
 export const CATALOG_PRODUCT_TYPE_LABELS: Record<CatalogProductType, string> = {
-  ruo: "Research (RUO)",
+  peptides: "Peptides",
   pharmacy: "Pharmacy",
 };
 

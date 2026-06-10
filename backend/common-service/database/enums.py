@@ -79,7 +79,7 @@ class DocumentStatus(str, enum.Enum):
 
 
 class ProductType(str, enum.Enum):
-    ruo = "ruo"
+    peptides = "peptides"
     pharmacy = "pharmacy"
 
 

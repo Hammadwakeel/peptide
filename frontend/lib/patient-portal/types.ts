@@ -1,4 +1,16 @@
+import type { CatalogProductType } from "@/lib/products/catalog-types";
+import type { StockStatus } from "@/lib/products/types";
+
 export type PatientPortalTab = "payments" | "orders" | "products" | "chat";
+
+export type PatientOrderLineItem = {
+  id: string;
+  productName: string;
+  qty: number;
+  price: number;
+};
+
+export type PatientReviewStatus = "pending_review" | "approved" | "rejected" | "cancelled";
 
 export type PatientPendingOrder = {
   id: string;
@@ -6,13 +18,10 @@ export type PatientPendingOrder = {
   doctorName: string;
   itemsCount: number;
   orderedOn: string;
-  lineItems: {
-    id: string;
-    productName: string;
-    qty: number;
-    price: number;
-  }[];
+  lineItems: PatientOrderLineItem[];
   total: number;
+  reviewStatus?: PatientReviewStatus;
+  notes?: string;
 };
 
 export type PatientHistoryOrder = {
@@ -20,20 +29,33 @@ export type PatientHistoryOrder = {
   orderId: string;
   date: string;
   status: "paid" | "shipped" | "delivered";
+  reviewStatus?: PatientReviewStatus;
+  shipmentStatus?: string;
+  rejectionReason?: string;
   total: number;
-  lineItems: {
-    id: string;
-    productName: string;
-    qty: number;
-    price: number;
-  }[];
+  lineItems: PatientOrderLineItem[];
   tracking?: {
     carrier: string;
     trackingNumber: string;
     estimatedDelivery: string;
     trackingUrl: string;
   };
+  notes?: string;
   receiptUrl?: string;
+};
+
+export type PlacePatientOrderPayload = {
+  items: { store_id: string; qty: number }[];
+  shipping_address_id?: string;
+  shipping_address?: {
+    line1: string;
+    line2?: string;
+    city: string;
+    state: string;
+    zip: string;
+    country?: string;
+  };
+  notes?: string;
 };
 
 export type PatientProfile = {
@@ -77,6 +99,7 @@ export type PatientSubscription = {
 
 export type BrowseProduct = {
   id: string;
+  productId: string;
   name: string;
   category: string;
   shortDescription: string;
@@ -86,6 +109,8 @@ export type BrowseProduct = {
   price: number;
   stock: number;
   lowStockThreshold: number;
+  stockStatus: StockStatus;
+  productType: CatalogProductType | null;
 };
 
 export type PayFlowStep = "summary" | "payment" | "processing" | "success" | "failure";
