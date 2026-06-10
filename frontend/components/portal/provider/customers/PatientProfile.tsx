@@ -55,10 +55,17 @@ type PatientProfileProps = {
 export function PatientProfile({ patientId }: PatientProfileProps) {
   const searchParams = useSearchParams();
   const { getPatient } = usePatients();
-  const { getThread } = useChat();
+  const { getThread, ensureDoctorThread } = useChat();
   const patient = getPatient(patientId);
   const chatThread = getThread(patientId);
   const [activeTab, setActiveTab] = useState<PatientProfileTab>("orders");
+  const [chatReady, setChatReady] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === "chat") {
+      void ensureDoctorThread(patientId).finally(() => setChatReady(true));
+    }
+  }, [activeTab, patientId, ensureDoctorThread]);
 
   useEffect(() => {
     const tab = searchParams.get("tab");
@@ -162,8 +169,10 @@ export function PatientProfile({ patientId }: PatientProfileProps) {
               <div className="overflow-hidden rounded-xl border border-deep-teal/10">
                 <ProviderActiveThread thread={chatThread} compact />
               </div>
-            ) : (
+            ) : chatReady ? (
               <p className="text-sm text-deep-teal/50">No chat thread for this patient yet.</p>
+            ) : (
+              <p className="text-sm text-deep-teal/50">Loading chat…</p>
             )
           ) : null}
           {activeTab === "notes" ? (

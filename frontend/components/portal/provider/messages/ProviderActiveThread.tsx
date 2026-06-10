@@ -13,11 +13,12 @@ type ProviderActiveThreadProps = {
 };
 
 export function ProviderActiveThread({ thread, compact = false }: ProviderActiveThreadProps) {
-  const { sendMessage, markRead } = useChat();
+  const { sendMessage, sendMedia, markRead, loadMessages } = useChat();
 
   useEffect(() => {
-    markRead(thread.patientId, "provider");
-  }, [thread.patientId, markRead]);
+    void loadMessages(thread.conversationId);
+    void markRead(thread.conversationId, "provider");
+  }, [thread.conversationId, loadMessages, markRead]);
 
   return (
     <div className={`flex flex-col ${compact ? "h-[480px]" : "h-[calc(100dvh-220px)] min-h-[420px]"}`}>
@@ -36,9 +37,8 @@ export function ProviderActiveThread({ thread, compact = false }: ProviderActive
         <ChatMessageList messages={thread.messages} viewerRole="provider" />
       </div>
       <ChatMessageInput
-        onSend={(content) => {
-          sendMessage(thread.patientId, "provider", thread.providerName, content);
-        }}
+        onSend={(content) => sendMessage(thread.conversationId, content)}
+        onUpload={(file, messageType) => sendMedia(thread.conversationId, file, messageType)}
       />
     </div>
   );

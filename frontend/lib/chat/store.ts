@@ -44,6 +44,7 @@ export function sendChatMessage(
     senderName,
     content,
     sentAt: new Date().toISOString(),
+    messageType: "text",
   };
 
   const threads = readStore();

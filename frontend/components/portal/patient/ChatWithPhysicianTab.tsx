@@ -19,15 +19,24 @@ function OnlineIndicator({ online }: { online: boolean }) {
 }
 
 export function ChatWithPhysicianTab() {
-  const { getThread, defaultPatientId, sendMessage, markRead } = useChat();
-  const thread = getThread(defaultPatientId);
+  const { threads, loading, error, sendMessage, sendMedia, markRead, loadMessages } = useChat();
+  const thread = threads[0];
   const [draft, setDraft] = useState("");
 
   useEffect(() => {
     if (thread) {
-      markRead(thread.patientId, "patient");
+      void loadMessages(thread.conversationId);
+      void markRead(thread.conversationId, "patient");
     }
-  }, [thread, markRead]);
+  }, [thread?.conversationId, loadMessages, markRead]);
+
+  if (loading) {
+    return <p className="text-sm text-deep-teal/50">Loading chat…</p>;
+  }
+
+  if (error) {
+    return <p className="text-sm text-coral-blush">{error}</p>;
+  }
 
   if (!thread) {
     return <p className="text-sm text-deep-teal/50">Unable to load chat.</p>;
@@ -81,9 +90,8 @@ export function ChatWithPhysicianTab() {
         <ChatMessageInput
           draft={draft}
           onDraftChange={setDraft}
-          onSend={(content) => {
-            sendMessage(thread.patientId, "patient", thread.patientName, content);
-          }}
+          onSend={(content) => sendMessage(thread.conversationId, content)}
+          onUpload={(file, messageType) => sendMedia(thread.conversationId, file, messageType)}
         />
       </div>
     </div>

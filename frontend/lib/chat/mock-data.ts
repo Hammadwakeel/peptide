@@ -17,6 +17,7 @@ function toThreadMessage(
     senderName: msg.sender === "provider" ? PROVIDER.name : patientName,
     content: msg.content,
     sentAt: msg.sentAt,
+    messageType: "text",
   };
 }
 
@@ -26,6 +27,7 @@ export const INITIAL_CHAT_THREADS: ChatThread[] = MOCK_PATIENTS.map((patient) =>
     (a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime(),
   );
   return {
+    conversationId: `mock-${patient.id}`,
     patientId: patient.id,
     patientName: patient.name,
     providerName: PROVIDER.name,

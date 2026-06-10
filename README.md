@@ -9,7 +9,7 @@ Frontier-Nexus-Rx/
 │   ├── database/          # Cloud SQL schema, migrations, connection
 │   ├── identity-service/  # Auth, onboarding, affiliates (port 3001)
 │   ├── commerce-service/  # Inventory, clinic store, patient catalog (port 3002)
-│   ├── communication-service/  # Chat (planned, port 3003)
+│   ├── communication-service/  # Chat (port 3003) — MongoDB + Redis + Kafka
 │   └── shared/            # Shared TypeScript utilities
 └── README.md
 ```
@@ -20,8 +20,8 @@ Frontier-Nexus-Rx/
 |---------|------|-------|----------------|
 | **Identity** | 3001 | Python / FastAPI | Login, OTP, JWT, clinic/doctor/patient/affiliate/admin onboarding |
 | **Commerce** | 3002 | Python / FastAPI | Master inventory, clinic My Store pricing, patient storefront |
-| **Communication** | 3003 | Planned | Provider–patient chat |
-| **Database** | — | PostgreSQL (Cloud SQL) | Single shared DB (`sql-data`) — 60+ tables |
+| **Communication** | 3003 | Python / FastAPI | Provider–patient chat (Postgres metadata, MongoDB messages, Redis/Kafka real-time) |
+| **Database** | — | PostgreSQL (Cloud SQL) | Shared DB for identity/commerce + conversation metadata |
 
 All services share one PostgreSQL database and validate JWTs issued by the identity service.
 
@@ -31,7 +31,7 @@ All services share one PostgreSQL database and validate JWTs issued by the ident
 
 - **Node.js 20+** and **pnpm 10+**
 - **Python 3.10+**
-- **pip** packages: see `backend/database/requirements.txt`, `backend/identity-service/requirements.txt`, `backend/commerce-service/requirements.txt`
+- **pip** packages: see service `requirements.txt` files under `backend/identity-service`, `backend/commerce-service`, `backend/communication-service`, and `backend/common-service`
 - GCP Cloud SQL credentials (local dev: service account JSON in `backend/database/`)
 
 ---
@@ -57,6 +57,7 @@ cp backend/.env.example backend/.env
 cp backend/database/.env.example backend/database/.env   # create if missing
 cp backend/identity-service/.env.example backend/identity-service/.env   # or edit existing
 cp backend/commerce-service/.env.example backend/commerce-service/.env   # or edit existing
+cp backend/communication-service/.env.example backend/communication-service/.env   # or edit existing
 ```
 
 Each service folder has its own `.env`. **Never commit `.env` files or GCP JSON keys.**
@@ -64,9 +65,10 @@ Each service folder has its own `.env`. **Never commit `.env` files or GCP JSON 
 ### 3. Install Python dependencies
 
 ```bash
-pip3 install -r backend/database/requirements.txt
+pip3 install -r backend/common-service/requirements.txt
 pip3 install -r backend/identity-service/requirements.txt
 pip3 install -r backend/commerce-service/requirements.txt
+pip3 install -r backend/communication-service/requirements.txt
 ```
 
 ### 4. Run database migrations
@@ -88,6 +90,7 @@ pnpm --dir backend commerce:seed    # sample inventory + clinic store products
 ```bash
 pnpm --dir backend identity:dev     # http://localhost:3001
 pnpm --dir backend commerce:dev     # http://localhost:3002
+cd backend/communication-service && python main.py   # http://localhost:3003
 ```
 
 ---
@@ -98,6 +101,7 @@ pnpm --dir backend commerce:dev     # http://localhost:3002
 |---------|------------|--------------|
 | Identity | [http://localhost:3001/docs](http://localhost:3001/docs) | `GET /health` |
 | Commerce | [http://localhost:3002/docs](http://localhost:3002/docs) | `GET /health` |
+| Communication | [http://localhost:3003/docs](http://localhost:3003/docs) | `GET /health` |
 
 ### Swagger authorization
 
@@ -134,6 +138,7 @@ Run from repo root:
 | `pnpm --dir backend identity:seed` | Seed test users |
 | `pnpm --dir backend commerce:dev` | Start commerce service (:3002) |
 | `pnpm --dir backend commerce:seed` | Seed sample products |
+| `cd backend/communication-service && python main.py` | Start communication service (:3003) |
 
 ---
 
@@ -156,6 +161,15 @@ Run from repo root:
 | Admin inventory | `POST /admin/products`, `GET /admin/products`, `PUT /admin/products/{id}` |
 | Clinic catalog | `GET /clinic/inventory`, `GET /clinic/store/products`, `POST /clinic/store/products` |
 | Patient storefront | `GET /patient/store/products` |
+
+### Communication service (`:3003`)
+
+| Area | Endpoints |
+|------|-----------|
+| Conversations | `POST /conversations`, `GET /conversations`, `GET /conversations/me` |
+| Messages | `GET/POST /conversations/{id}/messages`, `POST /conversations/{id}/messages/upload` |
+| Real-time | `WS /ws/chat?token=<jwt>` |
+| Templates | `GET /message-templates` |
 
 All list endpoints support pagination: `?page=1&limit=20` (max 100).
 

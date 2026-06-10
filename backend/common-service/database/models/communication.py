@@ -1,6 +1,7 @@
 import uuid
+from datetime import datetime
 
-from sqlalchemy import Boolean, ForeignKey, Integer, String, Text, UniqueConstraint, text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -9,8 +10,11 @@ from ..base import Base, CreatedAtMixin, TimestampMixin, UUIDMixin
 
 class Conversation(UUIDMixin, TimestampMixin, Base):
     __tablename__ = "conversations"
-    __table_args__ = (UniqueConstraint("clinic_id", "patient_id"),)
+    __table_args__ = (UniqueConstraint("doctor_id", "patient_id"),)
 
+    doctor_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     clinic_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("clinics.id", ondelete="CASCADE"), nullable=False
     )
@@ -18,6 +22,7 @@ class Conversation(UUIDMixin, TimestampMixin, Base):
         UUID(as_uuid=True), ForeignKey("patients.id", ondelete="CASCADE"), nullable=False, index=True
     )
     status: Mapped[str] = mapped_column(String(50), nullable=False, server_default="active")
+    last_message_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class MessageTemplate(UUIDMixin, CreatedAtMixin, Base):

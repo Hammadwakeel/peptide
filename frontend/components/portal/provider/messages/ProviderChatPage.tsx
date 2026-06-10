@@ -10,7 +10,7 @@ import { useChat } from "@/context/ChatProvider";
 export function ProviderChatPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { threads } = useChat();
+  const { threads, loading, error, ensureDoctorThread, refreshThreads } = useChat();
   const patientParam = searchParams.get("patient");
   const [activePatientId, setActivePatientId] = useState<string | null>(
     patientParam ?? threads[0]?.patientId ?? null,
@@ -19,14 +19,41 @@ export function ProviderChatPage() {
   useEffect(() => {
     if (patientParam) {
       setActivePatientId(patientParam);
+      void ensureDoctorThread(patientParam);
     }
-  }, [patientParam]);
+  }, [patientParam, ensureDoctorThread]);
+
+  useEffect(() => {
+    if (!patientParam && !activePatientId && threads[0]?.patientId) {
+      setActivePatientId(threads[0].patientId);
+    }
+  }, [threads, patientParam, activePatientId]);
 
   const activeThread = threads.find((thread) => thread.patientId === activePatientId);
 
   function selectPatient(patientId: string) {
     setActivePatientId(patientId);
     router.replace(`/portal/doctor/messages?patient=${patientId}`, { scroll: false });
+    void ensureDoctorThread(patientId);
+  }
+
+  if (loading) {
+    return <p className="text-sm text-deep-teal/50">Loading messages…</p>;
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-3">
+        <p className="text-sm text-coral-blush">{error}</p>
+        <button
+          type="button"
+          onClick={() => void refreshThreads()}
+          className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm text-deep-teal"
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -48,15 +75,18 @@ export function ProviderChatPage() {
           <div className="border-b border-deep-teal/10 px-4 py-3">
             <p className="text-xs font-medium uppercase tracking-wide text-deep-teal/45">Threads</p>
           </div>
-          <div className="max-h-[280px] lg:max-h-none lg:h-[calc(100dvh-220px)] lg:min-h-[420px]">
+          {threads.length === 0 ? (
+            <p className="px-4 py-6 text-sm text-deep-teal/50">
+              No conversations yet. Start one from a patient profile or customer list.
+            </p>
+          ) : (
             <ChatThreadList
               threads={threads}
               activePatientId={activePatientId}
               onSelect={selectPatient}
             />
-          </div>
+          )}
         </div>
-
         <div>
           {activeThread ? (
             <ProviderActiveThread thread={activeThread} />
