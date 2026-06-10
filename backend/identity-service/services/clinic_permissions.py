@@ -10,7 +10,8 @@ PERMISSIONS_BY_LEVEL: dict[str, frozenset[str]] = {
         "edit_branding",
         "edit_settings",
         "manage_members",
-        "manage_patients",
+        "view_patients",
+        "invite_patients",
     }),
     "admin": frozenset({
         "view_clinic",
@@ -19,15 +20,17 @@ PERMISSIONS_BY_LEVEL: dict[str, frozenset[str]] = {
         "edit_branding",
         "edit_settings",
         "manage_members",
-        "manage_patients",
+        "view_patients",
+        "invite_patients",
     }),
     "staff": frozenset({
         "view_clinic",
-        "manage_patients",
+        "view_patients",
     }),
     "associate_provider": frozenset({
         "view_clinic",
-        "manage_patients",
+        "view_patients",
+        "invite_patients",
     }),
 }
 

@@ -4,7 +4,7 @@ from fastapi import HTTPException
 
 from auth_utils import generate_invite_token
 from config import FRONTEND_URL, INVITE_EXPIRY_DAYS
-from db import connect
+from db import SessionLocal, connect
 from email_service import send_patient_invite_email
 from repository import find_user_by_email
 from repository.clinic_repository import get_doctor_clinic
@@ -16,19 +16,33 @@ from repository.patient_repository import (
 )
 from schemas.doctor import InvitePatientRequest
 from schemas.pagination import PaginationQuery, paginated_response
+from services.clinic_permissions import permissions_for_level, require_permission
+
+
+def _membership_context(cursor, user: dict) -> dict:
+    membership = get_doctor_clinic(cursor, user["sub"])
+    if not membership:
+        raise HTTPException(status_code=403, detail="No clinic linked to this doctor account")
+    if membership["status"] != "active":
+        raise HTTPException(status_code=403, detail="Clinic is not active yet")
+    membership["permissions"] = permissions_for_level(membership["access_level"])
+    return membership
 
 
 def invite_patient(doctor_user: dict, body: InvitePatientRequest) -> dict:
     conn = connect()
     cursor = conn.cursor()
     try:
-        clinic = get_doctor_clinic(cursor, doctor_user["sub"])
-        if not clinic:
-            raise HTTPException(status_code=403, detail="No clinic linked to this doctor account")
-        if clinic["status"] != "active":
-            raise HTTPException(status_code=403, detail="Clinic is not active yet")
+        membership = _membership_context(cursor, doctor_user)
+        require_permission(membership, "invite_patients")
+        clinic = membership
 
-        existing = find_user_by_email(cursor, body.email)
+        db = SessionLocal()
+        try:
+            existing = find_user_by_email(db, body.email)
+        finally:
+            db.close()
+
         if existing:
             raise HTTPException(status_code=409, detail="Email already has an account")
 
@@ -92,9 +106,9 @@ def list_my_patients(doctor_user: dict, pagination: PaginationQuery) -> dict:
     conn = connect()
     cursor = conn.cursor()
     try:
-        clinic = get_doctor_clinic(cursor, doctor_user["sub"])
-        if not clinic:
-            raise HTTPException(status_code=403, detail="No clinic linked to this doctor account")
+        membership = _membership_context(cursor, doctor_user)
+        require_permission(membership, "view_patients")
+        clinic = membership
 
         offset = (pagination.page - 1) * pagination.limit
         total = count_patients_by_clinic(cursor, str(clinic["id"]))

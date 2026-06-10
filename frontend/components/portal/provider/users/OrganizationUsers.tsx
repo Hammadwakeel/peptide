@@ -75,8 +75,8 @@ function InviteUserModal({ open, onClose, onInvite }: InviteUserModalProps) {
               className={authInputClassName}
             >
               <option value="admin">Admin — full clinic management</option>
-              <option value="staff">Staff — patients & view clinic</option>
-              <option value="associate_provider">Associate Provider — patients & view clinic</option>
+              <option value="staff">Staff — view patients & clinic</option>
+              <option value="associate_provider">Associate Provider — view & invite patients</option>
             </select>
           </div>
           <div className="flex justify-end gap-2">

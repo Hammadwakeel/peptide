@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AddPatientModal } from "@/components/portal/provider/customers/AddPatientModal";
-import { invitePatient, listDoctorPatients } from "@/lib/doctor/api";
+import { getClinicProfile, invitePatient, listDoctorPatients } from "@/lib/doctor/api";
 import {
   doctorPatientFullName,
   type DoctorPatient,
@@ -37,13 +37,18 @@ export function CustomerManagement() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<CustomerFilter>("all");
   const [modalOpen, setModalOpen] = useState(false);
+  const [canInvitePatients, setCanInvitePatients] = useState(false);
 
   const loadPatients = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await listDoctorPatients({ page: 1, limit: 100 });
+      const [response, profile] = await Promise.all([
+        listDoctorPatients({ page: 1, limit: 100 }),
+        getClinicProfile(),
+      ]);
       setPatients(response.patients);
       setClinicName(response.clinic_name);
+      setCanInvitePatients(profile.membership.permissions.includes("invite_patients"));
     } catch (error) {
       showError(error, "Unable to load patients.");
       setPatients([]);
@@ -92,7 +97,7 @@ export function CustomerManagement() {
         <h2 className="font-serif text-xl font-light text-deep-teal">Customer Management</h2>
         <p className="mt-1 text-sm text-deep-teal/60">
           {clinicName
-            ? `Patients for ${clinicName}. Invite new patients and manage relationships.`
+            ? `Patients for ${clinicName}. ${canInvitePatients ? "Invite new patients and manage relationships." : "View and manage patient relationships."}`
             : "View and manage patients for your clinic."}
         </p>
       </div>
@@ -113,13 +118,15 @@ export function CustomerManagement() {
           >
             Refresh
           </button>
-          <button
-            type="button"
-            onClick={() => setModalOpen(true)}
-            className="rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal"
-          >
-            Invite Patient
-          </button>
+          {canInvitePatients ? (
+            <button
+              type="button"
+              onClick={() => setModalOpen(true)}
+              className="rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal"
+            >
+              Invite Patient
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -189,7 +196,9 @@ export function CustomerManagement() {
         ) : filteredPatients.length === 0 ? (
           <p className="px-4 py-10 text-center text-sm text-deep-teal/50">
             {patients.length === 0
-              ? "No patients yet. Invite your first patient to get started."
+              ? canInvitePatients
+                ? "No patients yet. Invite your first patient to get started."
+                : "No patients yet."
               : "No patients match your filters."}
           </p>
         ) : null}

@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi import HTTPException
 
 from auth_utils import generate_password, hash_password
-from db import connect
+from db import SessionLocal, connect
 from email_service import send_credentials_email
 from repository import find_user_by_email
 from repository.patient_repository import accept_patient_invite, find_valid_invite
@@ -19,7 +19,13 @@ def accept_invitation(body: AcceptInvitationRequest) -> dict:
         if not invite:
             raise HTTPException(status_code=400, detail="Invalid or expired invitation")
 
-        if find_user_by_email(cursor, body.email):
+        db = SessionLocal()
+        try:
+            existing_user = find_user_by_email(db, body.email)
+        finally:
+            db.close()
+
+        if existing_user:
             raise HTTPException(status_code=409, detail="Email already registered")
 
         password = generate_password()

@@ -46,9 +46,9 @@ def create_patient_invite(
     expires_at = datetime.now(timezone.utc) + timedelta(days=expires_days)
     cursor.execute(
         """
-        INSERT INTO patient_invites (patient_id, clinic_id, doctor_id, email, token_hash, expires_at)
+        INSERT INTO patient_invites (patient_id, clinic_id, invited_by, email, token_hash, expires_at)
         VALUES (%s, %s, %s, %s, %s, %s)
-        RETURNING id, patient_id, clinic_id, doctor_id, email, status, expires_at
+        RETURNING id, patient_id, clinic_id, invited_by, email, status, expires_at
         """,
         (patient_id, clinic_id, doctor_id, email.lower(), hash_token(raw_token), expires_at),
     )
@@ -58,13 +58,13 @@ def create_patient_invite(
 def find_valid_invite(cursor, token: str, doctor_id: str, email: str) -> dict[str, Any] | None:
     cursor.execute(
         """
-        SELECT pi.id, pi.patient_id, pi.clinic_id, pi.doctor_id, pi.email,
+        SELECT pi.id, pi.patient_id, pi.clinic_id, pi.invited_by AS doctor_id, pi.email,
                p.first_name, p.last_name, c.clinic_name
         FROM patient_invites pi
         JOIN patients p ON p.id = pi.patient_id
         JOIN clinics c ON c.id = pi.clinic_id
         WHERE pi.token_hash = %s
-          AND pi.doctor_id = %s
+          AND pi.invited_by = %s
           AND LOWER(pi.email) = LOWER(%s)
           AND pi.status = 'pending'
           AND pi.expires_at > NOW()

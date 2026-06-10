@@ -11,7 +11,8 @@ export type ClinicPermission =
   | "edit_branding"
   | "edit_settings"
   | "manage_members"
-  | "manage_patients";
+  | "view_patients"
+  | "invite_patients";
 
 export type ClinicProfile = {
   id: string;
