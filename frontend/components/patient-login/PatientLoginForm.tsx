@@ -1,20 +1,27 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   authInputClassName,
   authLabelClassName,
 } from "@/components/auth/AuthShell";
 import { useAuth } from "@/context/AuthProvider";
-import { sendPatientOtp, verifyPatientOtp } from "@/lib/auth/api";
+import {
+  OtpRequiredError,
+  sendOtp,
+  verifyOtp,
+} from "@/lib/auth/api";
+import { storePendingLogin } from "@/lib/auth/storage";
 import { CLINIC_BRANDING } from "@/lib/patient-portal/mock-data";
 import { showError, toast } from "@/lib/toast";
 
 type LoginMode = "password" | "otp";
 
 export function PatientLoginForm() {
-  const { login } = useAuth();
+  const router = useRouter();
+  const { login, establishSession } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
@@ -31,7 +38,7 @@ export function PatientLoginForm() {
 
     const toastId = toast.loading("Sending verification code…");
     try {
-      await sendPatientOtp(email);
+      await sendOtp(email);
       setOtpSent(true);
       toast.dismiss(toastId);
       toast.success("Verification code sent.");
@@ -51,11 +58,10 @@ export function PatientLoginForm() {
         if (otp.trim().length !== 6) {
           throw new Error("Enter the 6-digit verification code.");
         }
-        await verifyPatientOtp(email, otp);
+        const { session, message } = await verifyOtp(email, otp, "patient");
         toast.dismiss(toastId);
-        toast.success("Email verified. Sign in with your password.");
-        setMode("password");
-        setOtp("");
+        toast.success(message || "Signed in successfully.");
+        establishSession(session, rememberMe);
         return;
       }
 
@@ -64,6 +70,14 @@ export function PatientLoginForm() {
       toast.success("Welcome back.");
     } catch (error) {
       toast.dismiss(toastId);
+
+      if (error instanceof OtpRequiredError) {
+        storePendingLogin({ email, password, role: "patient", rememberMe });
+        toast.info("Enter the verification code sent to your email.");
+        router.push(`/login/verify-otp?email=${encodeURIComponent(error.email)}`);
+        return;
+      }
+
       showError(error, "Unable to sign in.");
     } finally {
       setIsSubmitting(false);

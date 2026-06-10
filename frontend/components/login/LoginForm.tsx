@@ -54,8 +54,8 @@ export function LoginForm() {
 
       if (error instanceof OtpRequiredError) {
         storePendingLogin({ email, password, role, rememberMe });
-        toast.info("Verify your email to continue.");
-        router.push(`/login/send-otp?email=${encodeURIComponent(error.email)}`);
+        toast.info("Enter the verification code sent to your email.");
+        router.push(`/login/verify-otp?email=${encodeURIComponent(error.email)}`);
         return;
       }
 

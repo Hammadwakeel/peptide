@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AuthCard,
   AuthShell,
@@ -22,12 +22,13 @@ import { showError, toast } from "@/lib/toast";
 export function VerifyOtpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useAuth();
+  const { establishSession } = useAuth();
   const pendingLogin = readPendingLogin();
   const email = searchParams.get("email") ?? pendingLogin?.email ?? "";
   const [otp, setOtp] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const autoSendStarted = useRef(false);
 
   async function handleResend() {
     if (!email.trim()) {
@@ -36,7 +37,7 @@ export function VerifyOtpForm() {
     }
 
     setIsResending(true);
-    const toastId = toast.loading("Resending verification code…");
+    const toastId = toast.loading("Sending verification code…");
 
     try {
       const result = await sendOtp(email);
@@ -44,18 +45,25 @@ export function VerifyOtpForm() {
       toast.success(result.message);
     } catch (error) {
       toast.dismiss(toastId);
-      showError(error, "Unable to resend verification code.");
+      showError(error, "Unable to send verification code.");
     } finally {
       setIsResending(false);
     }
   }
+
+  useEffect(() => {
+    if (!email.trim() || autoSendStarted.current) return;
+    autoSendStarted.current = true;
+    void handleResend();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [email]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!email.trim()) {
       toast.error("Missing email address.");
-      router.push("/login/send-otp");
+      router.push("/login");
       return;
     }
 
@@ -68,17 +76,13 @@ export function VerifyOtpForm() {
     const toastId = toast.loading("Verifying code…");
 
     try {
-      const result = await verifyOtp(email, otp);
+      const rememberMe = pendingLogin?.rememberMe ?? false;
+      const role = pendingLogin?.role;
+      const { session, message } = await verifyOtp(email, otp, role);
+      clearPendingLogin();
       toast.dismiss(toastId);
-      toast.success(result.message);
-
-      if (pendingLogin) {
-        await login(pendingLogin);
-        clearPendingLogin();
-        return;
-      }
-
-      router.push("/login?verified=1");
+      toast.success(message || "Signed in successfully.");
+      establishSession(session, rememberMe);
     } catch (error) {
       toast.dismiss(toastId);
       showError(error, "Invalid or expired verification code.");
@@ -174,8 +178,8 @@ export function VerifyOtpForm() {
             transition={{ ...transition, delay: 0.45 }}
           >
             Wrong email?{" "}
-            <Link href="/login/send-otp" className={authLinkClassName}>
-              Change email
+            <Link href="/login" className={authLinkClassName}>
+              Back to sign in
             </Link>
           </motion.p>
         </AuthCard>

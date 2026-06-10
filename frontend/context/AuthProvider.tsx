@@ -32,6 +32,7 @@ type AuthContextValue = {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
+  establishSession: (session: AuthSession, rememberMe?: boolean) => void;
   logout: () => void;
 };
 
@@ -126,14 +127,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => window.clearInterval(interval);
   }, [expireSession, refreshSession]);
 
+  const establishSession = useCallback(
+    (nextSession: AuthSession, rememberMe = false) => {
+      persistSession(nextSession, rememberMe);
+      setSession(nextSession);
+      router.push(getPortalPath(nextSession.role));
+    },
+    [router],
+  );
+
   const login = useCallback(
     async (credentials: LoginCredentials) => {
       const nextSession = await loginWithBackend(credentials);
-      persistSession(nextSession, credentials.rememberMe);
-      setSession(nextSession);
-      router.push(getPortalPath(credentials.role));
+      establishSession(nextSession, credentials.rememberMe);
     },
-    [router],
+    [establishSession],
   );
 
   const value = useMemo<AuthContextValue>(
@@ -142,9 +150,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isLoading,
       isAuthenticated: Boolean(session),
       login,
+      establishSession,
       logout,
     }),
-    [session, isLoading, login, logout],
+    [session, isLoading, login, establishSession, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

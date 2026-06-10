@@ -2,6 +2,8 @@ import { AUTH_ENDPOINTS } from "@/lib/auth/endpoints";
 import { REFRESH_THRESHOLD_MS } from "@/lib/auth/constants";
 import type {
   AuthSession,
+  CreateAdminPayload,
+  CreateAdminResponse,
   ForgotPasswordPayload,
   LoginCredentials,
   ResetPasswordPayload,
@@ -23,6 +25,12 @@ type LoginResponse = {
     email_verified?: boolean;
   };
 };
+
+function isOtpRequiredResponse(payload: LoginResponse): boolean {
+  if (payload.status !== false) return false;
+  const message = (payload.message ?? "").toLowerCase();
+  return message.includes("otp") || payload.email_verified === false;
+}
 
 type RefreshResponse = {
   status: boolean;
@@ -84,10 +92,10 @@ function toAuthSession(
   email: string,
   userId: string,
   backendRole: string,
-  requestedRole: UserRole,
+  requestedRole?: UserRole,
 ): AuthSession {
   const role = mapBackendRole(backendRole);
-  if (role !== requestedRole) {
+  if (requestedRole && role !== requestedRole) {
     throw new Error(
       `Select the "${role.charAt(0).toUpperCase()}${role.slice(1)}" role for this account.`,
     );
@@ -102,6 +110,26 @@ function toAuthSession(
     email: email.trim().toLowerCase(),
     userId,
   };
+}
+
+export async function createAdmin(
+  payload: CreateAdminPayload,
+): Promise<CreateAdminResponse> {
+  const response = await fetch(AUTH_ENDPOINTS.createAdmin, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: payload.email.trim(),
+      password: payload.password,
+    }),
+  });
+
+  const body = (await response.json().catch(() => null)) as CreateAdminResponse | null;
+  if (!response.ok || !body?.status) {
+    throw new Error(parseApiError(body, "Unable to create admin account."));
+  }
+
+  return body;
 }
 
 export async function loginWithBackend(
@@ -130,10 +158,11 @@ export async function loginWithBackend(
     throw new Error(parseApiError(payload, "Unable to sign in."));
   }
 
+  if (isOtpRequiredResponse(payload)) {
+    throw new OtpRequiredError(email);
+  }
+
   if (payload.status === false) {
-    if (payload.email_verified === false) {
-      throw new OtpRequiredError(email);
-    }
     throw new Error(payload.message ?? "Additional verification is required.");
   }
 
@@ -195,7 +224,8 @@ export async function sendOtp(email: string): Promise<SendOtpResponse> {
 export async function verifyOtp(
   email: string,
   otp: string,
-): Promise<VerifyOtpResponse> {
+  requestedRole?: UserRole,
+): Promise<{ session: AuthSession; message: string }> {
   const response = await fetch(AUTH_ENDPOINTS.verifyOtp, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -207,7 +237,20 @@ export async function verifyOtp(
     throw new Error(parseApiError(payload, "Invalid or expired verification code."));
   }
 
-  return payload;
+  if (!payload.token || !payload.refresh_token || !payload.user) {
+    throw new Error("Invalid response from authentication service.");
+  }
+
+  const session = toAuthSession(
+    payload.token,
+    payload.refresh_token,
+    payload.user.email,
+    payload.user.id,
+    payload.user.role,
+    requestedRole,
+  );
+
+  return { session, message: payload.message };
 }
 
 /** @deprecated Use sendOtp */
@@ -215,9 +258,13 @@ export const sendPatientOtp = async (email: string) => {
   await sendOtp(email);
 };
 
-/** @deprecated Use verifyOtp */
-export const verifyPatientOtp = async (email: string, otp: string) => {
-  await verifyOtp(email, otp);
+/** @deprecated Use verifyOtp — returns session on success */
+export const verifyPatientOtp = async (
+  email: string,
+  otp: string,
+  role: UserRole = "patient",
+) => {
+  await verifyOtp(email, otp, role);
 };
 
 export async function requestPasswordReset(

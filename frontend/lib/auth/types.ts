@@ -17,6 +17,21 @@ export type LoginCredentials = {
   rememberMe: boolean;
 };
 
+export type CreateAdminPayload = {
+  email: string;
+  password: string;
+};
+
+export type CreateAdminResponse = {
+  status: boolean;
+  message: string;
+  user: {
+    id: string;
+    email: string;
+    role: string;
+  };
+};
+
 export type PendingLogin = {
   email: string;
   password: string;
@@ -34,11 +49,14 @@ export type SendOtpResponse = {
 export type VerifyOtpResponse = {
   status: boolean;
   message: string;
+  token: string;
+  refresh_token: string;
   email_verified: boolean;
   user: {
     id: string;
     email: string;
     role: string;
+    email_verified?: boolean;
   };
 };
 
