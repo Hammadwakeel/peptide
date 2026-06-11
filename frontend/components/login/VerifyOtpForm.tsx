@@ -13,10 +13,12 @@ import {
 import { useAuth } from "@/context/AuthProvider";
 import { fadeInUp, motion, scaleIn, staggerContainer, transition } from "@/components/motion";
 import { sendOtp, verifyOtp } from "@/lib/auth/api";
+import { loginPathForRole } from "@/lib/auth/constants";
 import {
   clearPendingLogin,
   readPendingLogin,
 } from "@/lib/auth/storage";
+import type { UserRole } from "@/lib/auth/types";
 import { showError, toast } from "@/lib/toast";
 
 export function VerifyOtpForm() {
@@ -25,6 +27,15 @@ export function VerifyOtpForm() {
   const { establishSession } = useAuth();
   const pendingLogin = readPendingLogin();
   const email = searchParams.get("email") ?? pendingLogin?.email ?? "";
+  const requestedRole = (pendingLogin?.role ??
+    searchParams.get("role")) as UserRole | undefined;
+  const backToLoginHref =
+    requestedRole === "admin" ||
+    requestedRole === "affiliate" ||
+    requestedRole === "patient" ||
+    requestedRole === "doctor"
+      ? loginPathForRole(requestedRole)
+      : "/login";
   const [otp, setOtp] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
@@ -77,8 +88,7 @@ export function VerifyOtpForm() {
 
     try {
       const rememberMe = pendingLogin?.rememberMe ?? false;
-      const role = pendingLogin?.role;
-      const { session, message } = await verifyOtp(email, otp, role);
+      const { session, message } = await verifyOtp(email, otp, requestedRole);
       clearPendingLogin();
       toast.dismiss(toastId);
       toast.success(message || "Signed in successfully.");
@@ -178,7 +188,7 @@ export function VerifyOtpForm() {
             transition={{ ...transition, delay: 0.45 }}
           >
             Wrong email?{" "}
-            <Link href="/login" className={authLinkClassName}>
+            <Link href={backToLoginHref} className={authLinkClassName}>
               Back to sign in
             </Link>
           </motion.p>

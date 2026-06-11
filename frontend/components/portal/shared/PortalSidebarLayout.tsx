@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { memo, useEffect, useState } from "react";
+import { Tooltip, TruncateTooltip } from "@/components/ui/Tippy";
 import { useAuth } from "@/context/AuthProvider";
+import { navTourId } from "@/lib/onboarding/tour-targets";
 
 export type SidebarLink = {
   href: string;
@@ -20,6 +22,9 @@ type PortalSidebarLayoutProps = {
 };
 
 function isLinkActive(pathname: string, href: string, exact?: boolean) {
+  if (href === "/portal/patient") {
+    return pathname === href || pathname === "/portal/patient/pay";
+  }
   if (exact) return pathname === href;
   if (href === "/portal/admin/wms") {
     return pathname === href || pathname.startsWith("/portal/admin/wms/");
@@ -34,7 +39,7 @@ function isLinkActive(pathname: string, href: string, exact?: boolean) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function PortalSidebarLayout({
+export const PortalSidebarLayout = memo(function PortalSidebarLayout({
   portalLabel,
   brandTitle = "Frontier Biomed",
   links,
@@ -43,6 +48,17 @@ export function PortalSidebarLayout({
   const pathname = usePathname();
   const { session, logout, isLoading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    function openSidebarForTour() {
+      if (window.matchMedia("(max-width: 1023px)").matches) {
+        setSidebarOpen(true);
+      }
+    }
+
+    window.addEventListener("frontier:joyride-nav-step", openSidebarForTour);
+    return () => window.removeEventListener("frontier:joyride-nav-step", openSidebarForTour);
+  }, []);
 
   if (isLoading) {
     return (
@@ -53,6 +69,13 @@ export function PortalSidebarLayout({
   }
 
   const activeLink = links.find((link) => isLinkActive(pathname, link.href, link.exact));
+  const hideHeaderTitle =
+    pathname === "/portal/admin/catalog" ||
+    pathname === "/portal/admin/users" ||
+    pathname === "/portal/admin/approvals" ||
+    pathname.startsWith("/portal/doctor") ||
+    pathname.startsWith("/portal/affiliate") ||
+    pathname.startsWith("/portal/patient");
 
   return (
     <div className="min-h-dvh bg-pure-white text-deep-teal lg:flex">
@@ -66,7 +89,7 @@ export function PortalSidebarLayout({
       ) : null}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-deep-teal/10 bg-pure-white transition-transform lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-dvh max-h-dvh w-72 flex-col border-r border-deep-teal/10 bg-pure-white transition-transform lg:sticky lg:top-0 lg:z-auto lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -77,13 +100,18 @@ export function PortalSidebarLayout({
           <p className="mt-2 font-serif text-xl font-light text-deep-teal">{brandTitle}</p>
         </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-4" aria-label={portalLabel}>
+        <nav
+          className="flex-1 min-h-0 space-y-1 overflow-y-auto overscroll-contain px-3 py-4"
+          aria-label={portalLabel}
+          data-tour="portal-nav"
+        >
           {links.map((link) => {
             const active = isLinkActive(pathname, link.href, link.exact);
             return (
               <Link
                 key={link.href}
                 href={link.href}
+                data-tour={navTourId(link.href)}
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
                   active
@@ -108,7 +136,9 @@ export function PortalSidebarLayout({
 
         <div className="border-t border-deep-teal/10 p-4">
           {session ? (
-            <p className="mb-3 truncate px-2 text-xs text-deep-teal/50">{session.email}</p>
+            <TruncateTooltip content={session.email}>
+              <p className="mb-3 truncate px-2 text-xs text-deep-teal/50">{session.email}</p>
+            </TruncateTooltip>
           ) : null}
           <button
             type="button"
@@ -123,24 +153,30 @@ export function PortalSidebarLayout({
       <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-between gap-4 border-b border-deep-teal/10 px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setSidebarOpen(true)}
-              className="rounded-lg border border-deep-teal/15 p-2 text-deep-teal lg:hidden"
-              aria-label="Open navigation"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </button>
-            <h1 className="font-serif text-xl font-light text-deep-teal sm:text-2xl">
-              {activeLink?.label ?? portalLabel}
-            </h1>
+            <Tooltip content="Open navigation">
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                className="rounded-lg border border-deep-teal/15 p-2 text-deep-teal lg:hidden"
+                aria-label="Open navigation"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </button>
+            </Tooltip>
+            {!hideHeaderTitle ? (
+              <h1 className="font-serif text-xl font-light text-deep-teal sm:text-2xl">
+                {activeLink?.label ?? portalLabel}
+              </h1>
+            ) : null}
           </div>
         </header>
 
-        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8" data-tour="portal-main">
+          {children}
+        </main>
       </div>
     </div>
   );
-}
+});

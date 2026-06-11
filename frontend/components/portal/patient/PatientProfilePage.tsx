@@ -1,10 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { CreditCard, LogOut, MapPin, User } from "lucide-react";
 import {
   authInputClassName,
   authLabelClassName,
 } from "@/components/auth/AuthShell";
+import { PortalPageSection } from "@/components/portal/shared/PortalPageSection";
+import {
+  PortalPageToolbar,
+  toolbarBtnClass,
+  toolbarBtnPrimaryClass,
+} from "@/components/portal/shared/PortalPageToolbar";
 import { useAuth } from "@/context/AuthProvider";
 import { usePatientPortal } from "@/context/PatientPortalProvider";
 import {
@@ -203,17 +210,24 @@ export function PatientProfilePage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-serif text-2xl font-light text-deep-teal">Account Settings</h1>
-        <p className="mt-1 text-sm text-deep-teal/55">
-          Manage your profile, shipping addresses, and saved cards.
-        </p>
-      </div>
+    <div className="space-y-5">
+      <PortalPageToolbar title="Account">
+        <button
+          type="button"
+          disabled={isSaving}
+          onClick={() => void saveProfile()}
+          className={toolbarBtnPrimaryClass}
+        >
+          Save profile
+        </button>
+        <button type="button" onClick={logout} className={toolbarBtnClass}>
+          <LogOut className="size-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Log out</span>
+        </button>
+      </PortalPageToolbar>
 
-      <section className="rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm">
-        <h2 className="text-sm font-medium text-deep-teal">Personal information</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+      <PortalPageSection icon={User} title="Personal information" subtitle={profile.email}>
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className={authLabelClassName}>First name</label>
             <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className={authInputClassName} />
@@ -235,28 +249,23 @@ export function PatientProfilePage() {
             <input type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} className={authInputClassName} />
           </div>
         </div>
-        <button
-          type="button"
-          disabled={isSaving}
-          onClick={() => void saveProfile()}
-          className="mt-4 rounded-full bg-deep-teal px-4 py-2 text-sm text-pure-white disabled:opacity-60"
-        >
-          Save profile
-        </button>
-      </section>
+      </PortalPageSection>
 
-      <section className="rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-deep-teal">Shipping addresses</h2>
+      <PortalPageSection
+        icon={MapPin}
+        title="Shipping addresses"
+        subtitle={`${addresses.length} saved address${addresses.length === 1 ? "" : "es"}`}
+      >
+        <div className="mb-4 flex justify-end">
           <button
             type="button"
             onClick={() => setAddressDraft(emptyAddress())}
-            className="text-sm text-pacific-teal hover:underline"
+            className="text-sm font-medium text-pacific-teal hover:underline"
           >
             Add address
           </button>
         </div>
-        <ul className="mt-4 space-y-3">
+        <ul className="space-y-3">
           {addresses.length === 0 ? (
             <li className="text-sm text-deep-teal/50">No saved addresses yet.</li>
           ) : (
@@ -315,20 +324,23 @@ export function PatientProfilePage() {
             </div>
           </div>
         ) : null}
-      </section>
+      </PortalPageSection>
 
-      <section className="rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-deep-teal">Payment methods</h2>
+      <PortalPageSection
+        icon={CreditCard}
+        title="Payment methods"
+        subtitle={`${paymentMethods.length} saved card${paymentMethods.length === 1 ? "" : "s"}`}
+      >
+        <div className="mb-4 flex justify-end">
           <button
             type="button"
             onClick={() => setShowPaymentForm((value) => !value)}
-            className="text-sm text-pacific-teal hover:underline"
+            className="text-sm font-medium text-pacific-teal hover:underline"
           >
             {showPaymentForm ? "Cancel" : "Add card"}
           </button>
         </div>
-        <ul className="mt-4 space-y-3">
+        <ul className="space-y-3">
           {paymentMethods.length === 0 ? (
             <li className="text-sm text-deep-teal/50">No saved cards yet.</li>
           ) : (
@@ -412,15 +424,7 @@ export function PatientProfilePage() {
             </div>
           </div>
         ) : null}
-      </section>
-
-      <button
-        type="button"
-        onClick={logout}
-        className="rounded-full border border-deep-teal/15 px-5 py-2.5 text-sm font-medium text-deep-teal hover:border-coral-blush hover:text-coral-blush"
-      >
-        Log out
-      </button>
+      </PortalPageSection>
     </div>
   );
 }

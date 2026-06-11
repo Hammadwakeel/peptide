@@ -11,14 +11,14 @@ const DOCUMENT_FIELDS: {
 }[] = [
   {
     key: "resellerPermit",
-    label: "Reseller permit document",
-    description: "Upload your reseller permit as PDF or image.",
+    label: "Reseller permit",
+    description: "Required for compliance review. PDF or high-quality image.",
     required: true,
   },
   {
     key: "clinicLogo",
-    label: "Clinic logo (optional)",
-    description: "PNG, JPEG, or WebP logo for your storefront.",
+    label: "Clinic logo",
+    description: "Optional branding for your patient storefront.",
   },
 ];
 
@@ -29,7 +29,7 @@ type StepDocumentsProps = {
 
 export function StepDocuments({ value, onChange }: StepDocumentsProps) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid h-full min-h-0 gap-4 lg:grid-cols-2">
       {DOCUMENT_FIELDS.map((field) => (
         <FileUploadZone
           key={field.key}
@@ -37,7 +37,11 @@ export function StepDocuments({ value, onChange }: StepDocumentsProps) {
           label={field.label}
           description={field.description}
           required={field.required}
-          accept={field.key === "clinicLogo" ? ".png,.jpg,.jpeg,.webp" : ".pdf,.png,.jpg,.jpeg,.webp"}
+          accept={
+            field.key === "clinicLogo"
+              ? ".png,.jpg,.jpeg,.webp"
+              : ".pdf,.png,.jpg,.jpeg,.webp"
+          }
           imagesOnly={field.key === "clinicLogo"}
           value={value[field.key]}
           onChange={(file) => onChange({ ...value, [field.key]: file })}

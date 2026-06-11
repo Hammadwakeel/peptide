@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ArrowLeft, Package } from "lucide-react";
 import { RejectOrderModal } from "@/components/portal/provider/orders/RejectOrderModal";
+import { ProviderPageSection } from "@/components/portal/provider/shared/ProviderPageSection";
+import {
+  ProviderPageToolbar,
+  toolbarBtnClass,
+  toolbarBtnPrimaryClass,
+} from "@/components/portal/provider/shared/ProviderPageToolbar";
 import { useOrders } from "@/context/OrdersProvider";
 import { getPatientInitials } from "@/lib/patients/types";
 import {
@@ -90,16 +97,18 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
   }
 
   if (isLoading) {
-    return <p className="text-sm text-deep-teal/60">Loading order…</p>;
+    return <p className="py-12 text-center text-sm text-deep-teal/50">Loading order…</p>;
   }
 
   if (!order) {
     return (
-      <div className="rounded-2xl border border-deep-teal/10 p-8 text-center">
-        <p className="text-deep-teal">Order not found.</p>
-        <Link href="/portal/doctor/orders" className="mt-4 inline-block text-sm text-pacific-teal hover:underline">
-          Back to orders
-        </Link>
+      <div className="space-y-5">
+        <ProviderPageToolbar title="Order not found">
+          <Link href="/portal/doctor/orders" className={toolbarBtnClass}>
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Back</span>
+          </Link>
+        </ProviderPageToolbar>
       </div>
     );
   }
@@ -108,54 +117,45 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
 
   return (
     <div className="space-y-5">
-      <Link href="/portal/doctor/orders" className="inline-flex text-sm text-pacific-teal hover:underline">
-        ← Back to Order Management
-      </Link>
+      <ProviderPageToolbar title={order.orderNumber ?? order.id}>
+        <Link href="/portal/doctor/orders" className={toolbarBtnClass}>
+          <ArrowLeft className="size-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Back</span>
+        </Link>
+        {isPending ? (
+          <>
+            <button
+              type="button"
+              disabled={isUpdating}
+              onClick={() => setRejectOpen(true)}
+              className={toolbarBtnClass}
+            >
+              Reject
+            </button>
+            <button
+              type="button"
+              disabled={isUpdating}
+              onClick={() => void handleApprove()}
+              className={toolbarBtnPrimaryClass}
+            >
+              {isUpdating ? "Approving…" : "Approve"}
+            </button>
+          </>
+        ) : null}
+      </ProviderPageToolbar>
 
-      <section className="rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm sm:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="font-mono text-xs uppercase tracking-wide text-deep-teal/45">Order</p>
-            <h2 className="mt-1 font-serif text-2xl font-light text-deep-teal">
-              {order.orderNumber ?? order.id}
-            </h2>
-            <div className="mt-3 flex flex-wrap gap-2 text-sm">
-              {order.reviewStatus ? (
-                <span className="rounded-full bg-deep-teal/5 px-2.5 py-0.5 text-deep-teal/70">
-                  {REVIEW_STATUS_LABELS[order.reviewStatus]}
-                </span>
-              ) : null}
-              <span className="rounded-full bg-deep-teal/5 px-2.5 py-0.5 text-deep-teal/70">
-                {PAYMENT_STATUS_LABELS[order.paymentStatus]}
-              </span>
-              <span className="rounded-full bg-deep-teal/5 px-2.5 py-0.5 text-deep-teal/70">
-                {SHIPMENT_STATUS_LABELS[order.shipmentStatus]}
-              </span>
-            </div>
-          </div>
-          {isPending ? (
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                disabled={isUpdating}
-                onClick={() => void handleApprove()}
-                className="rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-60"
-              >
-                {isUpdating ? "Approving…" : "Approve order"}
-              </button>
-              <button
-                type="button"
-                disabled={isUpdating}
-                onClick={() => setRejectOpen(true)}
-                className="rounded-full border border-coral-blush px-4 py-2 text-sm font-medium text-deep-teal hover:bg-coral-blush/30 disabled:opacity-60"
-              >
-                Reject
-              </button>
-            </div>
-          ) : null}
-        </div>
-
-        <dl className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <ProviderPageSection
+        icon={Package}
+        title="Order summary"
+        subtitle={[
+          order.reviewStatus ? REVIEW_STATUS_LABELS[order.reviewStatus] : null,
+          PAYMENT_STATUS_LABELS[order.paymentStatus],
+          SHIPMENT_STATUS_LABELS[order.shipmentStatus],
+        ]
+          .filter(Boolean)
+          .join(" · ")}
+      >
+        <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <dt className="text-xs text-deep-teal/45">Clinic</dt>
             <dd className="text-sm text-deep-teal">{order.clinicName}</dd>
@@ -184,11 +184,10 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
             Patient notes: {order.notes}
           </p>
         ) : null}
-      </section>
+      </ProviderPageSection>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <section className="rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm">
-          <h3 className="text-sm font-medium text-deep-teal">Line items</h3>
+        <ProviderPageSection icon={Package} title="Line items">
           <div className="mt-4 overflow-x-auto rounded-xl border border-deep-teal/10">
             <table className="min-w-full text-sm">
               <thead className="border-b border-deep-teal/10 bg-deep-teal/[0.02] text-xs uppercase text-deep-teal/45">
@@ -215,11 +214,10 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
               </tbody>
             </table>
           </div>
-        </section>
+        </ProviderPageSection>
 
         {order.customerName ? (
-          <section className="rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm">
-            <h3 className="text-sm font-medium text-deep-teal">Patient info</h3>
+          <ProviderPageSection icon={Package} title="Patient info">
             <div className="mt-4 flex items-center gap-3">
               <span className="flex size-12 items-center justify-center rounded-full bg-deep-teal/10 text-sm font-medium text-deep-teal">
                 {getPatientInitials(order.customerName)}
@@ -242,12 +240,11 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
                 View patient profile
               </Link>
             ) : null}
-          </section>
+          </ProviderPageSection>
         ) : null}
       </div>
 
-      <section className="rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm">
-        <h3 className="text-sm font-medium text-deep-teal">Shipment tracking</h3>
+      <ProviderPageSection icon={Package} title="Shipment tracking">
         {order.tracking ? (
           <dl className="mt-4 grid gap-3 sm:grid-cols-3">
             <div>
@@ -276,11 +273,10 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
             Track shipment →
           </a>
         ) : null}
-      </section>
+      </ProviderPageSection>
 
       {order.timeline.length > 0 ? (
-        <section className="rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm">
-          <h3 className="text-sm font-medium text-deep-teal">Status timeline</h3>
+        <ProviderPageSection icon={Package} title="Status timeline">
           <ol className="mt-4 space-y-4 border-l border-deep-teal/15 pl-4">
             {order.timeline.map((entry) => (
               <li key={entry.id} className="relative">
@@ -291,7 +287,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
               </li>
             ))}
           </ol>
-        </section>
+        </ProviderPageSection>
       ) : null}
 
       <RejectOrderModal

@@ -1,10 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { RefreshCw, UserPlus, UsersRound } from "lucide-react";
 import {
   authInputClassName,
   authLabelClassName,
 } from "@/components/auth/AuthShell";
+import { ProviderPageSection } from "@/components/portal/provider/shared/ProviderPageSection";
+import {
+  ProviderPageToolbar,
+  toolbarBtnClass,
+  toolbarBtnPrimaryClass,
+} from "@/components/portal/provider/shared/ProviderPageToolbar";
 import {
   cancelClinicInvitation,
   inviteClinicMember,
@@ -176,115 +183,115 @@ export function OrganizationUsers() {
   }
 
   if (isLoading) {
-    return (
-      <div className="rounded-[2rem] border border-deep-teal/10 bg-pure-white p-8 text-sm text-deep-teal/55 shadow-sm">
-        Loading organization members…
-      </div>
-    );
+    return <p className="py-12 text-center text-sm text-deep-teal/50">Loading organization members…</p>;
   }
 
   return (
     <>
-      <div className="rounded-[2rem] border border-deep-teal/10 bg-pure-white shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-deep-teal/10 p-4 sm:p-6">
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setTab("all")}
-              className={`rounded-full px-4 py-2 text-sm font-medium ${
-                tab === "all" ? "bg-deep-teal text-pure-white" : "text-deep-teal/65 hover:bg-deep-teal/5"
-              }`}
-            >
-              All members
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab("pending")}
-              className={`rounded-full px-4 py-2 text-sm font-medium ${
-                tab === "pending" ? "bg-deep-teal text-pure-white" : "text-deep-teal/65 hover:bg-deep-teal/5"
-              }`}
-            >
-              Pending invites ({pending.length})
-            </button>
-          </div>
+      <div className="space-y-5">
+        <ProviderPageToolbar title="Organization Users">
+          <select
+            value={tab}
+            onChange={(e) => setTab(e.target.value as "all" | "pending")}
+            className="rounded-full border border-deep-teal/25 bg-pure-white px-4 py-2 text-sm text-deep-teal outline-none focus:border-deep-teal"
+          >
+            <option value="all">All members</option>
+            <option value="pending">Pending invites ({pending.length})</option>
+          </select>
+          <button
+            type="button"
+            onClick={() => void loadMembers()}
+            className={toolbarBtnClass}
+            aria-label="Refresh members"
+          >
+            <RefreshCw className="size-4" aria-hidden="true" />
+          </button>
           {canManage ? (
             <button
               type="button"
               onClick={() => setInviteOpen(true)}
-              className="rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal"
+              className={toolbarBtnPrimaryClass}
             >
-              Invite member
+              <UserPlus className="size-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Invite member</span>
             </button>
           ) : null}
-        </div>
+        </ProviderPageToolbar>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-deep-teal/10 text-xs uppercase tracking-wide text-deep-teal/45">
-              <tr>
-                <th className="px-4 py-3 font-medium sm:px-6">Name</th>
-                <th className="px-4 py-3 font-medium sm:px-6">Email</th>
-                <th className="px-4 py-3 font-medium sm:px-6">Role</th>
-                <th className="px-4 py-3 font-medium sm:px-6">Status</th>
-                <th className="px-4 py-3 font-medium sm:px-6">Access</th>
-                {canManage ? <th className="px-4 py-3 font-medium sm:px-6">Actions</th> : null}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
+        <ProviderPageSection
+          icon={UsersRound}
+          title="Team members"
+          subtitle={`${filtered.length} member${filtered.length === 1 ? "" : "s"}`}
+          noPadding
+        >
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left text-sm">
+              <thead className="border-b border-deep-teal/10 bg-surface-muted/50 text-xs uppercase tracking-wide text-deep-teal/45">
                 <tr>
-                  <td colSpan={canManage ? 6 : 5} className="px-6 py-8 text-center text-deep-teal/50">
-                    No members found.
-                  </td>
+                  <th className="px-4 py-3 font-medium sm:px-6">Name</th>
+                  <th className="px-4 py-3 font-medium sm:px-6">Email</th>
+                  <th className="px-4 py-3 font-medium sm:px-6">Role</th>
+                  <th className="px-4 py-3 font-medium sm:px-6">Status</th>
+                  <th className="px-4 py-3 font-medium sm:px-6">Access</th>
+                  {canManage ? <th className="px-4 py-3 font-medium sm:px-6">Actions</th> : null}
                 </tr>
-              ) : (
-                filtered.map((user) => (
-                  <tr key={user.id} className="border-b border-deep-teal/5 last:border-0">
-                    <td className="px-4 py-3 font-medium sm:px-6">{user.name}</td>
-                    <td className="px-4 py-3 text-deep-teal/70 sm:px-6">{user.email}</td>
-                    <td className="px-4 py-3 sm:px-6">
-                      {ACCESS_LEVEL_LABELS[user.access_level]}
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={canManage ? 6 : 5} className="px-6 py-8 text-center text-deep-teal/50">
+                      No members found.
                     </td>
-                    <td className="px-4 py-3 sm:px-6"><StatusPill status={user.status} /></td>
-                    <td className="px-4 py-3 sm:px-6">
-                      {user.status === "pending" ? (
-                        <span className="text-xs text-deep-teal/45">Awaiting accept</span>
-                      ) : (
-                        <label className="inline-flex cursor-pointer items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={user.is_active}
-                            disabled={!canManage || user.access_level === "owner"}
-                            onChange={() => void handleToggleAccess(user)}
-                            className="size-4 rounded border-deep-teal/20 text-pacific-teal"
-                          />
-                          <span className="text-xs text-deep-teal/55">
-                            {user.is_active ? "On" : "Off"}
-                          </span>
-                        </label>
-                      )}
-                    </td>
-                    {canManage ? (
+                  </tr>
+                ) : (
+                  filtered.map((user) => (
+                    <tr key={user.id} className="border-b border-deep-teal/5 last:border-0">
+                      <td className="px-4 py-3 font-medium sm:px-6">{user.name}</td>
+                      <td className="px-4 py-3 text-deep-teal/70 sm:px-6">{user.email}</td>
                       <td className="px-4 py-3 sm:px-6">
-                        {user.access_level !== "owner" ? (
-                          <button
-                            type="button"
-                            onClick={() => void handleRemove(user)}
-                            className="text-xs font-medium text-deep-teal/45 hover:text-deep-teal"
-                          >
-                            {user.status === "pending" ? "Cancel" : "Remove"}
-                          </button>
+                        {ACCESS_LEVEL_LABELS[user.access_level]}
+                      </td>
+                      <td className="px-4 py-3 sm:px-6"><StatusPill status={user.status} /></td>
+                      <td className="px-4 py-3 sm:px-6">
+                        {user.status === "pending" ? (
+                          <span className="text-xs text-deep-teal/45">Awaiting accept</span>
                         ) : (
-                          <span className="text-xs text-deep-teal/35">—</span>
+                          <label className="inline-flex cursor-pointer items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={user.is_active}
+                              disabled={!canManage || user.access_level === "owner"}
+                              onChange={() => void handleToggleAccess(user)}
+                              className="size-4 rounded border-deep-teal/20 text-pacific-teal"
+                            />
+                            <span className="text-xs text-deep-teal/55">
+                              {user.is_active ? "On" : "Off"}
+                            </span>
+                          </label>
                         )}
                       </td>
-                    ) : null}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                      {canManage ? (
+                        <td className="px-4 py-3 sm:px-6">
+                          {user.access_level !== "owner" ? (
+                            <button
+                              type="button"
+                              onClick={() => void handleRemove(user)}
+                              className="text-xs font-medium text-deep-teal/45 hover:text-deep-teal"
+                            >
+                              {user.status === "pending" ? "Cancel" : "Remove"}
+                            </button>
+                          ) : (
+                            <span className="text-xs text-deep-teal/35">—</span>
+                          )}
+                        </td>
+                      ) : null}
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </ProviderPageSection>
       </div>
 
       <InviteUserModal

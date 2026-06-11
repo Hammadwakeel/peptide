@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { parseTrackingCsv } from "@/lib/orders/mock-data";
+import { parseTrackingCsv } from "@/lib/orders/tracking-csv";
 import type { TrackingCsvRow } from "@/lib/orders/types";
 import { toast } from "@/lib/toast";
 
@@ -9,9 +9,15 @@ type BulkTrackingImportModalProps = {
   open: boolean;
   onClose: () => void;
   onConfirm: (rows: TrackingCsvRow[]) => { updated: number; failed: number };
+  validOrderIds?: Set<string>;
 };
 
-export function BulkTrackingImportModal({ open, onClose, onConfirm }: BulkTrackingImportModalProps) {
+export function BulkTrackingImportModal({
+  open,
+  onClose,
+  onConfirm,
+  validOrderIds,
+}: BulkTrackingImportModalProps) {
   const [rows, setRows] = useState<TrackingCsvRow[]>([]);
   const [fileName, setFileName] = useState("");
   const [isDragging, setIsDragging] = useState(false);
@@ -28,7 +34,7 @@ export function BulkTrackingImportModal({ open, onClose, onConfirm }: BulkTracki
     setResult(null);
     const reader = new FileReader();
     reader.onload = () => {
-      setRows(parseTrackingCsv(String(reader.result ?? "")));
+      setRows(parseTrackingCsv(String(reader.result ?? ""), validOrderIds));
     };
     reader.readAsText(file);
   }
@@ -119,7 +125,7 @@ export function BulkTrackingImportModal({ open, onClose, onConfirm }: BulkTracki
             </div>
 
             {errorRows.length > 0 ? (
-              <ul className="mt-3 space-y-1 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-600">
+              <ul className="mt-3 space-y-1 rounded-xl border border-coral-blush bg-coral-blush/40 p-3 text-xs text-deep-teal/80">
                 {errorRows.map((row) => (
                   <li key={row.row}>Row {row.row}: {row.error}</li>
                 ))}

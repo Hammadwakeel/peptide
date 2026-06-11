@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
+import { Tooltip } from "@/components/ui/Tippy";
 import { FrontierLogo } from "@/components/FrontierLogo";
 import { fadeIn, motion, transition } from "@/components/motion";
 
@@ -61,16 +62,18 @@ export function Navbar() {
             <span className="sm:hidden">Portal</span>
           </Link>
 
-          <button
-            type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-deep-teal/10 text-deep-teal md:hidden"
-            aria-expanded={menuOpen}
-            aria-controls="mobile-nav"
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            onClick={() => setMenuOpen((open) => !open)}
-          >
-            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          <Tooltip content={menuOpen ? "Close menu" : "Open menu"}>
+            <button
+              type="button"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-deep-teal/10 text-deep-teal md:hidden"
+              aria-expanded={menuOpen}
+              aria-controls="mobile-nav"
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              onClick={() => setMenuOpen((open) => !open)}
+            >
+              {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </Tooltip>
         </div>
       </div>
 

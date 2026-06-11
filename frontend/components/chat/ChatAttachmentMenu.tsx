@@ -1,6 +1,7 @@
 "use client";
 
 import { FileText, ImageIcon, Music, Plus } from "lucide-react";
+import { Tooltip } from "@/components/ui/Tippy";
 import { useEffect, useRef } from "react";
 
 type ChatAttachmentMenuProps = {
@@ -51,18 +52,20 @@ export function ChatAttachmentMenu({
 
   return (
     <div ref={rootRef} className="relative shrink-0">
-      <button
-        type="button"
-        onClick={onToggle}
-        disabled={disabled}
-        className={`flex size-10 items-center justify-center rounded-full text-deep-teal/70 transition-transform hover:bg-deep-teal/5 hover:text-deep-teal disabled:opacity-40 ${
-          open ? "rotate-45 bg-deep-teal/5 text-deep-teal" : ""
-        }`}
-        aria-label="Attach file"
-        aria-expanded={open}
-      >
-        <Plus className="size-5" />
-      </button>
+      <Tooltip content="Attach file" visible={open ? false : undefined}>
+        <button
+          type="button"
+          onClick={onToggle}
+          disabled={disabled}
+          className={`flex size-10 items-center justify-center rounded-full text-deep-teal/70 transition-transform hover:bg-deep-teal/5 hover:text-deep-teal disabled:opacity-40 ${
+            open ? "rotate-45 bg-deep-teal/5 text-deep-teal" : ""
+          }`}
+          aria-label="Attach file"
+          aria-expanded={open}
+        >
+          <Plus className="size-5" />
+        </button>
+      </Tooltip>
 
       {open ? (
         <div className="absolute bottom-12 left-0 z-20 min-w-[180px] overflow-hidden rounded-2xl border border-deep-teal/10 bg-pure-white py-2 shadow-lg">

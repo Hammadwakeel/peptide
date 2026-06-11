@@ -1,6 +1,7 @@
 "use client";
 
 import { FileText, Loader2, Music, Send, X } from "lucide-react";
+import { Tooltip, TruncateTooltip } from "@/components/ui/Tippy";
 import { useState } from "react";
 import type { ChatMediaMessageType } from "@/lib/chat/types";
 
@@ -29,14 +30,16 @@ export function ChatMediaPreview({ attachment, onCancel, onSend, disabled = fals
     <div className="border-t border-deep-teal/10 bg-deep-teal/[0.03]">
       <div className="flex items-center justify-between px-4 py-2">
         <p className="text-xs font-medium uppercase tracking-wide text-deep-teal/50">Preview</p>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="rounded-full p-1 text-deep-teal/50 hover:bg-deep-teal/5 hover:text-deep-teal"
-          aria-label="Cancel attachment"
-        >
-          <X className="size-4" />
-        </button>
+        <Tooltip content="Cancel attachment">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-full p-1 text-deep-teal/50 hover:bg-deep-teal/5 hover:text-deep-teal"
+            aria-label="Cancel attachment"
+          >
+            <X className="size-4" />
+          </button>
+        </Tooltip>
       </div>
 
       <div className="px-4 pb-3">
@@ -62,7 +65,9 @@ export function ChatMediaPreview({ attachment, onCancel, onSend, disabled = fals
               <FileText className="size-6" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-deep-teal">{attachment.file.name}</p>
+              <TruncateTooltip content={attachment.file.name}>
+                <p className="truncate text-sm font-medium text-deep-teal">{attachment.file.name}</p>
+              </TruncateTooltip>
               <p className="text-xs text-deep-teal/50">
                 {(attachment.file.size / 1024).toFixed(1)} KB · Document
               </p>
@@ -74,7 +79,9 @@ export function ChatMediaPreview({ attachment, onCancel, onSend, disabled = fals
           <div className="rounded-2xl border border-deep-teal/10 bg-pure-white p-4 shadow-sm">
             <div className="mb-3 flex items-center gap-2 text-deep-teal">
               <Music className="size-5" />
-              <span className="truncate text-sm font-medium">{attachment.file.name}</span>
+              <TruncateTooltip content={attachment.file.name}>
+                <span className="truncate text-sm font-medium">{attachment.file.name}</span>
+              </TruncateTooltip>
             </div>
             {attachment.previewUrl ? (
               <audio controls src={attachment.previewUrl} className="w-full" />
@@ -108,15 +115,17 @@ export function ChatMediaPreview({ attachment, onCancel, onSend, disabled = fals
             }
           }}
         />
-        <button
-          type="button"
-          onClick={handleSend}
-          disabled={disabled || (attachment.messageType === "image" && !attachment.previewUrl)}
-          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-deep-teal text-pure-white hover:bg-pacific-teal disabled:opacity-40"
-          aria-label="Send attachment"
-        >
-          <Send className="size-4" />
-        </button>
+        <Tooltip content="Send attachment">
+          <button
+            type="button"
+            onClick={handleSend}
+            disabled={disabled || (attachment.messageType === "image" && !attachment.previewUrl)}
+            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-deep-teal text-pure-white hover:bg-pacific-teal disabled:opacity-40"
+            aria-label="Send attachment"
+          >
+            <Send className="size-4" />
+          </button>
+        </Tooltip>
       </div>
     </div>
   );

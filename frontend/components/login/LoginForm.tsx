@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   AuthCard,
@@ -46,13 +46,35 @@ const ROLE_HEADINGS: Record<
   },
 };
 
+const ROLE_QUERY_VALUES = ["admin", "affiliate", "doctor", "patient"] as const;
+
+function roleFromPathname(pathname: string): UserRole | undefined {
+  if (pathname === "/login/admin") return "admin";
+  if (pathname === "/login/affiliate") return "affiliate";
+  return undefined;
+}
+
+function roleFromSearchParams(
+  searchParams: ReturnType<typeof useSearchParams>,
+): UserRole | undefined {
+  const queryRole = searchParams.get("role");
+  if (queryRole && ROLE_QUERY_VALUES.includes(queryRole as (typeof ROLE_QUERY_VALUES)[number])) {
+    return queryRole as UserRole;
+  }
+  return undefined;
+}
+
 export function LoginForm({ fixedRole }: LoginFormProps = {}) {
   const { login } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
+  const resolvedFixedRole = fixedRole ?? roleFromPathname(pathname);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<UserRole>(fixedRole ?? "doctor");
+  const [role, setRole] = useState<UserRole>(
+    () => resolvedFixedRole ?? roleFromSearchParams(searchParams) ?? "doctor",
+  );
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -60,10 +82,17 @@ export function LoginForm({ fixedRole }: LoginFormProps = {}) {
     if (searchParams.get("verified") === "1") {
       toast.success("Email verified. You can sign in now.");
     }
-    if (!fixedRole && searchParams.get("role") === "patient") {
-      setRole("patient");
+
+    if (resolvedFixedRole) {
+      setRole(resolvedFixedRole);
+      return;
     }
-  }, [searchParams, fixedRole]);
+
+    const queryRole = roleFromSearchParams(searchParams);
+    if (queryRole) {
+      setRole(queryRole);
+    }
+  }, [searchParams, resolvedFixedRole]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -80,7 +109,10 @@ export function LoginForm({ fixedRole }: LoginFormProps = {}) {
       if (error instanceof OtpRequiredError) {
         storePendingLogin({ email, password, role, rememberMe });
         toast.info("Enter the verification code sent to your email.");
-        router.push(`/login/verify-otp?email=${encodeURIComponent(error.email)}`);
+        const verifyUrl = new URL("/login/verify-otp", window.location.origin);
+        verifyUrl.searchParams.set("email", error.email);
+        verifyUrl.searchParams.set("role", role);
+        router.push(`${verifyUrl.pathname}${verifyUrl.search}`);
         return;
       }
 
@@ -91,7 +123,8 @@ export function LoginForm({ fixedRole }: LoginFormProps = {}) {
   }
 
   const redirectTarget = searchParams.get("redirect");
-  const heading = ROLE_HEADINGS[fixedRole ?? "doctor"];
+  const heading = ROLE_HEADINGS[resolvedFixedRole ?? "doctor"];
+  const roleToggleRoles = resolvedFixedRole ? [resolvedFixedRole] : (["doctor", "patient"] as UserRole[]);
 
   return (
     <AuthShell background="hands">
@@ -161,14 +194,9 @@ export function LoginForm({ fixedRole }: LoginFormProps = {}) {
             </motion.div>
 
             <motion.div variants={fadeInUp} transition={transition}>
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <label htmlFor="password" className="text-sm font-medium text-deep-teal">
-                  Password
-                </label>
-                <Link href="/forgot-password" className={`text-sm ${authLinkClassName}`}>
-                  Forgot password?
-                </Link>
-              </div>
+              <label htmlFor="password" className={authLabelClassName}>
+                Password
+              </label>
               <input
                 id="password"
                 type="password"
@@ -182,11 +210,13 @@ export function LoginForm({ fixedRole }: LoginFormProps = {}) {
               />
             </motion.div>
 
-            {!fixedRole ? (
-              <motion.div variants={fadeInUp} transition={transition}>
-                <RoleToggle value={role} onChange={setRole} roles={["doctor", "patient"]} />
-              </motion.div>
-            ) : null}
+            <motion.div variants={fadeInUp} transition={transition}>
+              <RoleToggle
+                value={role}
+                onChange={resolvedFixedRole ? () => {} : setRole}
+                roles={roleToggleRoles}
+              />
+            </motion.div>
 
             <motion.label
               variants={fadeInUp}
@@ -215,20 +245,22 @@ export function LoginForm({ fixedRole }: LoginFormProps = {}) {
             </motion.button>
           </motion.form>
 
-          <motion.p
-            className="mt-6 text-center text-sm text-deep-teal/60"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...transition, delay: 0.45 }}
-          >
-            Are you a clinic?{" "}
-            <Link href="/apply" className={authLinkClassName}>
-              Apply here.
-            </Link>
-          </motion.p>
+          {resolvedFixedRole !== "admin" && resolvedFixedRole !== "affiliate" ? (
+            <motion.p
+              className="mt-6 text-center text-sm text-deep-teal/60"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...transition, delay: 0.45 }}
+            >
+              Are you a clinic?{" "}
+              <Link href="/apply" className={authLinkClassName}>
+                Apply here.
+              </Link>
+            </motion.p>
+          ) : null}
 
           <motion.div
-            className="mt-4 flex justify-center"
+            className={`flex justify-center ${resolvedFixedRole === "admin" || resolvedFixedRole === "affiliate" ? "mt-6" : "mt-4"}`}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...transition, delay: 0.55 }}

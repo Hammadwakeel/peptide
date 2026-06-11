@@ -1,8 +1,15 @@
 "use client";
 
 import Image from "next/image";
+import { Tooltip } from "@/components/ui/Tippy";
 import type { BrowseProduct } from "@/lib/patient-portal/types";
-import { STOCK_STATUS_LABELS } from "@/lib/products/types";
+import { STOCK_STATUS_LABELS, type StockStatus } from "@/lib/products/types";
+
+const PATIENT_STOCK_TIPS: Record<StockStatus, string> = {
+  in_stock: "Ready to order from your clinic.",
+  low_stock: "Limited stock — order soon.",
+  out_of_stock: "Currently unavailable to order.",
+};
 
 type PatientProductCardProps = {
   product: BrowseProduct;
@@ -20,9 +27,11 @@ function StockBadge({ product }: { product: BrowseProduct }) {
     out_of_stock: "bg-deep-teal/10 text-deep-teal/45",
   };
   return (
-    <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${styles[status]}`}>
-      {STOCK_STATUS_LABELS[status]}
-    </span>
+    <Tooltip content={PATIENT_STOCK_TIPS[status]}>
+      <span className={`cursor-help rounded-full px-2 py-0.5 text-[10px] font-medium ${styles[status]}`}>
+        {STOCK_STATUS_LABELS[status]}
+      </span>
+    </Tooltip>
   );
 }
 
@@ -58,9 +67,11 @@ export function PatientProductCard({ product, view, onRequest, onOrder, onInfo }
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm font-medium text-deep-teal">${product.price}</p>
             <div className="flex gap-2">
-              <button type="button" onClick={onInfo} aria-label="Product details" className="rounded-full border border-deep-teal/15 px-2 py-1 text-sm text-deep-teal/60">
-                ℹ
-              </button>
+              <Tooltip content="View product details">
+                <button type="button" onClick={onInfo} aria-label="Product details" className="rounded-full border border-deep-teal/15 px-2 py-1 text-sm text-deep-teal/60">
+                  ℹ
+                </button>
+              </Tooltip>
               <button
                 type="button"
                 disabled={product.stockStatus === "out_of_stock"}
@@ -90,14 +101,16 @@ export function PatientProductCard({ product, view, onRequest, onOrder, onInfo }
           sizes="(max-width:768px) 50vw, 33vw"
           unoptimized={isRemoteImage(product.image)}
         />
-        <button
-          type="button"
-          onClick={onInfo}
-          aria-label="Product details"
-          className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-pure-white/95 text-sm text-deep-teal/70 shadow-sm"
-        >
-          ℹ
-        </button>
+        <Tooltip content="View product details">
+          <button
+            type="button"
+            onClick={onInfo}
+            aria-label="Product details"
+            className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-pure-white/95 text-sm text-deep-teal/70 shadow-sm"
+          >
+            ℹ
+          </button>
+        </Tooltip>
       </div>
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-start justify-between gap-2">

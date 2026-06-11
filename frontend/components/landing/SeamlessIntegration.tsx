@@ -10,6 +10,7 @@ import {
   transition,
   viewport,
 } from "@/components/motion";
+import { BRAND_SURFACE_CLASSES } from "@/lib/brand/colors";
 
 const cards = [
   {
@@ -17,28 +18,28 @@ const cards = [
     title: "API-First Architecture",
     description:
       "Sync verification data directly with existing EHR, EMR, and clinical systems.",
-    bg: "bg-[#E6F0EE]",
+    bg: BRAND_SURFACE_CLASSES[0],
   },
   {
     icon: LayoutDashboard,
     title: "Unified Dashboard",
     description:
       "One interface for verification, traceability, and operational oversight.",
-    bg: "bg-[#F3EFE9]",
+    bg: BRAND_SURFACE_CLASSES[1],
   },
   {
     icon: Bell,
     title: "Proactive Alerts",
     description:
       "Receive instant notifications when batches reach critical verification milestones.",
-    bg: "bg-[#E8EEF2]",
+    bg: BRAND_SURFACE_CLASSES[2],
   },
   {
     icon: Workflow,
     title: "Workflow Continuity",
     description:
       "Deploy without disrupting practitioners, inventory systems, or existing processes.",
-    bg: "bg-[#F2F4F7]",
+    bg: BRAND_SURFACE_CLASSES[3],
   },
 ];
 

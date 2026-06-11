@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Tooltip } from "@/components/ui/Tippy";
 import type { PatientOrder } from "@/lib/patients/types";
 import { ORDER_STATUS_LABELS } from "@/lib/patients/types";
 
@@ -41,13 +42,15 @@ export function OrderHistoryTab({ orders }: OrderHistoryTabProps) {
               <td className="px-4 py-3 text-deep-teal/70">{ORDER_STATUS_LABELS[order.status]}</td>
               <td className="px-4 py-3 text-deep-teal">${order.total}</td>
               <td className="px-4 py-3 text-right">
-                <button
-                  type="button"
-                  aria-label={`View order ${order.id}`}
-                  className="text-pacific-teal hover:text-deep-teal"
-                >
-                  →
-                </button>
+                <Tooltip content={`View order ${order.id}`}>
+                  <button
+                    type="button"
+                    aria-label={`View order ${order.id}`}
+                    className="text-pacific-teal hover:text-deep-teal"
+                  >
+                    →
+                  </button>
+                </Tooltip>
               </td>
             </tr>
           ))}

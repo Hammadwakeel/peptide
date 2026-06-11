@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { WMS_DASHBOARD_METRICS } from "@/lib/wms/mock-data";
+import { useMemo } from "react";
 import { WmsSubNav } from "@/components/portal/admin/wms/WmsSubNav";
+import { useAdminOrders } from "@/context/OrdersProvider";
+import { BRAND_COLORS, BRAND_RGBA } from "@/lib/brand/colors";
+import type { WmsDashboardMetrics } from "@/lib/wms/types";
 
 function OnTimeGauge({ rate }: { rate: number }) {
   const circumference = 2 * Math.PI * 54;
@@ -11,13 +14,13 @@ function OnTimeGauge({ rate }: { rate: number }) {
   return (
     <div className="relative mx-auto size-36">
       <svg viewBox="0 0 120 120" className="size-full -rotate-90">
-        <circle cx="60" cy="60" r="54" fill="none" stroke="#0d717b15" strokeWidth="10" />
+        <circle cx="60" cy="60" r="54" fill="none" stroke={BRAND_RGBA.pacificTeal15} strokeWidth="10" />
         <circle
           cx="60"
           cy="60"
           r="54"
           fill="none"
-          stroke="#0d717b"
+          stroke={BRAND_COLORS.pacificTeal}
           strokeWidth="10"
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -32,8 +35,41 @@ function OnTimeGauge({ rate }: { rate: number }) {
   );
 }
 
+function computeWmsMetrics(orders: ReturnType<typeof useAdminOrders>["allOrders"]): WmsDashboardMetrics {
+  const pendingShipments = orders.filter(
+    (order) =>
+      order.paymentStatus === "paid" &&
+      (order.shipmentStatus === "not_shipped" || order.shipmentStatus === "processing"),
+  ).length;
+
+  const shippedOrders = orders.filter(
+    (order) => order.paymentDate && order.tracking?.shippedDate,
+  );
+
+  const avgDaysToShip =
+    shippedOrders.length > 0
+      ? Math.round(
+          (shippedOrders.reduce((sum, order) => {
+            const shipped = new Date(order.tracking!.shippedDate!).getTime();
+            const paid = new Date(order.paymentDate!).getTime();
+            return sum + Math.max(0, (shipped - paid) / 86_400_000);
+          }, 0) /
+            shippedOrders.length) *
+            10,
+        ) / 10
+      : 0;
+
+  return {
+    pendingShipments,
+    avgDaysToShip,
+    lateOrders: 0,
+    onTimeRate: shippedOrders.length > 0 ? 100 : 0,
+  };
+}
+
 export function WmsDashboard() {
-  const metrics = WMS_DASHBOARD_METRICS;
+  const { allOrders } = useAdminOrders();
+  const metrics = useMemo(() => computeWmsMetrics(allOrders), [allOrders]);
 
   return (
     <div className="space-y-6">

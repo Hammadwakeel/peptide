@@ -1,6 +1,7 @@
 "use client";
 
 import { Mic, Send, Trash2 } from "lucide-react";
+import { Tooltip } from "@/components/ui/Tippy";
 import { useState } from "react";
 import { formatDuration } from "@/lib/chat/types";
 import { VoiceWaveform } from "@/components/chat/VoiceWaveform";
@@ -53,15 +54,17 @@ export function VoiceNoteRecorder({ recording, onCancel, onSend, disabled = fals
         <p className="mb-2 px-1 text-xs text-coral-blush">{sendError}</p>
       ) : null}
       <div className="flex items-center gap-3 rounded-full bg-deep-teal/[0.04] px-3 py-2">
-        <button
-          type="button"
-          onClick={handleCancel}
-          disabled={isSending}
-          className="flex size-10 shrink-0 items-center justify-center rounded-full text-coral-blush hover:bg-coral-blush/10 disabled:opacity-40"
-          aria-label="Cancel recording"
-        >
-          <Trash2 className="size-5" />
-        </button>
+        <Tooltip content="Cancel recording">
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={isSending}
+            className="flex size-10 shrink-0 items-center justify-center rounded-full text-coral-blush hover:bg-coral-blush/10 disabled:opacity-40"
+            aria-label="Cancel recording"
+          >
+            <Trash2 className="size-5" />
+          </button>
+        </Tooltip>
 
         <span className="relative flex size-3 shrink-0">
           <span className="absolute inline-flex size-full animate-ping rounded-full bg-coral-blush/60" />
@@ -78,15 +81,17 @@ export function VoiceNoteRecorder({ recording, onCancel, onSend, disabled = fals
           {recording.isReady ? formatDuration(recording.elapsedMs) : "0:00"}
         </span>
 
-        <button
-          type="button"
-          onClick={() => void handleSend()}
-          disabled={isSending || disabled || !recording.isReady}
-          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-deep-teal text-pure-white hover:bg-pacific-teal disabled:opacity-40"
-          aria-label="Send voice note"
-        >
-          {isSending ? <Mic className="size-4 animate-pulse" /> : <Send className="size-4" />}
-        </button>
+        <Tooltip content="Send voice note">
+          <button
+            type="button"
+            onClick={() => void handleSend()}
+            disabled={isSending || disabled || !recording.isReady}
+            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-deep-teal text-pure-white hover:bg-pacific-teal disabled:opacity-40"
+            aria-label="Send voice note"
+          >
+            {isSending ? <Mic className="size-4 animate-pulse" /> : <Send className="size-4" />}
+          </button>
+        </Tooltip>
       </div>
     </div>
   );

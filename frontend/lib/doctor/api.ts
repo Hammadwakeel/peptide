@@ -138,6 +138,21 @@ export async function listDoctorPatients(
   );
 }
 
+export async function fetchAllDoctorPatients() {
+  const limit = 100;
+  let page = 1;
+  const patients: DoctorPatientsResponse["patients"] = [];
+
+  while (true) {
+    const response = await listDoctorPatients({ page, limit });
+    patients.push(...response.patients);
+    if (!response.pagination.has_next) break;
+    page += 1;
+  }
+
+  return patients;
+}
+
 export async function invitePatient(
   payload: InvitePatientPayload,
 ): Promise<InvitePatientResponse> {

@@ -1,6 +1,8 @@
 "use client";
 
+import { RoleOnboardingJoyride } from "@/components/onboarding/RoleOnboardingJoyride";
 import { PortalSidebarLayout, type SidebarLink } from "@/components/portal/shared/PortalSidebarLayout";
+import { PortalBootstrap } from "@/components/bootstrap/PortalBootstrap";
 import { AdminOrdersProvider } from "@/context/OrdersProvider";
 
 const ADMIN_LINKS: SidebarLink[] = [
@@ -19,7 +21,9 @@ const ADMIN_LINKS: SidebarLink[] = [
 export function AdminPortalLayout({ children }: { children: React.ReactNode }) {
   return (
     <AdminOrdersProvider>
+      <PortalBootstrap role="admin" />
       <PortalSidebarLayout portalLabel="Admin portal" links={ADMIN_LINKS}>
+        <RoleOnboardingJoyride role="admin" />
         {children}
       </PortalSidebarLayout>
     </AdminOrdersProvider>

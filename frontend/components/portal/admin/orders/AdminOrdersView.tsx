@@ -9,6 +9,9 @@ import {
   type PaymentStatus,
   type ShipmentStatus,
 } from "@/lib/orders/types";
+import { Tooltip } from "@/components/ui/Tippy";
+import { fuseSearch } from "@/lib/search/fuse";
+import { ORDER_SEARCH_KEYS } from "@/lib/search/keys";
 import { toast } from "@/lib/toast";
 
 function PaymentPill({ status }: { status: PaymentStatus }) {
@@ -41,16 +44,7 @@ export function AdminOrdersView() {
   );
 
   const orders = useMemo(() => {
-    let list = [...allOrders];
-    const query = search.trim().toLowerCase();
-    if (query) {
-      list = list.filter(
-        (order) =>
-          order.id.toLowerCase().includes(query) ||
-          order.clinicName.toLowerCase().includes(query) ||
-          (order.customerName?.toLowerCase().includes(query) ?? false),
-      );
-    }
+    let list = fuseSearch(allOrders, search, ORDER_SEARCH_KEYS);
     if (clinicFilter !== "all") {
       list = list.filter((order) => order.clinicName === clinicFilter);
     }
@@ -202,25 +196,28 @@ export function AdminOrdersView() {
                 <td className="px-4 py-3 font-medium text-pacific-teal">${order.profit}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        toggleFlag(order.id);
-                        toast.success(order.flagged ? "Flag removed." : "Order flagged.");
-                      }}
-                      className={`text-lg leading-none ${order.flagged ? "text-coral-blush" : "text-deep-teal/30 hover:text-coral-blush"}`}
-                      aria-label={order.flagged ? "Remove flag" : "Flag order"}
-                      title={order.flagged ? "Remove flag" : "Flag order"}
-                    >
-                      ⚑
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => toast.success(`Refund initiated for ${order.id}.`)}
-                      className="text-xs text-pacific-teal hover:underline"
-                    >
-                      Refund
-                    </button>
+                    <Tooltip content={order.flagged ? "Remove flag" : "Flag order for review"}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          toggleFlag(order.id);
+                          toast.success(order.flagged ? "Flag removed." : "Order flagged.");
+                        }}
+                        className={`text-lg leading-none ${order.flagged ? "text-coral-blush" : "text-deep-teal/30 hover:text-coral-blush"}`}
+                        aria-label={order.flagged ? "Remove flag" : "Flag order"}
+                      >
+                        ⚑
+                      </button>
+                    </Tooltip>
+                    <Tooltip content="Initiate a refund for this order">
+                      <button
+                        type="button"
+                        onClick={() => toast.success(`Refund initiated for ${order.id}.`)}
+                        className="text-xs text-pacific-teal hover:underline"
+                      >
+                        Refund
+                      </button>
+                    </Tooltip>
                   </div>
                 </td>
               </tr>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { parseMockCsv } from "@/lib/products/mock-data";
+import { parseProductCsv } from "@/lib/products/csv-import";
 import type { CsvImportRow } from "@/lib/products/types";
 import { toast } from "@/lib/toast";
 
@@ -19,7 +19,7 @@ export function AdminBulkImport() {
     const reader = new FileReader();
     reader.onload = () => {
       const text = String(reader.result ?? "");
-      setRows(parseMockCsv(text));
+      setRows(parseProductCsv(text));
     };
     reader.readAsText(file);
   }
@@ -88,9 +88,9 @@ export function AdminBulkImport() {
           </div>
 
           {errorRows.length > 0 ? (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-4">
-              <p className="text-sm font-medium text-red-700">Failed rows</p>
-              <ul className="mt-2 space-y-1 text-xs text-red-600">
+            <div className="rounded-xl border border-coral-blush bg-coral-blush/40 p-4">
+              <p className="text-sm font-medium text-deep-teal">Failed rows</p>
+              <ul className="mt-2 space-y-1 text-xs text-deep-teal/80">
                 {errorRows.map((row) => (
                   <li key={row.row}>Row {row.row}: {row.error}</li>
                 ))}

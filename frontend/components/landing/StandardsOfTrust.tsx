@@ -9,6 +9,7 @@ import {
   transition,
   viewport,
 } from "@/components/motion";
+import { BRAND_SURFACE_CLASSES } from "@/lib/brand/colors";
 
 const metrics = [
   {
@@ -16,34 +17,34 @@ const metrics = [
     label: "Purity Verification Rate",
     description:
       "Every molecular batch undergoes multi-stage verification before release.",
-    bg: "bg-[#E6F0EE]",
+    bg: BRAND_SURFACE_CLASSES[0],
   },
   {
     value: "24/7",
     label: "Batch Traceability",
     description:
       "Complete chain-of-custody visibility from synthesis to practitioner delivery.",
-    bg: "bg-[#F3EFE9]",
+    bg: BRAND_SURFACE_CLASSES[1],
   },
   {
     value: "3x",
     label: "Validation Layers",
     description:
       "Independent verification protocols eliminate single-point failure.",
-    bg: "bg-[#E8EEF2]",
+    bg: BRAND_SURFACE_CLASSES[2],
   },
   {
     value: "100%",
     label: "Domestic Workflow",
     description:
       "Controlled verification and documentation within a single ecosystem.",
-    bg: "bg-[#F2F4F7]",
+    bg: BRAND_SURFACE_CLASSES[3],
   },
 ];
 
 export function StandardsOfTrust() {
   return (
-    <section id="standards" className="bg-slate-50 py-14 sm:py-20 lg:py-24">
+    <section id="standards" className="bg-surface-muted py-14 sm:py-20 lg:py-24">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-8 md:px-12 lg:px-20 xl:px-28">
         <motion.div
           className="mb-10 text-center sm:mb-16"
@@ -91,7 +92,7 @@ export function StandardsOfTrust() {
             {metrics.map((metric) => (
               <motion.div
                 key={metric.label}
-                className={`group rounded-2xl border border-deep-teal/5 ${metric.bg} p-6 transition-all duration-500 sm:rounded-[2.5rem] sm:p-10 sm:hover:-translate-y-2 sm:hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)]`}
+                className={`group rounded-2xl border border-deep-teal/5 ${metric.bg} p-6 transition-all duration-500 sm:rounded-[2.5rem] sm:p-10 sm:hover:-translate-y-2 sm:hover:shadow-[0_20px_50px_rgba(1,26,36,0.08)]`}
                 variants={fadeInUp}
                 transition={transition}
               >

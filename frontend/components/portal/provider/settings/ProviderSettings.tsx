@@ -2,10 +2,17 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { RefreshCw, Settings } from "lucide-react";
 import {
   authInputClassName,
   authLabelClassName,
 } from "@/components/auth/AuthShell";
+import { ProviderPageSection } from "@/components/portal/provider/shared/ProviderPageSection";
+import {
+  ProviderPageToolbar,
+  toolbarBtnClass,
+  toolbarBtnPrimaryClass,
+} from "@/components/portal/provider/shared/ProviderPageToolbar";
 import {
   getClinicProfile,
   updateClinicAddress,
@@ -19,6 +26,7 @@ import type {
   ClinicPermission,
   ClinicProfileResponse,
 } from "@/lib/doctor/clinic-types";
+import { DEFAULT_THEME_COLOR } from "@/lib/brand/colors";
 import { showError, toast } from "@/lib/toast";
 
 const SETTINGS_TABS = [
@@ -63,7 +71,7 @@ export function ProviderSettings() {
   });
   const [branding, setBranding] = useState({
     tagline: "",
-    theme_color: "#0d717b",
+    theme_color: DEFAULT_THEME_COLOR,
     logo_url: null as string | null,
   });
   const [banking, setBanking] = useState({
@@ -105,7 +113,7 @@ export function ProviderSettings() {
     }
     setBranding({
       tagline: data.branding.tagline || "",
-      theme_color: data.branding.theme_color || "#0d717b",
+      theme_color: data.branding.theme_color || DEFAULT_THEME_COLOR,
       logo_url: data.branding.logo_url,
     });
     if (data.banking) {
@@ -206,19 +214,11 @@ export function ProviderSettings() {
   }
 
   if (isLoading) {
-    return (
-      <div className="rounded-[2rem] border border-deep-teal/10 bg-pure-white p-8 text-sm text-deep-teal/55 shadow-sm">
-        Loading clinic profile…
-      </div>
-    );
+    return <p className="py-12 text-center text-sm text-deep-teal/50">Loading clinic profile…</p>;
   }
 
   if (!profile) {
-    return (
-      <div className="rounded-[2rem] border border-deep-teal/10 bg-pure-white p-8 text-sm text-deep-teal/55 shadow-sm">
-        Clinic profile unavailable.
-      </div>
-    );
+    return <p className="py-12 text-center text-sm text-deep-teal/50">Clinic profile unavailable.</p>;
   }
 
   const logoPreview = logoFile ? URL.createObjectURL(logoFile) : branding.logo_url;
@@ -227,16 +227,42 @@ export function ProviderSettings() {
   const readOnlyBanking = !canEdit("edit_banking");
   const readOnlySettings = !canEdit("edit_settings");
 
-  return (
-    <div className="rounded-[2rem] border border-deep-teal/10 bg-pure-white shadow-sm">
-      <div className="border-b border-deep-teal/10 px-4 py-4 sm:px-6">
-        <h2 className="font-serif text-xl font-light text-deep-teal">{profile.clinic.clinic_name}</h2>
-        <p className="mt-1 text-sm text-deep-teal/55">
-          {profile.clinic.email} · Role: {profile.membership.access_level.replace("_", " ")}
-        </p>
-      </div>
+  const canSaveCurrentTab =
+    (activeTab === "Practice Info" && !readOnlyPractice) ||
+    (activeTab === "Storefront Branding" && !readOnlyBranding) ||
+    (activeTab === "Banking" && !readOnlyBanking) ||
+    (activeTab === "Notifications" && !readOnlySettings);
 
-      <div className="flex flex-wrap gap-2 border-b border-deep-teal/10 p-4 sm:p-6">
+  return (
+    <div className="space-y-5">
+      <ProviderPageToolbar title="Settings">
+        <button
+          type="button"
+          onClick={() => void loadProfile()}
+          disabled={isLoading}
+          className={toolbarBtnClass}
+          aria-label="Refresh settings"
+        >
+          <RefreshCw className="size-4" aria-hidden="true" />
+        </button>
+        {canSaveCurrentTab ? (
+          <button
+            type="button"
+            onClick={() => void handleSave()}
+            disabled={isSaving}
+            className={toolbarBtnPrimaryClass}
+          >
+            {isSaving ? "Saving…" : "Save changes"}
+          </button>
+        ) : null}
+      </ProviderPageToolbar>
+
+      <ProviderPageSection
+        icon={Settings}
+        title={profile.clinic.clinic_name}
+        subtitle={`${profile.clinic.email} · ${profile.membership.access_level.replace("_", " ")}`}
+      >
+      <div className="flex flex-wrap gap-2 border-b border-deep-teal/10 pb-5">
         {SETTINGS_TABS.map((tab) => (
           <button
             key={tab}
@@ -253,7 +279,7 @@ export function ProviderSettings() {
         ))}
       </div>
 
-      <div className="space-y-4 p-4 sm:p-6">
+      <div className="space-y-4 pt-5">
         {activeTab === "Practice Info" ? (
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
@@ -523,22 +549,11 @@ export function ProviderSettings() {
           </div>
         ) : null}
 
-        {(activeTab === "Practice Info" && !readOnlyPractice) ||
-        (activeTab === "Storefront Branding" && !readOnlyBranding) ||
-        (activeTab === "Banking" && !readOnlyBanking) ||
-        (activeTab === "Notifications" && !readOnlySettings) ? (
-          <button
-            type="button"
-            onClick={() => void handleSave()}
-            disabled={isSaving}
-            className="rounded-full bg-deep-teal px-5 py-2.5 text-sm font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-60"
-          >
-            {isSaving ? "Saving…" : "Save changes"}
-          </button>
-        ) : (
+        {!canSaveCurrentTab ? (
           <p className="text-sm text-deep-teal/50">View only — contact your clinic owner to make changes.</p>
-        )}
+        ) : null}
       </div>
+      </ProviderPageSection>
     </div>
   );
 }

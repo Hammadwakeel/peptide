@@ -1,8 +1,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { MOCK_AUDIT_LOG, MOCK_COMPLIANCE } from "@/lib/admin/mock-data";
-import { COMPLIANCE_STATUS_LABELS, type ComplianceStatus } from "@/lib/admin/types";
+import {
+  COMPLIANCE_STATUS_LABELS,
+  type AuditLogEntry,
+  type ClinicCompliance,
+  type ComplianceStatus,
+} from "@/lib/admin/types";
+
+const COMPLIANCE_ROWS: ClinicCompliance[] = [];
+const AUDIT_LOG_ENTRIES: AuditLogEntry[] = [];
+import { fuseSearch } from "@/lib/search/fuse";
+import { AUDIT_LOG_SEARCH_KEYS } from "@/lib/search/keys";
 import { toast } from "@/lib/toast";
 
 function StatusCell({ status }: { status: ComplianceStatus }) {
@@ -10,7 +19,7 @@ function StatusCell({ status }: { status: ComplianceStatus }) {
     verified: "text-pacific-teal",
     pending: "text-deep-teal/60",
     expired: "text-coral-blush",
-    missing: "text-red-600",
+    missing: "text-deep-teal",
   };
   return <span className={`text-xs font-medium ${styles[status]}`}>{COMPLIANCE_STATUS_LABELS[status]}</span>;
 }
@@ -21,16 +30,7 @@ export function AdminComplianceView() {
   const [actionFilter, setActionFilter] = useState("all");
 
   const auditEntries = useMemo(() => {
-    let list = [...MOCK_AUDIT_LOG];
-    const q = auditSearch.trim().toLowerCase();
-    if (q) {
-      list = list.filter(
-        (entry) =>
-          entry.actor.toLowerCase().includes(q) ||
-          entry.action.toLowerCase().includes(q) ||
-          entry.entity.toLowerCase().includes(q),
-      );
-    }
+    let list = fuseSearch(AUDIT_LOG_ENTRIES, auditSearch, AUDIT_LOG_SEARCH_KEYS);
     if (actionFilter !== "all") {
       list = list.filter((entry) => entry.action.startsWith(actionFilter));
     }
@@ -38,7 +38,7 @@ export function AdminComplianceView() {
   }, [auditSearch, actionFilter]);
 
   const actionTypes = useMemo(
-    () => Array.from(new Set(MOCK_AUDIT_LOG.map((e) => e.action.split(".")[0]))),
+    () => Array.from(new Set(AUDIT_LOG_ENTRIES.map((e) => e.action.split(".")[0]))),
     [],
   );
 
@@ -69,7 +69,7 @@ export function AdminComplianceView() {
                 </tr>
               </thead>
               <tbody>
-                {MOCK_COMPLIANCE.map((row) => (
+                {COMPLIANCE_ROWS.map((row) => (
                   <tr key={row.id} className="border-b border-deep-teal/5">
                     <td className="px-4 py-3 font-medium text-deep-teal">{row.clinicName}</td>
                     <td className="px-4 py-3"><StatusCell status={row.npiStatus} /></td>
@@ -84,6 +84,9 @@ export function AdminComplianceView() {
                 ))}
               </tbody>
             </table>
+            {COMPLIANCE_ROWS.length === 0 ? (
+              <p className="px-4 py-10 text-center text-sm text-deep-teal/50">No compliance records yet.</p>
+            ) : null}
           </div>
         </>
       ) : (
@@ -102,6 +105,11 @@ export function AdminComplianceView() {
             </select>
           </div>
           <div className="space-y-3">
+            {auditEntries.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-deep-teal/15 px-6 py-12 text-center text-sm text-deep-teal/50">
+                No audit log entries yet.
+              </p>
+            ) : null}
             {auditEntries.map((entry) => (
               <article key={entry.id} className="rounded-xl border border-deep-teal/10 bg-pure-white p-4 shadow-sm">
                 <div className="flex flex-wrap items-start justify-between gap-2">

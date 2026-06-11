@@ -1,10 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { MessageSquare, RefreshCw } from "lucide-react";
 import { ChatThreadList } from "@/components/chat/ChatThreadList";
 import { ProviderActiveThread } from "@/components/portal/provider/messages/ProviderActiveThread";
+import { ProviderPageSection } from "@/components/portal/provider/shared/ProviderPageSection";
+import {
+  ProviderPageToolbar,
+  toolbarBtnPrimaryClass,
+} from "@/components/portal/provider/shared/ProviderPageToolbar";
 import { useChat } from "@/context/ChatProvider";
 
 export function ProviderChatPage() {
@@ -38,17 +43,18 @@ export function ProviderChatPage() {
   }
 
   if (loading) {
-    return <p className="text-sm text-deep-teal/50">Loading messages…</p>;
+    return <p className="py-12 text-center text-sm text-deep-teal/50">Loading messages…</p>;
   }
 
   if (error) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-5">
+        <ProviderPageToolbar title="Messages" />
         <p className="text-sm text-coral-blush">{error}</p>
         <button
           type="button"
-          onClick={() => void refreshThreads()}
-          className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm text-deep-teal"
+          onClick={() => void refreshThreads({ force: true })}
+          className={toolbarBtnPrimaryClass}
         >
           Retry
         </button>
@@ -57,46 +63,49 @@ export function ProviderChatPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-serif text-2xl font-light text-deep-teal">Messages</h1>
-          <p className="mt-1 text-sm text-deep-teal/55">
-            Patient conversations · also reachable from{" "}
-            <Link href="/portal/doctor/customers" className="text-pacific-teal hover:underline">
-              Customers
-            </Link>
-          </p>
-        </div>
-      </div>
+    <div className="space-y-5">
+      <ProviderPageToolbar title="Messages">
+        <button
+          type="button"
+          onClick={() => void refreshThreads({ force: true })}
+          className={toolbarBtnPrimaryClass}
+          aria-label="Refresh messages"
+        >
+          <RefreshCw className="size-4" aria-hidden="true" />
+        </button>
+      </ProviderPageToolbar>
 
-      <div className="overflow-hidden rounded-2xl border border-deep-teal/10 bg-pure-white shadow-sm lg:grid lg:grid-cols-[320px_minmax(0,1fr)]">
-        <div className="border-b border-deep-teal/10 lg:border-b-0 lg:border-r">
-          <div className="border-b border-deep-teal/10 px-4 py-3">
-            <p className="text-xs font-medium uppercase tracking-wide text-deep-teal/45">Threads</p>
+      <ProviderPageSection
+        icon={MessageSquare}
+        title="Conversations"
+        subtitle={`${threads.length} thread${threads.length === 1 ? "" : "s"}`}
+        noPadding
+      >
+        <div className="lg:grid lg:grid-cols-[320px_minmax(0,1fr)]">
+          <div className="border-b border-deep-teal/10 lg:border-b-0 lg:border-r">
+            {threads.length === 0 ? (
+              <p className="px-4 py-6 text-sm text-deep-teal/50">
+                No conversations yet. Start one from a patient profile or customer list.
+              </p>
+            ) : (
+              <ChatThreadList
+                threads={threads}
+                activePatientId={activePatientId}
+                onSelect={selectPatient}
+              />
+            )}
           </div>
-          {threads.length === 0 ? (
-            <p className="px-4 py-6 text-sm text-deep-teal/50">
-              No conversations yet. Start one from a patient profile or customer list.
-            </p>
-          ) : (
-            <ChatThreadList
-              threads={threads}
-              activePatientId={activePatientId}
-              onSelect={selectPatient}
-            />
-          )}
+          <div>
+            {activeThread ? (
+              <ProviderActiveThread thread={activeThread} />
+            ) : (
+              <div className="flex h-[420px] items-center justify-center text-sm text-deep-teal/50">
+                Select a conversation
+              </div>
+            )}
+          </div>
         </div>
-        <div>
-          {activeThread ? (
-            <ProviderActiveThread thread={activeThread} />
-          ) : (
-            <div className="flex h-[420px] items-center justify-center text-sm text-deep-teal/50">
-              Select a conversation
-            </div>
-          )}
-        </div>
-      </div>
+      </ProviderPageSection>
     </div>
   );
 }

@@ -3,7 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ArrowLeft, LayoutGrid } from "lucide-react";
 import { authInputClassName, authLabelClassName } from "@/components/auth/AuthShell";
+import { ProviderPageSection } from "@/components/portal/provider/shared/ProviderPageSection";
+import {
+  ProviderPageToolbar,
+  toolbarBtnClass,
+  toolbarBtnPrimaryClass,
+} from "@/components/portal/provider/shared/ProviderPageToolbar";
 import { useProviderPortal } from "@/context/ProviderPortalProvider";
 import type { CatalogProduct } from "@/lib/products/catalog-types";
 import {
@@ -111,22 +118,47 @@ export function ProviderProductDetail({ productId }: ProviderProductDetailProps)
   }
 
   if (!product && isRefreshing) {
-    return <p className="text-sm text-deep-teal/60">Loading product…</p>;
+    return <p className="py-12 text-center text-sm text-deep-teal/50">Loading product…</p>;
   }
 
   if (!product) {
-    return <p className="text-sm text-deep-teal/60">Product not found.</p>;
+    return (
+      <div className="space-y-5">
+        <ProviderPageToolbar title="Product not found">
+          <Link href="/portal/doctor/inventory" className={toolbarBtnClass}>
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Back</span>
+          </Link>
+        </ProviderPageToolbar>
+      </div>
+    );
   }
 
   const imageUrl = mainImage || getPrimaryImage(product) || "/brand/product-vial-2x-blend-hero.png";
   const inStore = product.in_my_store ?? isInMyStore(product.id);
 
   return (
-    <div className="space-y-6">
-      <Link href="/portal/doctor/inventory" className="inline-flex text-sm text-pacific-teal hover:underline">
-        Back to Inventory
-      </Link>
+    <div className="space-y-5">
+      <ProviderPageToolbar title={product.name}>
+        <Link href="/portal/doctor/inventory" className={toolbarBtnClass}>
+          <ArrowLeft className="size-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Back</span>
+        </Link>
+        <button
+          type="button"
+          disabled={isSaving}
+          onClick={() => void handleSaveRetailPrice()}
+          className={toolbarBtnPrimaryClass}
+        >
+          {isSaving ? "Saving…" : inStore ? "Update price" : "Add to store"}
+        </button>
+      </ProviderPageToolbar>
 
+      <ProviderPageSection
+        icon={LayoutGrid}
+        title="Product details"
+        subtitle={product.category.name ?? "Uncategorized"}
+      >
       <div className="grid gap-8 lg:grid-cols-2">
         <div className="flex gap-4">
           {product.images.length > 1 ? (
@@ -161,15 +193,9 @@ export function ProviderProductDetail({ productId }: ProviderProductDetailProps)
         </div>
 
         <div className="space-y-5">
-          <div>
-            <p className="text-xs uppercase tracking-wide text-deep-teal/45">
-              {product.category.name ?? "Uncategorized"}
-            </p>
-            <h2 className="mt-1 font-serif text-3xl font-light text-deep-teal">{product.name}</h2>
-            <p className="mt-2 text-sm text-deep-teal/65">{product.description ?? "—"}</p>
-          </div>
+          <p className="text-sm text-deep-teal/65">{product.description ?? "—"}</p>
 
-          <div className="grid gap-3 rounded-2xl border border-deep-teal/10 p-4 sm:grid-cols-2">
+          <div className="grid gap-3 rounded-xl border border-deep-teal/10 p-4 sm:grid-cols-2">
             {[
               ["SKU", product.sku],
               ["Product type", CATALOG_PRODUCT_TYPE_LABELS[product.product_type]],
@@ -191,26 +217,16 @@ export function ProviderProductDetail({ productId }: ProviderProductDetailProps)
             ))}
           </div>
 
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="flex-1">
-              <label className={authLabelClassName}>Set retail price ($)</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={retailPrice}
-                onChange={(e) => setRetailPrice(e.target.value)}
-                className={authInputClassName}
-              />
-            </div>
-            <button
-              type="button"
-              disabled={isSaving}
-              onClick={() => void handleSaveRetailPrice()}
-              className="rounded-full bg-deep-teal px-5 py-3 text-sm font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-60"
-            >
-              {isSaving ? "Saving…" : inStore ? "Update My Store price" : "Add to My Store"}
-            </button>
+          <div>
+            <label className={authLabelClassName}>Retail price ($)</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={retailPrice}
+              onChange={(e) => setRetailPrice(e.target.value)}
+              className={authInputClassName}
+            />
           </div>
 
           {product.directions ? (
@@ -221,6 +237,7 @@ export function ProviderProductDetail({ productId }: ProviderProductDetailProps)
           ) : null}
         </div>
       </div>
+      </ProviderPageSection>
     </div>
   );
 }

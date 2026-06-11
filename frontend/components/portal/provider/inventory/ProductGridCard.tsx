@@ -2,8 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Tooltip } from "@/components/ui/Tippy";
 import type { CatalogProduct, CatalogStockStatus } from "@/lib/products/catalog-types";
 import { CATALOG_STOCK_STATUS_LABELS, getPrimaryImage } from "@/lib/products/catalog-types";
+
+const STOCK_TIPS: Record<CatalogStockStatus, string> = {
+  in_stock: "Available to order from the catalog.",
+  low: "Limited inventory — order soon.",
+  out_of_stock: "Currently unavailable.",
+};
 
 type ProductGridCardProps = {
   product: CatalogProduct;
@@ -22,9 +29,11 @@ function StockBadge({ status }: { status: CatalogStockStatus }) {
     out_of_stock: "bg-deep-teal/10 text-deep-teal/45",
   };
   return (
-    <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${styles[status]}`}>
-      {CATALOG_STOCK_STATUS_LABELS[status]}
-    </span>
+    <Tooltip content={STOCK_TIPS[status]}>
+      <span className={`cursor-help rounded-full px-2 py-0.5 text-[10px] font-medium ${styles[status]}`}>
+        {CATALOG_STOCK_STATUS_LABELS[status]}
+      </span>
+    </Tooltip>
   );
 }
 
@@ -56,9 +65,11 @@ export function ProductGridCard({
             </div>
             <div className="flex items-center gap-2">
               <StockBadge status={product.stock_status} />
-              <button type="button" onClick={onToggleFavorite} aria-label="Toggle favorite" className="text-lg leading-none">
-                {isFavorite ? "★" : "☆"}
-              </button>
+              <Tooltip content={isFavorite ? "Remove from favorites" : "Add to favorites"}>
+                <button type="button" onClick={onToggleFavorite} aria-label="Toggle favorite" className="text-lg leading-none">
+                  {isFavorite ? "★" : "☆"}
+                </button>
+              </Tooltip>
             </div>
           </div>
           <p className="mt-2 line-clamp-2 text-sm text-deep-teal/60">
@@ -88,14 +99,16 @@ export function ProductGridCard({
     <article className="flex flex-col overflow-hidden rounded-2xl border border-deep-teal/10 bg-pure-white shadow-sm">
       <div className="relative aspect-[4/3]">
         <Image src={imageUrl} alt="" fill className="object-cover" sizes="(max-width:768px) 100vw, 33vw" unoptimized={imageUrl.startsWith("http")} />
-        <button
-          type="button"
-          onClick={onToggleFavorite}
-          className="absolute right-3 top-3 rounded-full bg-pure-white/90 px-2 py-1 text-sm"
-          aria-label="Toggle favorite"
-        >
-          {isFavorite ? "★" : "☆"}
-        </button>
+        <Tooltip content={isFavorite ? "Remove from favorites" : "Add to favorites"}>
+          <button
+            type="button"
+            onClick={onToggleFavorite}
+            className="absolute right-3 top-3 rounded-full bg-pure-white/90 px-2 py-1 text-sm"
+            aria-label="Toggle favorite"
+          >
+            {isFavorite ? "★" : "☆"}
+          </button>
+        </Tooltip>
       </div>
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-start justify-between gap-2">

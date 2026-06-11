@@ -2,6 +2,15 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { Download, Package, RefreshCw } from "lucide-react";
+import {
+  ProviderPageSection,
+} from "@/components/portal/provider/shared/ProviderPageSection";
+import {
+  ProviderPageToolbar,
+  toolbarBtnClass,
+  toolbarBtnPrimaryClass,
+} from "@/components/portal/provider/shared/ProviderPageToolbar";
 import { useOrders } from "@/context/OrdersProvider";
 import { getPatientInitials } from "@/lib/patients/types";
 import {
@@ -15,13 +24,16 @@ import {
   type PaymentStatus,
   type ShipmentStatus,
 } from "@/lib/orders/types";
+import { Tooltip } from "@/components/ui/Tippy";
+import { fuseSearch } from "@/lib/search/fuse";
+import { ORDER_SEARCH_KEYS } from "@/lib/search/keys";
 import { toast } from "@/lib/toast";
 
 function PaymentPill({ status }: { status: PaymentStatus }) {
   const styles: Record<PaymentStatus, string> = {
     paid: "bg-pacific-teal/10 text-pacific-teal",
     pending: "bg-coral-blush text-deep-teal/70",
-    failed: "bg-red-100 text-red-700",
+    failed: "bg-coral-blush/60 text-deep-teal",
     refunded: "bg-deep-teal/10 text-deep-teal/55",
     partial_refund: "bg-deep-teal/10 text-deep-teal/70",
   };
@@ -47,15 +59,6 @@ function ShipmentPill({ status }: { status: ShipmentStatus }) {
   );
 }
 
-function formatDate(value: string | null) {
-  if (!value) return "—";
-  return new Date(value).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
 function filterByTab(orders: Order[], tab: OrderTab): Order[] {
   if (tab === "all") return orders;
   return orders.filter((order) => order.reviewStatus === tab);
@@ -67,17 +70,8 @@ export function OrderManagement() {
   const [search, setSearch] = useState("");
 
   const orders = useMemo(() => {
-    let list = filterByTab(clinicOrders, tab);
-    const query = search.trim().toLowerCase();
-    if (query) {
-      list = list.filter(
-        (order) =>
-          order.id.toLowerCase().includes(query) ||
-          (order.orderNumber?.toLowerCase().includes(query) ?? false) ||
-          (order.customerName?.toLowerCase().includes(query) ?? false),
-      );
-    }
-    return list;
+    const list = filterByTab(clinicOrders, tab);
+    return fuseSearch(list, search, ORDER_SEARCH_KEYS);
   }, [clinicOrders, tab, search]);
 
   function handleExport() {
@@ -94,128 +88,131 @@ export function OrderManagement() {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl border border-deep-teal/10 bg-deep-teal/[0.02] px-4 py-4 sm:px-5">
-        <h2 className="font-serif text-xl font-light text-deep-teal">Order Management</h2>
-        <p className="mt-1 text-sm text-deep-teal/60">
-          Review patient orders, approve fulfillment, and track shipments.
-        </p>
-      </div>
+      <ProviderPageToolbar title="Orders">
+        <select
+          value={tab}
+          onChange={(e) => setTab(e.target.value as OrderTab)}
+          className="rounded-full border border-deep-teal/25 bg-pure-white px-4 py-2 text-sm text-deep-teal outline-none focus:border-deep-teal"
+        >
+          {(Object.keys(ORDER_TAB_LABELS) as OrderTab[]).map((key) => (
+            <option key={key} value={key}>
+              {ORDER_TAB_LABELS[key]}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          onClick={handleExport}
+          className={toolbarBtnClass}
+        >
+          <Download className="size-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Export</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => void refreshOrders({ force: true })}
+          disabled={isLoading}
+          className={toolbarBtnPrimaryClass}
+          aria-label="Refresh orders"
+        >
+          <RefreshCw className={`size-4 ${isLoading ? "animate-spin" : ""}`} aria-hidden="true" />
+        </button>
+      </ProviderPageToolbar>
 
-      <div className="flex flex-wrap gap-2">
-        {(Object.keys(ORDER_TAB_LABELS) as OrderTab[]).map((key) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setTab(key)}
-            className={`rounded-full px-4 py-2 text-sm font-medium ${
-              tab === key
-                ? "bg-deep-teal text-pure-white"
-                : "border border-deep-teal/15 text-deep-teal/70"
-            }`}
-          >
-            {ORDER_TAB_LABELS[key]}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search orders…"
-          className="w-full rounded-xl border border-deep-teal/15 px-3 py-2 text-sm outline-none focus:border-pacific-teal lg:max-w-sm"
-        />
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => void refreshOrders()}
-            className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal hover:border-pacific-teal"
-          >
-            Refresh
-          </button>
-          <button
-            type="button"
-            onClick={handleExport}
-            className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal hover:border-pacific-teal"
-          >
-            Export Orders
-          </button>
+      <ProviderPageSection
+        icon={Package}
+        title="Order list"
+        subtitle={
+          isLoading
+            ? "Loading…"
+            : `${orders.length} order${orders.length === 1 ? "" : "s"} · ${ORDER_TAB_LABELS[tab]}`
+        }
+        noPadding
+      >
+        <div className="border-b border-deep-teal/10 p-4 sm:px-5">
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search orders…"
+            className="w-full rounded-full border border-deep-teal/15 px-4 py-2 text-sm outline-none focus:border-pacific-teal sm:max-w-sm"
+          />
         </div>
-      </div>
-
-      <div className="overflow-x-auto rounded-2xl border border-deep-teal/10 bg-pure-white shadow-sm">
-        <table className="min-w-full text-left text-sm">
-          <thead className="border-b border-deep-teal/10 bg-deep-teal/[0.02] text-xs uppercase tracking-wide text-deep-teal/45">
-            <tr>
-              <th className="px-4 py-3 font-medium">Order</th>
-              <th className="px-4 py-3 font-medium">Patient</th>
-              <th className="px-4 py-3 font-medium">Review</th>
-              <th className="px-4 py-3 font-medium">Payment</th>
-              <th className="px-4 py-3 font-medium">Shipment</th>
-              <th className="px-4 py-3 font-medium">Items</th>
-              <th className="px-4 py-3 font-medium">Total</th>
-              <th className="px-4 py-3 font-medium">Profit</th>
-              <th className="px-4 py-3 font-medium" aria-label="Action" />
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-left text-sm">
+            <thead className="border-b border-deep-teal/10 bg-surface-muted/50 text-xs uppercase tracking-wide text-deep-teal/45">
               <tr>
-                <td colSpan={9} className="px-4 py-10 text-center text-sm text-deep-teal/50">
-                  Loading orders…
-                </td>
+                <th className="px-4 py-3 font-medium">Order</th>
+                <th className="px-4 py-3 font-medium">Patient</th>
+                <th className="px-4 py-3 font-medium">Review</th>
+                <th className="px-4 py-3 font-medium">Payment</th>
+                <th className="px-4 py-3 font-medium">Shipment</th>
+                <th className="px-4 py-3 font-medium">Items</th>
+                <th className="px-4 py-3 font-medium">Total</th>
+                <th className="px-4 py-3 font-medium">Profit</th>
+                <th className="px-4 py-3 font-medium" aria-label="Action" />
               </tr>
-            ) : (
-              orders.map((order) => (
-                <tr key={order.id} className="border-b border-deep-teal/5 last:border-0">
-                  <td className="px-4 py-3 font-mono text-xs font-medium text-deep-teal">
-                    {order.orderNumber ?? order.id}
-                  </td>
-                  <td className="px-4 py-3">
-                    {order.customerName ? (
-                      <div className="flex items-center gap-2">
-                        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-deep-teal/10 text-[10px] font-medium text-deep-teal">
-                          {getPatientInitials(order.customerName)}
-                        </span>
-                        <span className="text-deep-teal">{order.customerName}</span>
-                      </div>
-                    ) : (
-                      <span className="text-deep-teal/50">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-deep-teal/70">
-                    {order.reviewStatus ? REVIEW_STATUS_LABELS[order.reviewStatus] : "—"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <PaymentPill status={order.paymentStatus} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <ShipmentPill status={order.shipmentStatus} />
-                  </td>
-                  <td className="px-4 py-3 text-deep-teal">{order.itemsCount}</td>
-                  <td className="px-4 py-3 text-deep-teal">${order.total.toFixed(2)}</td>
-                  <td className="px-4 py-3 font-medium text-pacific-teal">
-                    ${order.profit.toFixed(2)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/portal/doctor/orders/${order.id}`}
-                      className="text-pacific-teal hover:text-deep-teal"
-                      aria-label={`View ${order.orderNumber ?? order.id}`}
-                    >
-                      →
-                    </Link>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={9} className="px-4 py-10 text-center text-sm text-deep-teal/50">
+                    Loading orders…
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-        {!isLoading && orders.length === 0 ? (
-          <p className="px-4 py-10 text-center text-sm text-deep-teal/50">No orders in this view.</p>
-        ) : null}
-      </div>
+              ) : (
+                orders.map((order) => (
+                  <tr key={order.id} className="border-b border-deep-teal/5 last:border-0">
+                    <td className="px-4 py-3 font-mono text-xs font-medium text-deep-teal">
+                      {order.orderNumber ?? order.id}
+                    </td>
+                    <td className="px-4 py-3">
+                      {order.customerName ? (
+                        <div className="flex items-center gap-2">
+                          <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-deep-teal/10 text-[10px] font-medium text-deep-teal">
+                            {getPatientInitials(order.customerName)}
+                          </span>
+                          <span className="text-deep-teal">{order.customerName}</span>
+                        </div>
+                      ) : (
+                        <span className="text-deep-teal/50">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-deep-teal/70">
+                      {order.reviewStatus ? REVIEW_STATUS_LABELS[order.reviewStatus] : "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <PaymentPill status={order.paymentStatus} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <ShipmentPill status={order.shipmentStatus} />
+                    </td>
+                    <td className="px-4 py-3 text-deep-teal">{order.itemsCount}</td>
+                    <td className="px-4 py-3 text-deep-teal">${order.total.toFixed(2)}</td>
+                    <td className="px-4 py-3 font-medium text-pacific-teal">
+                      ${order.profit.toFixed(2)}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Tooltip content={`View order ${order.orderNumber ?? order.id}`}>
+                        <Link
+                          href={`/portal/doctor/orders/${order.id}`}
+                          className="text-pacific-teal hover:text-deep-teal"
+                          aria-label={`View ${order.orderNumber ?? order.id}`}
+                        >
+                          →
+                        </Link>
+                      </Tooltip>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+          {!isLoading && orders.length === 0 ? (
+            <p className="px-4 py-10 text-center text-sm text-deep-teal/50">No orders in this view.</p>
+          ) : null}
+        </div>
+      </ProviderPageSection>
     </div>
   );
 }

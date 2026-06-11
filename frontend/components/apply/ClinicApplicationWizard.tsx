@@ -3,15 +3,12 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  AuthCard,
-  AuthShell,
-  authLinkClassName,
-} from "@/components/auth/AuthShell";
+import { ApplyJoyride } from "@/components/onboarding/JoyrideTour";
+import { ApplyShell } from "@/components/apply/ApplyShell";
 import { StepBanking } from "@/components/apply/wizard/StepBanking";
 import { StepDocuments } from "@/components/apply/wizard/StepDocuments";
 import { StepPracticeInfo } from "@/components/apply/wizard/StepPracticeInfo";
-import { WizardStepper } from "@/components/apply/wizard/WizardStepper";
+import { motion, transition } from "@/components/motion";
 import { submitClinicApplication, uploadClinicDocuments } from "@/lib/apply/api";
 import { storeApplicationSummary } from "@/lib/apply/storage";
 import {
@@ -53,26 +50,35 @@ export function ClinicApplicationWizard() {
     }));
   }, [searchParams]);
 
-  function goNext() {
-    if (step === 1) {
-      const error = validatePracticeStep(state.practice);
-      if (error) return showError(new Error(error));
-    }
-    if (step === 2) {
-      const error = validateDocumentsStep(state.documents);
-      if (error) return showError(new Error(error));
-    }
-    setStep((current) => Math.min(current + 1, FINAL_STEP));
-  }
+  function selectTab(nextStep: number) {
+    if (nextStep === step) return;
 
-  function goBack() {
-    setStep((current) => Math.max(current - 1, 1));
+    if (nextStep > step) {
+      for (let current = step; current < nextStep; current += 1) {
+        if (current === 1) {
+          const error = validatePracticeStep(state.practice);
+          if (error) return showError(new Error(error));
+        }
+        if (current === 2) {
+          const error = validateDocumentsStep(state.documents);
+          if (error) return showError(new Error(error));
+        }
+      }
+    }
+
+    setStep(nextStep);
   }
 
   async function handleSubmit() {
     const validationError = validateApplicationState(state);
     if (validationError) {
       showError(new Error(validationError));
+      return;
+    }
+
+    const bankingError = validateBankingStep(state.banking);
+    if (bankingError) {
+      showError(new Error(bankingError));
       return;
     }
 
@@ -106,74 +112,67 @@ export function ClinicApplicationWizard() {
     }
   }
 
+  const footer = (
+    <>
+      <Link
+        href="/login"
+        className="text-sm font-medium text-deep-teal/55 transition-colors hover:text-deep-teal"
+      >
+        Already have an account? Sign in
+      </Link>
+
+      {step < FINAL_STEP ? (
+        <button
+          type="button"
+          onClick={() => selectTab(step + 1)}
+          className="ml-auto rounded-full bg-deep-teal px-7 py-3 text-sm font-medium text-pure-white shadow-lg shadow-deep-teal/15 transition-all hover:bg-pacific-teal"
+        >
+          Next: {step === 1 ? "Documents" : "Banking"}
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => void handleSubmit()}
+          disabled={isSubmitting}
+          className="ml-auto rounded-full bg-deep-teal px-7 py-3 text-sm font-medium text-pure-white shadow-lg shadow-deep-teal/15 transition-all hover:bg-pacific-teal disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isSubmitting ? "Submitting…" : "Submit application"}
+        </button>
+      )}
+    </>
+  );
+
   return (
-    <AuthShell background="merch-jacket" compact>
-      <AuthCard compact>
-        <div className="mb-4">
-          <span className="font-mono text-[10px] uppercase tracking-[0.35em] text-pacific-teal">
-            Provider onboarding
-          </span>
-          <h1 className="mt-2 font-serif text-xl font-light tracking-[-0.02em] text-deep-teal sm:text-2xl">
-            Clinic application
-          </h1>
+    <ApplyShell currentStep={step} onTabChange={selectTab} footer={footer}>
+      <ApplyJoyride />
+      <motion.div
+        key={step}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={transition}
+        className="flex h-full min-h-0 flex-col"
+      >
+        <div className="h-full min-h-0 flex-1">
+          {step === 1 ? (
+            <StepPracticeInfo
+              value={state.practice}
+              onChange={(practice) => setState((current) => ({ ...current, practice }))}
+            />
+          ) : null}
+          {step === 2 ? (
+            <StepDocuments
+              value={state.documents}
+              onChange={(documents) => setState((current) => ({ ...current, documents }))}
+            />
+          ) : null}
+          {step === 3 ? (
+            <StepBanking
+              value={state.banking}
+              onChange={(banking) => setState((current) => ({ ...current, banking }))}
+            />
+          ) : null}
         </div>
-
-        <WizardStepper currentStep={step} />
-
-        {step === 1 ? (
-          <StepPracticeInfo
-            value={state.practice}
-            onChange={(practice) => setState((current) => ({ ...current, practice }))}
-          />
-        ) : null}
-        {step === 2 ? (
-          <StepDocuments
-            value={state.documents}
-            onChange={(documents) => setState((current) => ({ ...current, documents }))}
-          />
-        ) : null}
-        {step === 3 ? (
-          <StepBanking
-            value={state.banking}
-            onChange={(banking) => setState((current) => ({ ...current, banking }))}
-          />
-        ) : null}
-
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-          {step > 1 ? (
-            <button
-              type="button"
-              onClick={goBack}
-              className="rounded-full border border-deep-teal/15 px-5 py-2.5 text-sm font-medium text-deep-teal hover:border-pacific-teal"
-            >
-              Back
-            </button>
-          ) : (
-            <Link href="/login" className={`text-sm ${authLinkClassName}`}>
-              Back to sign in
-            </Link>
-          )}
-
-          {step < FINAL_STEP ? (
-            <button
-              type="button"
-              onClick={goNext}
-              className="ml-auto rounded-full bg-deep-teal px-5 py-2.5 text-sm font-medium text-pure-white hover:bg-pacific-teal"
-            >
-              Continue
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => void handleSubmit()}
-              disabled={isSubmitting}
-              className="ml-auto rounded-full bg-deep-teal px-5 py-2.5 text-sm font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-60"
-            >
-              {isSubmitting ? "Submitting…" : "Submit application"}
-            </button>
-          )}
-        </div>
-      </AuthCard>
-    </AuthShell>
+      </motion.div>
+    </ApplyShell>
   );
 }

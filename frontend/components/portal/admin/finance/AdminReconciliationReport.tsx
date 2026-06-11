@@ -1,11 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  MOCK_RECONCILIATION_ROWS,
-  MOCK_RECONCILIATION_SUMMARY,
-} from "@/lib/finance/mock-data";
-import { isDateInRange, type AccountingTimeRange } from "@/lib/finance/types";
+import { isDateInRange, type AccountingTimeRange, type ReconciliationRow } from "@/lib/finance/types";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -27,34 +23,25 @@ export function AdminReconciliationReport() {
   const [range, setRange] = useState<AccountingTimeRange>("this_year");
   const [clinicFilter, setClinicFilter] = useState("all");
 
+  const rows = useMemo<ReconciliationRow[]>(() => [], [range, clinicFilter]);
+
   const clinics = useMemo(
-    () => Array.from(new Set(MOCK_RECONCILIATION_ROWS.map((row) => row.clinicName))).sort(),
-    [],
+    () => Array.from(new Set(rows.map((row) => row.clinicName))).sort(),
+    [rows],
   );
 
-  const rows = useMemo(() => {
-    return MOCK_RECONCILIATION_ROWS.filter((row) => {
-      if (!isDateInRange(row.date, range)) return false;
-      if (clinicFilter !== "all" && row.clinicName !== clinicFilter) return false;
-      return true;
-    });
-  }, [range, clinicFilter]);
-
-  const summary = useMemo(() => {
-    return rows.reduce(
-      (acc, row) => ({
-        totalCollected: acc.totalCollected + row.collected,
-        totalDisbursed: acc.totalDisbursed + row.disbursed,
-        platformRevenue: acc.platformRevenue + row.netPlatform,
-      }),
-      { totalCollected: 0, totalDisbursed: 0, platformRevenue: 0 },
-    );
-  }, [rows]);
-
-  const displaySummary =
-    range === "this_year" && clinicFilter === "all"
-      ? MOCK_RECONCILIATION_SUMMARY
-      : summary;
+  const displaySummary = useMemo(
+    () =>
+      rows.reduce(
+        (acc, row) => ({
+          totalCollected: acc.totalCollected + row.collected,
+          totalDisbursed: acc.totalDisbursed + row.disbursed,
+          platformRevenue: acc.platformRevenue + row.netPlatform,
+        }),
+        { totalCollected: 0, totalDisbursed: 0, platformRevenue: 0 },
+      ),
+    [rows],
+  );
 
   return (
     <div className="space-y-5">

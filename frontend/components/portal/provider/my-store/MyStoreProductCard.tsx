@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { Tooltip } from "@/components/ui/Tippy";
 import type { StoreProduct } from "@/lib/products/catalog-types";
 
 type MyStoreProductCardProps = {
@@ -44,19 +45,23 @@ export function MyStoreProductCard({
 
   return (
     <article className="relative flex flex-col overflow-hidden rounded-2xl border border-deep-teal/10 bg-pure-white shadow-sm">
-      <button
-        type="button"
-        onClick={onRemove}
-        disabled={isUpdating}
-        aria-label={`Remove ${product.name} from My Store`}
-        className="absolute right-3 top-3 z-10 flex size-8 items-center justify-center rounded-full bg-pure-white/95 text-lg leading-none text-deep-teal/60 shadow-sm transition-colors hover:bg-coral-blush hover:text-deep-teal disabled:opacity-50"
-      >
-        ×
-      </button>
+      <Tooltip content={`Remove ${product.name} from My Store`}>
+        <button
+          type="button"
+          onClick={onRemove}
+          disabled={isUpdating}
+          aria-label={`Remove ${product.name} from My Store`}
+          className="absolute right-3 top-3 z-10 flex size-8 items-center justify-center rounded-full bg-pure-white/95 text-lg leading-none text-deep-teal/60 shadow-sm transition-colors hover:bg-coral-blush hover:text-deep-teal disabled:opacity-50"
+        >
+          ×
+        </button>
+      </Tooltip>
       {!product.is_visible ? (
-        <span className="absolute left-3 top-3 z-10 rounded-full bg-deep-teal/80 px-2 py-0.5 text-[10px] font-medium text-pure-white">
-          Hidden
-        </span>
+        <Tooltip content="Hidden from your patient storefront">
+          <span className="absolute left-3 top-3 z-10 cursor-help rounded-full bg-deep-teal/80 px-2 py-0.5 text-[10px] font-medium text-pure-white">
+            Hidden
+          </span>
+        </Tooltip>
       ) : null}
       <div className={`relative aspect-[4/3] ${product.is_visible ? "" : "opacity-50"}`}>
         <Image

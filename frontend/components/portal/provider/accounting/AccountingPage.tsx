@@ -1,16 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { BarChart3, Download, DollarSign, Wallet } from "lucide-react";
 import { RevenueProfitChart } from "@/components/portal/provider/accounting/RevenueProfitChart";
 import { TopProductsChart } from "@/components/portal/provider/accounting/TopProductsChart";
+import { ProviderPageSection } from "@/components/portal/provider/shared/ProviderPageSection";
 import {
-  MOCK_PAID_ORDERS,
-  MOCK_PROVIDER_PAYOUTS,
-  MOCK_TOP_PRODUCTS,
-  MOCK_TREND_DATA,
-} from "@/lib/finance/mock-data";
+  ProviderPageToolbar,
+  toolbarBtnClass,
+} from "@/components/portal/provider/shared/ProviderPageToolbar";
 import {
-  isDateInRange,
   paidOrdersToCsv,
   PAID_ORDER_STATUS_LABELS,
   PAYOUT_STATUS_LABELS,
@@ -18,6 +17,9 @@ import {
   type AccountingTimeRange,
   type PaidOrderRow,
   type PayoutStatus,
+  type ProductProfitRow,
+  type ProviderPayout,
+  type TrendPoint,
 } from "@/lib/finance/types";
 import { toast } from "@/lib/toast";
 
@@ -30,7 +32,7 @@ function PayoutStatusPill({ status }: { status: PayoutStatus }) {
   const styles: Record<PayoutStatus, string> = {
     paid: "bg-pacific-teal/10 text-pacific-teal",
     processing: "bg-coral-blush text-deep-teal/70",
-    failed: "bg-red-100 text-red-700",
+    failed: "bg-coral-blush/60 text-deep-teal",
   };
   return (
     <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${styles[status]}`}>
@@ -63,18 +65,10 @@ export function AccountingPage() {
   const [sortAsc, setSortAsc] = useState(false);
   const [breakdownId, setBreakdownId] = useState<string | null>(null);
 
-  const trendData = useMemo(
-    () =>
-      MOCK_TREND_DATA.filter((point) =>
-        isDateInRange(point.date, range, customStart, customEnd),
-      ),
-    [range, customStart, customEnd],
-  );
+  const trendData = useMemo<TrendPoint[]>(() => [], [range, customStart, customEnd]);
 
   const paidOrders = useMemo(() => {
-    let list = MOCK_PAID_ORDERS.filter((row) =>
-      isDateInRange(row.date, range, customStart, customEnd),
-    );
+    const list: PaidOrderRow[] = [];
     list.sort((a, b) => {
       const av = a[sortKey];
       const bv = b[sortKey];
@@ -86,15 +80,11 @@ export function AccountingPage() {
         : String(bv).localeCompare(String(av));
     });
     return list;
-  }, [range, customStart, customEnd, sortKey, sortAsc]);
+  }, [sortKey, sortAsc]);
 
-  const payouts = useMemo(
-    () =>
-      MOCK_PROVIDER_PAYOUTS.filter((payout) =>
-        isDateInRange(payout.date, range, customStart, customEnd),
-      ),
-    [range, customStart, customEnd],
-  );
+  const topProducts = useMemo<ProductProfitRow[]>(() => [], []);
+
+  const payouts = useMemo<ProviderPayout[]>(() => [], [range, customStart, customEnd]);
 
   function handleSort(key: SortKey) {
     if (sortKey === key) setSortAsc((current) => !current);
@@ -119,34 +109,27 @@ export function AccountingPage() {
   const breakdown = payouts.find((payout) => payout.id === breakdownId);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 className="font-serif text-2xl font-light text-deep-teal">Accounting</h2>
-          <p className="mt-1 text-sm text-deep-teal/60">
-            Revenue, profit trends, paid orders, and clinic payouts.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
+    <div className="space-y-5">
+      <ProviderPageToolbar title="Accounting">
+        <select
+          value={range}
+          onChange={(e) => setRange(e.target.value as AccountingTimeRange)}
+          className="rounded-full border border-deep-teal/25 bg-pure-white px-4 py-2 text-sm text-deep-teal outline-none focus:border-deep-teal"
+        >
           {(Object.keys(TIME_RANGE_LABELS) as AccountingTimeRange[]).map((key) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setRange(key)}
-              className={`rounded-full px-3 py-1.5 text-xs font-medium sm:text-sm ${
-                range === key
-                  ? "bg-deep-teal text-pure-white"
-                  : "border border-deep-teal/15 text-deep-teal/70"
-              }`}
-            >
+            <option key={key} value={key}>
               {TIME_RANGE_LABELS[key]}
-            </button>
+            </option>
           ))}
-        </div>
-      </div>
+        </select>
+        <button type="button" onClick={handleExport} className={toolbarBtnClass}>
+          <Download className="size-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Export</span>
+        </button>
+      </ProviderPageToolbar>
 
       {range === "custom" ? (
-        <div className="flex flex-wrap gap-3 rounded-xl border border-deep-teal/10 bg-deep-teal/[0.02] p-4">
+        <div className="flex flex-wrap gap-3 rounded-2xl border border-deep-teal/20 bg-pure-white px-4 py-4 shadow-sm sm:px-5">
           <label className="text-sm text-deep-teal">
             <span className="mb-1 block text-xs text-deep-teal/45">Start</span>
             <input
@@ -169,34 +152,23 @@ export function AccountingPage() {
       ) : null}
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <section className="rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm">
-          <h3 className="text-sm font-medium text-deep-teal">Revenue &amp; Profit Trends</h3>
-          <div className="mt-4">
-            <RevenueProfitChart data={trendData} />
-          </div>
-        </section>
-        <section className="rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm">
-          <h3 className="text-sm font-medium text-deep-teal">Top Products by Profit</h3>
-          <div className="mt-4">
-            <TopProductsChart data={MOCK_TOP_PRODUCTS} />
-          </div>
-        </section>
+        <ProviderPageSection icon={BarChart3} title="Revenue & profit trends">
+          <RevenueProfitChart data={trendData} />
+        </ProviderPageSection>
+        <ProviderPageSection icon={DollarSign} title="Top products by profit">
+          <TopProductsChart data={topProducts} />
+        </ProviderPageSection>
       </div>
 
-      <section className="rounded-2xl border border-deep-teal/10 bg-pure-white shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-deep-teal/10 px-4 py-4 sm:px-5">
-          <h3 className="text-sm font-medium text-deep-teal">Paid Orders</h3>
-          <button
-            type="button"
-            onClick={handleExport}
-            className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal hover:border-pacific-teal"
-          >
-            Export CSV
-          </button>
-        </div>
+      <ProviderPageSection
+        icon={DollarSign}
+        title="Paid orders"
+        subtitle={`${paidOrders.length} order${paidOrders.length === 1 ? "" : "s"}`}
+        noPadding
+      >
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-deep-teal/10 bg-deep-teal/[0.02] text-xs uppercase tracking-wide text-deep-teal/45">
+            <thead className="border-b border-deep-teal/10 bg-surface-muted/50 text-xs uppercase tracking-wide text-deep-teal/45">
               <tr>
                 {(
                   [
@@ -240,15 +212,17 @@ export function AccountingPage() {
             <p className="px-4 py-10 text-center text-sm text-deep-teal/50">No paid orders in this range.</p>
           ) : null}
         </div>
-      </section>
+      </ProviderPageSection>
 
-      <section className="rounded-2xl border border-deep-teal/10 bg-pure-white shadow-sm">
-        <div className="border-b border-deep-teal/10 px-4 py-4 sm:px-5">
-          <h3 className="text-sm font-medium text-deep-teal">Provider Payouts</h3>
-        </div>
+      <ProviderPageSection
+        icon={Wallet}
+        title="Provider payouts"
+        subtitle={`${payouts.length} payout${payouts.length === 1 ? "" : "s"}`}
+        noPadding
+      >
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-deep-teal/10 bg-deep-teal/[0.02] text-xs uppercase tracking-wide text-deep-teal/45">
+            <thead className="border-b border-deep-teal/10 bg-surface-muted/50 text-xs uppercase tracking-wide text-deep-teal/45">
               <tr>
                 <th className="px-4 py-3 font-medium">Batch ID</th>
                 <th className="px-4 py-3 font-medium">Date</th>
@@ -281,7 +255,7 @@ export function AccountingPage() {
             <p className="px-4 py-10 text-center text-sm text-deep-teal/50">No payouts in this range.</p>
           ) : null}
         </div>
-      </section>
+      </ProviderPageSection>
 
       {breakdown ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-deep-teal/40 p-4">
@@ -309,7 +283,7 @@ export function AccountingPage() {
               </div>
             </dl>
             {breakdown.error ? (
-              <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-xs text-red-700">{breakdown.error}</p>
+              <p className="mt-4 rounded-xl bg-coral-blush/40 px-3 py-2 text-xs text-deep-teal">{breakdown.error}</p>
             ) : null}
             <button
               type="button"

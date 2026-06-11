@@ -2,6 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ArrowLeft, Package, Truck } from "lucide-react";
+import { PortalPageSection } from "@/components/portal/shared/PortalPageSection";
+import {
+  PortalPageToolbar,
+  toolbarBtnClass,
+  toolbarBtnPrimaryClass,
+} from "@/components/portal/shared/PortalPageToolbar";
 import { usePatientPortal } from "@/context/PatientPortalProvider";
 import { getPatientOrderTracking } from "@/lib/patient-portal/api";
 import type { PatientHistoryOrder } from "@/lib/patient-portal/types";
@@ -80,37 +87,44 @@ export function PatientOrderDetail({ orderId }: PatientOrderDetailProps) {
   }, [orderId, getHistoryOrder, fetchOrderDetail]);
 
   if (isLoading) {
-    return <p className="text-sm text-deep-teal/60">Loading order…</p>;
+    return <p className="py-12 text-center text-sm text-deep-teal/50">Loading order…</p>;
   }
 
   if (!order) {
     return (
-      <div className="rounded-2xl border border-deep-teal/10 p-8 text-center">
-        <p className="text-deep-teal">Order not found.</p>
-        <Link href="/portal/patient/orders" className="mt-4 inline-block text-sm text-pacific-teal hover:underline">
-          Back to order history
-        </Link>
+      <div className="space-y-5">
+        <PortalPageToolbar title="Order not found">
+          <Link href="/portal/patient/orders" className={toolbarBtnClass}>
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Back</span>
+          </Link>
+        </PortalPageToolbar>
       </div>
     );
   }
 
   return (
     <div className="space-y-5">
-      <Link href="/portal/patient/orders" className="inline-flex text-sm text-pacific-teal hover:underline">
-        ← Back to Order History
-      </Link>
+      <PortalPageToolbar title={order.orderId}>
+        <Link href="/portal/patient/orders" className={toolbarBtnClass}>
+          <ArrowLeft className="size-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Back</span>
+        </Link>
+        {order.tracking?.trackingUrl ? (
+          <a href={order.tracking.trackingUrl} target="_blank" rel="noopener noreferrer" className={toolbarBtnPrimaryClass}>
+            Track shipment
+          </a>
+        ) : null}
+      </PortalPageToolbar>
 
-      <section className="rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm">
-        <h1 className="font-serif text-2xl font-light text-deep-teal">{order.orderId}</h1>
-        <p className="mt-1 text-sm text-deep-teal/55">Placed {formatDate(order.date)}</p>
+      <PortalPageSection icon={Package} title="Order details" subtitle={`Placed ${formatDate(order.date)}`}>
         {order.reviewStatus === "rejected" && order.rejectionReason ? (
-          <p className="mt-3 rounded-xl border border-coral-blush/40 bg-coral-blush/15 px-4 py-3 text-sm text-deep-teal/75">
+          <p className="mb-4 rounded-xl border border-coral-blush/40 bg-coral-blush/15 px-4 py-3 text-sm text-deep-teal/75">
             Rejected: {order.rejectionReason}
           </p>
         ) : null}
 
-        <h2 className="mt-6 text-sm font-medium text-deep-teal">Items</h2>
-        <ul className="mt-3 space-y-2 text-sm">
+        <ul className="space-y-2 text-sm">
           {order.lineItems.map((item) => (
             <li key={item.id} className="flex justify-between gap-3 border-b border-deep-teal/5 pb-2 text-deep-teal/80">
               <span>
@@ -124,12 +138,11 @@ export function PatientOrderDetail({ orderId }: PatientOrderDetailProps) {
           <span>Total</span>
           <span>${order.total.toFixed(2)}</span>
         </p>
-      </section>
+      </PortalPageSection>
 
-      <section className="rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm">
-        <h2 className="text-sm font-medium text-deep-teal">Tracking</h2>
+      <PortalPageSection icon={Truck} title="Tracking">
         {order.tracking ? (
-          <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+          <dl className="grid gap-3 sm:grid-cols-2">
             <div>
               <dt className="text-xs text-deep-teal/45">Carrier</dt>
               <dd className="text-sm text-deep-teal">{order.tracking.carrier}</dd>
@@ -146,21 +159,11 @@ export function PatientOrderDetail({ orderId }: PatientOrderDetailProps) {
             ) : null}
           </dl>
         ) : (
-          <p className="mt-3 text-sm text-deep-teal/50">
+          <p className="text-sm text-deep-teal/50">
             {trackingMessage ?? "Tracking not available yet."}
           </p>
         )}
-        {order.tracking?.trackingUrl ? (
-          <a
-            href={order.tracking.trackingUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-4 inline-flex rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal"
-          >
-            Track shipment
-          </a>
-        ) : null}
-      </section>
+      </PortalPageSection>
     </div>
   );
 }

@@ -3,6 +3,13 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ArrowLeft, MessageSquare, User } from "lucide-react";
+import { ProviderPageSection } from "@/components/portal/provider/shared/ProviderPageSection";
+import {
+  ProviderPageToolbar,
+  toolbarBtnClass,
+  toolbarBtnPrimaryClass,
+} from "@/components/portal/provider/shared/ProviderPageToolbar";
 import { ProviderActiveThread } from "@/components/portal/provider/messages/ProviderActiveThread";
 import { OrderHistoryTab } from "@/components/portal/provider/customers/tabs/OrderHistoryTab";
 import { CustomerInformationTab } from "@/components/portal/provider/customers/tabs/CustomerInformationTab";
@@ -76,33 +83,54 @@ export function PatientProfile({ patientId }: PatientProfileProps) {
 
   if (!patient) {
     return (
-      <div className="rounded-2xl border border-deep-teal/10 p-8 text-center">
-        <p className="text-deep-teal">Patient not found.</p>
-        <Link href="/portal/doctor/customers" className="mt-4 inline-block text-sm text-pacific-teal hover:underline">
-          Back to customers
-        </Link>
+      <div className="space-y-5">
+        <ProviderPageToolbar title="Patient not found">
+          <Link href="/portal/doctor/customers" className={toolbarBtnClass}>
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Back</span>
+          </Link>
+        </ProviderPageToolbar>
       </div>
     );
   }
 
   return (
     <div className="space-y-5">
-      <Link href="/portal/doctor/customers" className="inline-flex text-sm text-pacific-teal hover:underline">
-        ← Back to Customer Management
-      </Link>
+      <ProviderPageToolbar title={patient.name}>
+        <Link href="/portal/doctor/customers" className={toolbarBtnClass}>
+          <ArrowLeft className="size-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Back</span>
+        </Link>
+        <Link
+          href={`/portal/doctor/messages?patient=${patient.id}`}
+          className={toolbarBtnClass}
+        >
+          <MessageSquare className="size-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Chat</span>
+        </Link>
+        <button
+          type="button"
+          onClick={() => toast.success(`Create order flow opened for ${patient.name}.`)}
+          className={toolbarBtnPrimaryClass}
+        >
+          Create order
+        </button>
+      </ProviderPageToolbar>
 
-      <section className="rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm sm:p-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex gap-4">
-            <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-deep-teal/10 text-lg font-medium text-deep-teal">
-              {getPatientInitials(patient.name)}
-            </span>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="font-serif text-2xl font-light text-deep-teal">{patient.name}</h2>
-                <StatusPill status={patient.status} />
-              </div>
-              <dl className="mt-3 grid gap-1 text-sm sm:grid-cols-2">
+      <ProviderPageSection
+        icon={User}
+        title="Patient profile"
+        subtitle={`${patient.totalOrders} order${patient.totalOrders === 1 ? "" : "s"} · ${PATIENT_STATUS_LABELS[patient.status]}`}
+      >
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
+          <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-deep-teal/10 text-lg font-medium text-deep-teal">
+            {getPatientInitials(patient.name)}
+          </span>
+          <div className="flex-1">
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <StatusPill status={patient.status} />
+            </div>
+            <dl className="grid gap-3 text-sm sm:grid-cols-2">
                 <div>
                   <dt className="text-deep-teal/45">Email</dt>
                   <dd className="text-deep-teal">{patient.email}</dd>
@@ -124,28 +152,12 @@ export function PatientProfile({ patientId }: PatientProfileProps) {
                   <dd className="text-deep-teal">{formatDate(patient.lastOrderDate)}</dd>
                 </div>
               </dl>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => toast.success(`Create order flow opened for ${patient.name}.`)}
-              className="rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal"
-            >
-              Create Order
-            </button>
-            <Link
-              href={`/portal/doctor/messages?patient=${patient.id}`}
-              className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal hover:border-pacific-teal"
-            >
-              Quick Chat
-            </Link>
           </div>
         </div>
-      </section>
+      </ProviderPageSection>
 
-      <div className="rounded-2xl border border-deep-teal/10 bg-pure-white shadow-sm">
-        <div className="flex flex-wrap gap-2 border-b border-deep-teal/10 p-4 sm:p-5">
+      <ProviderPageSection icon={User} title="Records" noPadding>
+        <div className="flex flex-wrap gap-2 border-b border-deep-teal/10 p-4 sm:px-5">
           {(Object.keys(PROFILE_TAB_LABELS) as PatientProfileTab[]).map((tab) => (
             <button
               key={tab}
@@ -188,7 +200,7 @@ export function PatientProfile({ patientId }: PatientProfileProps) {
           ) : null}
           {activeTab === "information" ? <CustomerInformationTab patient={patient} /> : null}
         </div>
-      </div>
+      </ProviderPageSection>
     </div>
   );
 }

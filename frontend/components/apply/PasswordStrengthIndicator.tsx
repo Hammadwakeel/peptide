@@ -7,11 +7,11 @@ type PasswordStrengthIndicatorProps = {
 };
 
 const BAR_COLORS = [
-  "bg-red-400",
-  "bg-orange-400",
-  "bg-yellow-400",
+  "bg-coral-blush",
+  "bg-coral-blush/80",
+  "bg-pacific-teal/35",
+  "bg-pacific-teal/70",
   "bg-pacific-teal",
-  "bg-deep-teal",
 ];
 
 export function PasswordStrengthIndicator({ password }: PasswordStrengthIndicatorProps) {

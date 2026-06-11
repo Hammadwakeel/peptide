@@ -1,3 +1,5 @@
+import { DEFAULT_THEME_COLOR } from "@/lib/brand/colors";
+
 export type MetricsDateRange = "7d" | "30d" | "90d" | "ytd";
 
 export type ProviderMetrics = {
@@ -24,6 +26,6 @@ export const METRICS_RANGE_LABELS: Record<MetricsDateRange, string> = {
 export const DEFAULT_STOREFRONT_BRANDING: StorefrontBranding = {
   clinicName: "Frontier Wellness",
   tagline: "Verified peptides. Unconditional trust.",
-  themeColor: "#0d717b",
+  themeColor: DEFAULT_THEME_COLOR,
   logoUrl: null,
 };

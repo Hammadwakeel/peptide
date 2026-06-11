@@ -5,8 +5,10 @@ import {
   authInputClassName,
   authLabelClassName,
 } from "@/components/auth/AuthShell";
-import { getPlatformSettings, updatePlatformSettings } from "@/lib/admin/api";
+import { updatePlatformSettings } from "@/lib/admin/api";
 import type { PlatformSettings } from "@/lib/admin/types";
+import { useShallow } from "@/lib/hooks/zustand";
+import { useAdminPortalStore } from "@/stores/admin-portal-store";
 import { showError, toast } from "@/lib/toast";
 
 const EMPTY_SETTINGS: PlatformSettings = {
@@ -21,25 +23,27 @@ const EMPTY_SETTINGS: PlatformSettings = {
 };
 
 export function AdminPlatformSettings() {
+  const { platformSettings, isLoading, refreshPlatformSettings } = useAdminPortalStore(
+    useShallow((state) => ({
+      platformSettings: state.platformSettings,
+      isLoading: state.isLoading,
+      refreshPlatformSettings: state.refreshPlatformSettings,
+    })),
+  );
   const [settings, setSettings] = useState<PlatformSettings>(EMPTY_SETTINGS);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  const loadSettings = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await getPlatformSettings();
-      setSettings(response.settings);
-    } catch (error) {
-      showError(error, "Unable to load platform settings.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    void loadSettings();
-  }, [loadSettings]);
+    if (platformSettings) {
+      setSettings((current) =>
+        JSON.stringify(current) === JSON.stringify(platformSettings) ? current : platformSettings,
+      );
+    }
+  }, [platformSettings]);
+
+  const loadSettings = useCallback(async () => {
+    await refreshPlatformSettings();
+  }, [refreshPlatformSettings]);
 
   function updateField<K extends keyof PlatformSettings>(key: K, value: PlatformSettings[K]) {
     setSettings((current) => ({ ...current, [key]: value }));
@@ -54,6 +58,7 @@ export function AdminPlatformSettings() {
         affiliate_referral_fee_percent: settings.affiliate_referral_fee_percent,
       });
       setSettings(result.settings);
+      useAdminPortalStore.getState().setPlatformSettings(result.settings);
       toast.success(result.message);
     } catch (error) {
       showError(error, "Unable to save platform settings.");

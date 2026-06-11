@@ -1,10 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
+import { RoleOnboardingJoyride } from "@/components/onboarding/RoleOnboardingJoyride";
 import { PortalSidebarLayout, type SidebarLink } from "@/components/portal/shared/PortalSidebarLayout";
 import { OrdersProvider } from "@/context/OrdersProvider";
-import { ChatProvider, useChat } from "@/context/ChatProvider";
+import { ChatProvider, useProviderUnreadTotal } from "@/context/ChatProvider";
 import { PatientsProvider } from "@/context/PatientsProvider";
+import { PortalBootstrap } from "@/components/bootstrap/PortalBootstrap";
 import { ProviderPortalProvider } from "@/context/ProviderPortalProvider";
 
 const BASE_PROVIDER_LINKS: Omit<SidebarLink, "badge">[] = [
@@ -21,7 +23,7 @@ const BASE_PROVIDER_LINKS: Omit<SidebarLink, "badge">[] = [
 ];
 
 function ProviderPortalShell({ children }: { children: React.ReactNode }) {
-  const { providerUnreadTotal } = useChat();
+  const providerUnreadTotal = useProviderUnreadTotal();
 
   const links = useMemo(
     (): SidebarLink[] =>
@@ -35,6 +37,7 @@ function ProviderPortalShell({ children }: { children: React.ReactNode }) {
 
   return (
     <PortalSidebarLayout portalLabel="Provider portal" links={links}>
+      <RoleOnboardingJoyride role="doctor" />
       {children}
     </PortalSidebarLayout>
   );
@@ -43,6 +46,7 @@ function ProviderPortalShell({ children }: { children: React.ReactNode }) {
 export function ProviderPortalLayout({ children }: { children: React.ReactNode }) {
   return (
     <ProviderPortalProvider>
+      <PortalBootstrap role="doctor" />
       <PatientsProvider>
         <OrdersProvider>
           <ChatProvider>

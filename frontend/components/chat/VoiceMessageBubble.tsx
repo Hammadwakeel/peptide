@@ -1,6 +1,7 @@
 "use client";
 
 import { Pause, Play } from "lucide-react";
+import { Tooltip } from "@/components/ui/Tippy";
 import { useEffect, useRef, useState } from "react";
 import { formatDuration } from "@/lib/chat/types";
 import { VoiceWaveform } from "@/components/chat/VoiceWaveform";
@@ -64,16 +65,18 @@ export function VoiceMessageBubble({ mediaUrl, durationMs, messageId, isOwn }: V
 
   return (
     <div className="flex min-w-[220px] items-center gap-3">
-      <button
-        type="button"
-        onClick={togglePlay}
-        className={`flex size-9 shrink-0 items-center justify-center rounded-full ${
-          isOwn ? "bg-pure-white/15 text-pure-white" : "bg-deep-teal/10 text-deep-teal"
-        }`}
-        aria-label={isPlaying ? "Pause voice message" : "Play voice message"}
-      >
-        {isPlaying ? <Pause className="size-4" /> : <Play className="ml-0.5 size-4" />}
-      </button>
+      <Tooltip content={isPlaying ? "Pause voice message" : "Play voice message"}>
+        <button
+          type="button"
+          onClick={togglePlay}
+          className={`flex size-9 shrink-0 items-center justify-center rounded-full ${
+            isOwn ? "bg-pure-white/15 text-pure-white" : "bg-deep-teal/10 text-deep-teal"
+          }`}
+          aria-label={isPlaying ? "Pause voice message" : "Play voice message"}
+        >
+          {isPlaying ? <Pause className="size-4" /> : <Play className="ml-0.5 size-4" />}
+        </button>
+      </Tooltip>
 
       <div className="min-w-0 flex-1">
         <VoiceWaveform

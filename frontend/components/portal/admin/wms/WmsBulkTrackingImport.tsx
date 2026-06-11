@@ -3,12 +3,16 @@
 import { useMemo, useState } from "react";
 import { WmsSubNav } from "@/components/portal/admin/wms/WmsSubNav";
 import { useAdminOrders } from "@/context/OrdersProvider";
-import { parseTrackingCsv, TRACKING_CSV_SAMPLE } from "@/lib/orders/mock-data";
+import { parseTrackingCsv, TRACKING_CSV_HEADER } from "@/lib/orders/tracking-csv";
 import type { TrackingCsvRow } from "@/lib/orders/types";
 import { toast } from "@/lib/toast";
 
 export function WmsBulkTrackingImport() {
-  const { applyTrackingImport } = useAdminOrders();
+  const { allOrders, applyTrackingImport } = useAdminOrders();
+  const validOrderIds = useMemo(
+    () => new Set(allOrders.flatMap((order) => [order.id, order.orderNumber].filter(Boolean) as string[])),
+    [allOrders],
+  );
   const [rows, setRows] = useState<TrackingCsvRow[]>([]);
   const [fileName, setFileName] = useState("");
   const [isDragging, setIsDragging] = useState(false);
@@ -23,7 +27,7 @@ export function WmsBulkTrackingImport() {
     setResult(null);
     const reader = new FileReader();
     reader.onload = () => {
-      setRows(parseTrackingCsv(String(reader.result ?? "")));
+      setRows(parseTrackingCsv(String(reader.result ?? ""), validOrderIds));
     };
     reader.readAsText(file);
   }
@@ -75,7 +79,7 @@ export function WmsBulkTrackingImport() {
 
       <details className="rounded-xl border border-deep-teal/10 bg-deep-teal/[0.02] p-4 text-sm">
         <summary className="cursor-pointer font-medium text-deep-teal">Sample CSV format</summary>
-        <pre className="mt-3 overflow-x-auto rounded-lg bg-pure-white p-3 font-mono text-xs text-deep-teal/70">{TRACKING_CSV_SAMPLE}</pre>
+        <pre className="mt-3 overflow-x-auto rounded-lg bg-pure-white p-3 font-mono text-xs text-deep-teal/70">{TRACKING_CSV_HEADER}</pre>
       </details>
 
       {rows.length > 0 ? (
@@ -94,13 +98,13 @@ export function WmsBulkTrackingImport() {
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={row.row} className={`border-b border-deep-teal/5 ${row.error ? "bg-red-50" : ""}`}>
+                  <tr key={row.row} className={`border-b border-deep-teal/5 ${row.error ? "bg-coral-blush/40" : ""}`}>
                     <td className="px-4 py-3">{row.row}</td>
                     <td className="px-4 py-3 font-mono text-xs">{row.orderId}</td>
                     <td className="px-4 py-3">{row.carrier}</td>
                     <td className="px-4 py-3 font-mono text-xs">{row.trackingNumber}</td>
                     <td className="px-4 py-3">{row.shippedDate}</td>
-                    <td className="px-4 py-3 text-xs">{row.error ? <span className="text-red-600">{row.error}</span> : "Ready"}</td>
+                    <td className="px-4 py-3 text-xs">{row.error ? <span className="text-deep-teal">{row.error}</span> : "Ready"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -108,7 +112,7 @@ export function WmsBulkTrackingImport() {
           </div>
 
           {errorRows.length > 0 ? (
-            <p className="text-sm text-red-600">{errorRows.length} row(s) with errors will be skipped.</p>
+            <p className="text-sm text-deep-teal/80">{errorRows.length} row(s) with errors will be skipped.</p>
           ) : null}
 
           {result ? (

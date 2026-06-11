@@ -7,6 +7,7 @@ import {
   transition,
   viewport,
 } from "@/components/motion";
+import { BRAND_SURFACE_CLASSES } from "@/lib/brand/colors";
 
 const steps = [
   {
@@ -14,21 +15,21 @@ const steps = [
     title: "Raw Bond Analysis",
     description:
       "Automated spectroscopic analysis identifies contaminants at the molecular level before synthesis begins.",
-    bg: "bg-[#E6F0EE]",
+    bg: BRAND_SURFACE_CLASSES[0],
   },
   {
     number: "02",
     title: "Controlled Synthesis",
     description:
       "Our domestic, proprietary synthesis environment eliminates variables introduced by international shipping.",
-    bg: "bg-[#E6F0EE]",
+    bg: BRAND_SURFACE_CLASSES[0],
   },
   {
     number: "03",
     title: "Blockchain Certification",
     description:
       "Every batch receives an immutable digital certificate, verifiable by the practitioner in real-time.",
-    bg: "bg-[#E6F0EE]",
+    bg: BRAND_SURFACE_CLASSES[0],
   },
 ];
 
@@ -44,7 +45,7 @@ export function VerificationProcess() {
           variants={fadeInUp}
           transition={transition}
         >
-          <span className="inline-block rounded-full bg-[#E6F0EE] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[#1C6384] sm:px-4 sm:text-xs sm:tracking-[0.2em]">
+          <span className="inline-block rounded-full bg-pacific-teal/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-pacific-teal sm:px-4 sm:text-xs sm:tracking-[0.2em]">
             Verification Process
           </span>
           <h2 className="mt-4 font-serif text-3xl font-light leading-[1.08] tracking-[-0.03em] text-deep-teal sm:mt-6 sm:text-5xl md:text-6xl lg:text-7xl">
@@ -68,7 +69,7 @@ export function VerificationProcess() {
               variants={fadeInUp}
               transition={transition}
             >
-              <div className="self-end font-mono text-lg text-[#1C6384]/60 sm:text-xl">
+              <div className="self-end font-mono text-lg text-pacific-teal/60 sm:text-xl">
                 {step.number}
               </div>
 

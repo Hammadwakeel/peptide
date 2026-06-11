@@ -1,10 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { BookOpen, Headphones, Send } from "lucide-react";
 import {
   authInputClassName,
   authLabelClassName,
 } from "@/components/auth/AuthShell";
+import { ProviderPageSection } from "@/components/portal/provider/shared/ProviderPageSection";
+import { ProviderPageToolbar } from "@/components/portal/provider/shared/ProviderPageToolbar";
+import { fuseSearch } from "@/lib/search/fuse";
+import { HELP_ARTICLE_SEARCH_KEYS } from "@/lib/search/keys";
 import { toast } from "@/lib/toast";
 
 const ARTICLES = [
@@ -20,15 +25,10 @@ export function HelpSupport() {
   const [ticketDescription, setTicketDescription] = useState("");
   const [ticketPriority, setTicketPriority] = useState("normal");
 
-  const filteredArticles = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return ARTICLES;
-    return ARTICLES.filter(
-      (article) =>
-        article.title.toLowerCase().includes(q) ||
-        article.category.toLowerCase().includes(q),
-    );
-  }, [query]);
+  const filteredArticles = useMemo(
+    () => fuseSearch(ARTICLES, query, HELP_ARTICLE_SEARCH_KEYS),
+    [query],
+  );
 
   function handleTicketSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,18 +39,22 @@ export function HelpSupport() {
   }
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-[2rem] border border-deep-teal/10 bg-pure-white p-6 shadow-sm">
-        <h2 className="font-serif text-xl font-light text-deep-teal">Knowledge Base</h2>
-        <p className="mt-1 text-sm text-deep-teal/60">Search help articles and onboarding guides.</p>
+    <div className="space-y-5">
+      <ProviderPageToolbar title="Help / Support" />
+
+      <ProviderPageSection
+        icon={BookOpen}
+        title="Knowledge base"
+        subtitle={`${filteredArticles.length} article${filteredArticles.length === 1 ? "" : "s"}`}
+      >
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search articles…"
-          className={`${authInputClassName} mt-4`}
+          className={`${authInputClassName} mb-4`}
         />
-        <ul className="mt-4 space-y-2">
+        <ul className="space-y-2">
           {filteredArticles.map((article) => (
             <li
               key={article.id}
@@ -61,11 +65,10 @@ export function HelpSupport() {
             </li>
           ))}
         </ul>
-      </section>
+      </ProviderPageSection>
 
-      <section className="rounded-[2rem] border border-deep-teal/10 bg-pure-white p-6 shadow-sm">
-        <h2 className="font-serif text-xl font-light text-deep-teal">Submit a Ticket</h2>
-        <form onSubmit={handleTicketSubmit} className="mt-4 space-y-4">
+      <ProviderPageSection icon={Send} title="Submit a ticket">
+        <form onSubmit={handleTicketSubmit} className="space-y-4">
           <div>
             <label htmlFor="ticket-subject" className={authLabelClassName}>Subject</label>
             <input
@@ -108,11 +111,10 @@ export function HelpSupport() {
             Submit ticket
           </button>
         </form>
-      </section>
+      </ProviderPageSection>
 
-      <section className="rounded-[2rem] border border-deep-teal/10 bg-pure-white p-6 shadow-sm">
-        <h2 className="font-serif text-xl font-light text-deep-teal">Contact Us</h2>
-        <ul className="mt-4 space-y-3 text-sm text-deep-teal/70">
+      <ProviderPageSection icon={Headphones} title="Contact us">
+        <ul className="space-y-3 text-sm text-deep-teal/70">
           <li>
             <span className="font-medium text-deep-teal">Email:</span>{" "}
             <a href="mailto:support@frontierbiomed.com" className="text-pacific-teal hover:underline">
@@ -136,7 +138,7 @@ export function HelpSupport() {
             </button>
           </li>
         </ul>
-      </section>
+      </ProviderPageSection>
     </div>
   );
 }

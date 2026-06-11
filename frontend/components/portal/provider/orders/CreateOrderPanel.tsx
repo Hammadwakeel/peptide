@@ -6,10 +6,13 @@ import {
   authLabelClassName,
 } from "@/components/auth/AuthShell";
 import { AddPatientModal } from "@/components/portal/provider/customers/AddPatientModal";
-import { useOrders } from "@/context/OrdersProvider";
+import { useProviderPortal } from "@/context/ProviderPortalProvider";
 import { usePatients } from "@/context/PatientsProvider";
-import { MOCK_PRODUCTS } from "@/lib/products/mock-data";
 import type { CartLineItem, OrderType } from "@/lib/orders/types";
+import type { StoreProduct } from "@/lib/products/catalog-types";
+import { fuseSearch } from "@/lib/search/fuse";
+import { STORE_PRODUCT_SEARCH_KEYS } from "@/lib/search/keys";
+import { Tooltip } from "@/components/ui/Tippy";
 import { toast } from "@/lib/toast";
 
 type CreateOrderPanelProps = {
@@ -18,7 +21,7 @@ type CreateOrderPanelProps = {
 };
 
 export function CreateOrderPanel({ open, onClose }: CreateOrderPanelProps) {
-  const { createOrder } = useOrders();
+  const { myStore } = useProviderPortal();
   const { patients, addPatient } = usePatients();
   const [orderFor, setOrderFor] = useState<OrderType>("customer");
   const [customerId, setCustomerId] = useState("");
@@ -29,26 +32,28 @@ export function CreateOrderPanel({ open, onClose }: CreateOrderPanelProps) {
   const [cart, setCart] = useState<CartLineItem[]>([]);
   const [addPatientOpen, setAddPatientOpen] = useState(false);
 
-  const filteredProducts = useMemo(() => {
-    const query = productSearch.trim().toLowerCase();
-    if (!query) return MOCK_PRODUCTS.slice(0, 8);
-    return MOCK_PRODUCTS.filter(
-      (product) =>
-        product.name.toLowerCase().includes(query) ||
-        product.sku.toLowerCase().includes(query),
-    );
-  }, [productSearch]);
+  const products = myStore;
 
-  const selectedProduct = MOCK_PRODUCTS.find((product) => product.id === selectedProductId);
+  const filteredProducts = useMemo(() => {
+    if (!productSearch.trim()) return products.slice(0, 8);
+    return fuseSearch(products, productSearch, STORE_PRODUCT_SEARCH_KEYS);
+  }, [productSearch, products]);
+
+  const selectedProduct = products.find((product) => product.product_id === selectedProductId);
   const cartTotal = cart.reduce((sum, item) => sum + item.qty * item.unitPrice, 0);
 
   if (!open) return null;
 
+  function unitPriceForProduct(product: StoreProduct, type: OrderType) {
+    if (type === "clinic") return product.clinic_cost ?? 0;
+    return product.retail_price;
+  }
+
   function handleProductSelect(productId: string) {
     setSelectedProductId(productId);
-    const product = MOCK_PRODUCTS.find((item) => item.id === productId);
+    const product = products.find((item) => item.product_id === productId);
     if (product) {
-      setPrice(String(orderFor === "clinic" ? product.clinicPrice : product.price));
+      setPrice(String(unitPriceForProduct(product, orderFor)));
     }
   }
 
@@ -67,7 +72,7 @@ export function CreateOrderPanel({ open, onClose }: CreateOrderPanelProps) {
       ...current,
       {
         id: `cart-${Date.now()}`,
-        productId: selectedProduct.id,
+        productId: selectedProduct.product_id,
         productName: selectedProduct.name,
         sku: selectedProduct.sku,
         qty: parsedQty,
@@ -90,19 +95,7 @@ export function CreateOrderPanel({ open, onClose }: CreateOrderPanelProps) {
       toast.error("Select a customer.");
       return;
     }
-    const order = createOrder({
-      orderType: orderFor,
-      customerId: customer?.id,
-      customerName: customer?.name,
-      doctorName: "Dr. Rivera",
-      cart,
-      patientEmail: customer?.email,
-      patientPhone: customer?.phone,
-    });
-    toast.success(`Order ${order.id} created.`);
-    setCart([]);
-    setCustomerId("");
-    onClose();
+    toast.info("Order creation via the API is not available yet.");
   }
 
   return (
@@ -118,9 +111,11 @@ export function CreateOrderPanel({ open, onClose }: CreateOrderPanelProps) {
           <h2 id="create-order-title" className="font-serif text-xl font-light text-deep-teal">
             Create new order
           </h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="text-2xl text-deep-teal/50 hover:text-deep-teal">
-            ×
-          </button>
+          <Tooltip content="Close">
+            <button type="button" onClick={onClose} aria-label="Close" className="text-2xl text-deep-teal/50 hover:text-deep-teal">
+              ×
+            </button>
+          </Tooltip>
         </div>
 
         <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
@@ -177,15 +172,18 @@ export function CreateOrderPanel({ open, onClose }: CreateOrderPanelProps) {
                 placeholder="Search products…"
                 className={authInputClassName}
               />
+              {products.length === 0 ? (
+                <p className="mt-2 text-sm text-deep-teal/50">Add products to My Store to create orders.</p>
+              ) : null}
               {productSearch || selectedProductId ? (
                 <ul className="mt-2 max-h-40 overflow-y-auto rounded-xl border border-deep-teal/10">
                   {filteredProducts.map((product) => (
-                    <li key={product.id}>
+                    <li key={product.product_id}>
                       <button
                         type="button"
-                        onClick={() => handleProductSelect(product.id)}
+                        onClick={() => handleProductSelect(product.product_id)}
                         className={`w-full px-3 py-2 text-left text-sm hover:bg-deep-teal/[0.03] ${
-                          selectedProductId === product.id ? "bg-deep-teal/5 font-medium" : ""
+                          selectedProductId === product.product_id ? "bg-deep-teal/5 font-medium" : ""
                         }`}
                       >
                         {product.name}

@@ -10,6 +10,13 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import {
+  BRAND_COLORS,
+  BRAND_RGBA,
+  CHART_AXIS_STROKE,
+  CHART_GRID_STROKE,
+  CHART_TICK_FILL,
+} from "@/lib/brand/colors";
 import type { TrendPoint } from "@/lib/finance/types";
 
 type RevenueProfitChartProps = {
@@ -33,25 +40,25 @@ export function RevenueProfitChart({ data }: RevenueProfitChartProps) {
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#0d717b15" />
+          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_STROKE} />
           <XAxis
             dataKey="date"
             tickFormatter={formatAxisDate}
-            tick={{ fill: "#0d717b99", fontSize: 11 }}
-            axisLine={{ stroke: "#0d717b22" }}
+            tick={{ fill: CHART_TICK_FILL, fontSize: 11 }}
+            axisLine={{ stroke: CHART_AXIS_STROKE }}
           />
           <YAxis
             tickFormatter={(value) => `$${value}`}
-            tick={{ fill: "#0d717b99", fontSize: 11 }}
-            axisLine={{ stroke: "#0d717b22" }}
+            tick={{ fill: CHART_TICK_FILL, fontSize: 11 }}
+            axisLine={{ stroke: CHART_AXIS_STROKE }}
           />
           <Tooltip
             formatter={(value) => [formatCurrency(Number(value ?? 0)), ""]}
             labelFormatter={(label) => formatAxisDate(String(label))}
             contentStyle={{
               borderRadius: 12,
-              border: "1px solid #0d717b22",
-              background: "#fff",
+              border: `1px solid ${CHART_AXIS_STROKE}`,
+              background: BRAND_COLORS.pureWhite,
             }}
           />
           <Legend />
@@ -59,18 +66,18 @@ export function RevenueProfitChart({ data }: RevenueProfitChartProps) {
             type="monotone"
             dataKey="revenue"
             name="Revenue"
-            stroke="#0d717b"
+            stroke={BRAND_COLORS.pacificTeal}
             strokeWidth={2}
-            dot={{ r: 3, fill: "#0d717b" }}
+            dot={{ r: 3, fill: BRAND_COLORS.pacificTeal }}
             activeDot={{ r: 5 }}
           />
           <Line
             type="monotone"
             dataKey="profit"
             name="Profit"
-            stroke="#3a9aa3"
+            stroke={BRAND_RGBA.pacificTeal65}
             strokeWidth={2}
-            dot={{ r: 3, fill: "#3a9aa3" }}
+            dot={{ r: 3, fill: BRAND_RGBA.pacificTeal65 }}
             activeDot={{ r: 5 }}
           />
         </LineChart>

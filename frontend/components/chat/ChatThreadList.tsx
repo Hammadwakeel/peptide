@@ -1,5 +1,6 @@
 "use client";
 
+import { TruncateTooltip } from "@/components/ui/Tippy";
 import { getPatientInitials } from "@/lib/patients/types";
 import { formatThreadPreviewTime, type ChatThread } from "@/lib/chat/types";
 
@@ -35,16 +36,20 @@ export function ChatThreadList({ threads, activePatientId, onSelect }: ChatThrea
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="truncate font-medium text-deep-teal">{thread.patientName}</p>
+                  <TruncateTooltip content={thread.patientName}>
+                    <p className="truncate font-medium text-deep-teal">{thread.patientName}</p>
+                  </TruncateTooltip>
                   {last ? (
                     <span className="shrink-0 text-[10px] text-deep-teal/45">
                       {formatThreadPreviewTime(last.sentAt)}
                     </span>
                   ) : null}
                 </div>
-                <p className="mt-0.5 truncate text-xs text-deep-teal/55">
-                  {last?.content ?? "No messages yet"}
-                </p>
+                <TruncateTooltip content={last?.content ?? "No messages yet"}>
+                  <p className="mt-0.5 truncate text-xs text-deep-teal/55">
+                    {last?.content ?? "No messages yet"}
+                  </p>
+                </TruncateTooltip>
               </div>
               {thread.unreadProvider > 0 ? (
                 <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-pacific-teal text-[10px] font-medium text-pure-white">

@@ -1,39 +1,41 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import { FolderTree, Plus, RefreshCw } from "lucide-react";
 import {
   authInputClassName,
   authLabelClassName,
 } from "@/components/auth/AuthShell";
-import { createCategory, listCategories } from "@/lib/admin/inventory/api";
-import type { InventoryCategory, ProductType } from "@/lib/admin/inventory/types";
+import { createCategory } from "@/lib/admin/inventory/api";
+import type { ProductType } from "@/lib/admin/inventory/types";
+import { useShallow } from "@/lib/hooks/zustand";
+import { useAdminPortalStore } from "@/stores/admin-portal-store";
 import { PRODUCT_TYPE_LABELS } from "@/lib/admin/inventory/types";
 import { showError, toast } from "@/lib/toast";
 
+const TYPE_BADGE_STYLES: Record<ProductType, string> = {
+  peptides: "border-deep-teal/25 bg-deep-teal/10 text-deep-teal",
+  pharmacy: "border-coral-blush bg-coral-blush/80 text-deep-teal",
+};
+
 export function AdminCategoriesPanel() {
-  const [categories, setCategories] = useState<InventoryCategory[]>([]);
+  const { categories, isLoading, refreshCatalog } = useAdminPortalStore(
+    useShallow((state) => ({
+      categories: state.categories,
+      isLoading: state.isLoading,
+      refreshCatalog: state.refreshCatalog,
+    })),
+  );
   const [name, setName] = useState("");
   const [productType, setProductType] = useState<ProductType>("peptides");
   const [description, setDescription] = useState("");
   const [sortOrder, setSortOrder] = useState("0");
-  const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
   const loadCategories = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await listCategories();
-      setCategories(response.categories);
-    } catch (error) {
-      showError(error, "Unable to load categories.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadCategories();
-  }, [loadCategories]);
+    await refreshCatalog(true);
+  }, [refreshCatalog]);
 
   async function handleCreate(event: React.FormEvent) {
     event.preventDefault();
@@ -55,6 +57,7 @@ export function AdminCategoriesPanel() {
       setName("");
       setDescription("");
       setSortOrder("0");
+      setShowForm(false);
       await loadCategories();
     } catch (error) {
       showError(error, "Unable to create category.");
@@ -63,110 +66,171 @@ export function AdminCategoriesPanel() {
     }
   }
 
-  return (
-    <section className="rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="font-serif text-xl font-light text-deep-teal">Categories</h2>
-          <p className="mt-1 text-sm text-deep-teal/55">Manage catalog categories used by products</p>
-        </div>
-        <button
-          type="button"
-          onClick={() => void loadCategories()}
-          className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm text-deep-teal hover:border-pacific-teal"
-        >
-          Refresh
-        </button>
-      </div>
+  const sortedCategories = [...categories].sort(
+    (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.name.localeCompare(b.name),
+  );
 
-      <form onSubmit={(event) => void handleCreate(event)} className="mt-5 grid gap-3 sm:grid-cols-2">
-        <div>
-          <label htmlFor="category-name" className={authLabelClassName}>Category name</label>
-          <input
-            id="category-name"
-            required
-            minLength={2}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className={authInputClassName}
-          />
-        </div>
-        <div>
-          <label htmlFor="category-type" className={authLabelClassName}>Product type</label>
-          <select
-            id="category-type"
-            value={productType}
-            onChange={(e) => setProductType(e.target.value as ProductType)}
-            className={authInputClassName}
+  return (
+    <section className="flex flex-col overflow-hidden rounded-2xl border border-deep-teal/25 bg-pure-white shadow-[0_4px_24px_rgba(1,26,36,0.12)]">
+      <div className="flex items-center justify-between gap-3 bg-deep-teal px-5 py-4 text-pure-white">
+        <div className="flex items-center gap-3">
+          <div
+            className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-pure-white/15"
+            aria-hidden="true"
           >
-            <option value="peptides">Peptides</option>
-            <option value="pharmacy">Pharmacy</option>
-          </select>
+            <FolderTree className="size-4" />
+          </div>
+          <div>
+            <h2 className="font-serif text-lg font-light">Categories</h2>
+            <p className="text-xs text-pure-white/75">
+              {isLoading ? "Loading…" : `${categories.length} in catalog`}
+            </p>
+          </div>
         </div>
-        <div>
-          <label htmlFor="category-sort" className={authLabelClassName}>Sort order</label>
-          <input
-            id="category-sort"
-            type="number"
-            min="0"
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
-            className={authInputClassName}
-          />
-        </div>
-        <div className="sm:col-span-2">
-          <label htmlFor="category-description" className={authLabelClassName}>Description (optional)</label>
-          <input
-            id="category-description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className={authInputClassName}
-          />
-        </div>
-        <div className="sm:col-span-2">
+        <div className="flex items-center gap-2">
           <button
-            type="submit"
-            disabled={isCreating}
-            className="rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-60"
+            type="button"
+            onClick={() => setShowForm((current) => !current)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-pure-white/15 px-3 py-1.5 text-xs font-medium hover:bg-pure-white/25"
           >
-            {isCreating ? "Creating…" : "Create category"}
+            <Plus className="size-3.5" aria-hidden="true" />
+            {showForm ? "Cancel" : "New"}
+          </button>
+          <button
+            type="button"
+            onClick={() => void loadCategories()}
+            disabled={isLoading}
+            className="inline-flex items-center gap-1.5 rounded-full bg-pure-white/15 px-3 py-1.5 text-xs font-medium hover:bg-pure-white/25 disabled:opacity-50"
+          >
+            <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} aria-hidden="true" />
           </button>
         </div>
-      </form>
+      </div>
 
-      <div className="mt-5 overflow-x-auto">
-        <table className="min-w-full text-left text-sm">
-          <thead className="border-b border-deep-teal/10 text-xs uppercase tracking-wide text-deep-teal/45">
-            <tr>
-              <th className="px-3 py-2">Name</th>
-              <th className="px-3 py-2">Type</th>
-              <th className="px-3 py-2">Slug</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr>
-                <td colSpan={3} className="px-3 py-6 text-center text-deep-teal/50">
-                  Loading categories…
-                </td>
-              </tr>
-            ) : categories.length === 0 ? (
-              <tr>
-                <td colSpan={3} className="px-3 py-6 text-center text-deep-teal/50">
-                  No categories yet.
-                </td>
-              </tr>
-            ) : (
-              categories.map((category) => (
-                <tr key={category.id} className="border-b border-deep-teal/5">
-                  <td className="px-3 py-2 font-medium text-deep-teal">{category.name}</td>
-                  <td className="px-3 py-2 text-deep-teal/60">{PRODUCT_TYPE_LABELS[category.product_type]}</td>
-                  <td className="px-3 py-2 text-deep-teal/60">{category.slug ?? "—"}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      {showForm ? (
+        <form
+          onSubmit={(event) => void handleCreate(event)}
+          className="border-b border-deep-teal/10 bg-coral-blush/25 px-5 py-4"
+        >
+          <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-deep-teal">
+            New category
+          </p>
+          <div className="mt-3 grid gap-3">
+            <div>
+              <label htmlFor="category-name" className={authLabelClassName}>
+                Name
+              </label>
+              <input
+                id="category-name"
+                required
+                minLength={2}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={authInputClassName}
+                placeholder="Recovery Peptides"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="category-type" className={authLabelClassName}>
+                  Type
+                </label>
+                <select
+                  id="category-type"
+                  value={productType}
+                  onChange={(e) => setProductType(e.target.value as ProductType)}
+                  className={authInputClassName}
+                >
+                  <option value="peptides">Peptides</option>
+                  <option value="pharmacy">Pharmacy</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="category-sort" className={authLabelClassName}>
+                  Sort
+                </label>
+                <input
+                  id="category-sort"
+                  type="number"
+                  min="0"
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value)}
+                  className={authInputClassName}
+                />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="category-description" className={authLabelClassName}>
+                Description
+              </label>
+              <input
+                id="category-description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className={authInputClassName}
+                placeholder="Optional"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={isCreating}
+              className="w-full rounded-full bg-deep-teal py-2 text-sm font-medium text-pure-white hover:opacity-90 disabled:opacity-60"
+            >
+              {isCreating ? "Creating…" : "Create category"}
+            </button>
+          </div>
+        </form>
+      ) : null}
+
+      <div className="max-h-[520px] flex-1 overflow-y-auto">
+        {isLoading ? (
+          <p className="px-5 py-10 text-center text-sm text-deep-teal/50">Loading categories…</p>
+        ) : sortedCategories.length === 0 ? (
+          <div className="px-5 py-10 text-center">
+            <p className="text-sm font-medium text-deep-teal/70">No categories yet</p>
+            <button
+              type="button"
+              onClick={() => setShowForm(true)}
+              className="mt-3 text-sm font-medium text-deep-teal hover:underline"
+            >
+              Create your first category
+            </button>
+          </div>
+        ) : (
+          <ul className="divide-y divide-deep-teal/8 p-2">
+            {sortedCategories.map((category) => (
+              <li
+                key={category.id}
+                className="flex items-center gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-deep-teal/5"
+              >
+                <div
+                  className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-deep-teal text-sm font-medium text-pure-white"
+                  aria-hidden="true"
+                >
+                  {category.name.slice(0, 1).toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="truncate font-medium text-deep-teal">{category.name}</p>
+                    <span
+                      className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${TYPE_BADGE_STYLES[category.product_type]}`}
+                    >
+                      {PRODUCT_TYPE_LABELS[category.product_type]}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 truncate font-mono text-xs text-deep-teal/45">
+                    {category.slug ?? "—"}
+                  </p>
+                </div>
+                {category.sort_order != null ? (
+                  <span className="shrink-0 font-mono text-[11px] text-deep-teal/60">
+                    #{category.sort_order}
+                  </span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </section>
   );

@@ -10,6 +10,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import {
+  BRAND_COLORS,
+  CHART_AXIS_STROKE,
+  CHART_GRID_STROKE,
+  CHART_TICK_FILL,
+} from "@/lib/brand/colors";
 import type { ProductProfitRow } from "@/lib/finance/types";
 import { PROFIT_TIER_COLORS } from "@/lib/finance/types";
 
@@ -42,27 +48,27 @@ export function TopProductsChart({ data }: TopProductsChartProps) {
           layout="vertical"
           margin={{ top: 8, right: 16, left: 8, bottom: 0 }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="#0d717b15" horizontal={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_STROKE} horizontal={false} />
           <XAxis
             type="number"
             tickFormatter={(value) => `$${value}`}
-            tick={{ fill: "#0d717b99", fontSize: 11 }}
-            axisLine={{ stroke: "#0d717b22" }}
+            tick={{ fill: CHART_TICK_FILL, fontSize: 11 }}
+            axisLine={{ stroke: CHART_AXIS_STROKE }}
           />
           <YAxis
             type="category"
             dataKey="shortName"
             width={140}
-            tick={{ fill: "#0d717b99", fontSize: 10 }}
-            axisLine={{ stroke: "#0d717b22" }}
+            tick={{ fill: CHART_TICK_FILL, fontSize: 10 }}
+            axisLine={{ stroke: CHART_AXIS_STROKE }}
           />
           <Tooltip
             formatter={(value) => [formatCurrency(Number(value ?? 0)), "Profit"]}
             labelFormatter={(_, payload) => payload?.[0]?.payload?.productName ?? ""}
             contentStyle={{
               borderRadius: 12,
-              border: "1px solid #0d717b22",
-              background: "#fff",
+              border: `1px solid ${CHART_AXIS_STROKE}`,
+              background: BRAND_COLORS.pureWhite,
             }}
           />
           <Bar dataKey="profit" radius={[0, 6, 6, 0]}>

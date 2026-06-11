@@ -73,7 +73,7 @@ export function PayNowFlow({ order, open, onClose, onSuccess }: PayNowFlowProps)
         {step === "payment" ? (
           <form onSubmit={handlePay} className="p-6">
             <h2 className="font-serif text-xl font-light text-deep-teal">Payment</h2>
-            <p className="mt-1 text-xs text-deep-teal/50">Stripe Elements (mock)</p>
+            <p className="mt-1 text-xs text-deep-teal/50">Secure card payment</p>
             <div className="mt-4 space-y-3">
               <div>
                 <label className={authLabelClassName}>Card number</label>
@@ -125,7 +125,7 @@ export function PayNowFlow({ order, open, onClose, onSuccess }: PayNowFlowProps)
 
         {step === "failure" ? (
           <div className="p-8 text-center">
-            <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-red-100 text-2xl text-red-600">×</div>
+            <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-coral-blush text-2xl text-deep-teal">×</div>
             <h2 className="mt-4 font-serif text-xl font-light text-deep-teal">Payment failed</h2>
             <p className="mt-2 text-sm text-deep-teal/60">Please try a different card or contact your clinic.</p>
             <button type="button" onClick={() => setStep("payment")} className="mt-6 rounded-full border border-deep-teal/15 px-5 py-2.5 text-sm text-deep-teal">

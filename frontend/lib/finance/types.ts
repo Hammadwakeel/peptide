@@ -1,3 +1,5 @@
+import { PROFIT_TIER_COLORS } from "@/lib/brand/colors";
+
 export type AccountingTimeRange =
   | "today"
   | "this_month"
@@ -82,11 +84,7 @@ export const PAID_ORDER_STATUS_LABELS: Record<PaidOrderRow["status"], string> = 
   partial_refund: "Partial Refund",
 };
 
-export const PROFIT_TIER_COLORS: Record<ProductProfitRow["tier"], string> = {
-  high: "#0d717b",
-  medium: "#3a9aa3",
-  low: "#8ec5c9",
-};
+export { PROFIT_TIER_COLORS };
 
 export function paidOrdersToCsv(rows: PaidOrderRow[]): string {
   const header = "Order#,Date,Product,Customer,Qty,Base Price,Net Profit,Total,Status";

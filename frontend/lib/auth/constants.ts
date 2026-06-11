@@ -33,6 +33,9 @@ export const PUBLIC_ROUTES = [
   "/login/verify-otp",
   "/forgot-password",
   "/reset-password",
+  "/set-password",
+  "/accept-invitation",
+  "/accept-clinic-invitation",
   "/apply",
   "/apply/submitted",
 ] as const;

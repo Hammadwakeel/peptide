@@ -1,17 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   authInputClassName,
   authLabelClassName,
 } from "@/components/auth/AuthShell";
 import {
   createAffiliate,
-  listAffiliates,
   updateAffiliateProfitMargin,
   updateAffiliateSubAffiliateLimit,
 } from "@/lib/admin/api";
+import { useShallow } from "@/lib/hooks/zustand";
+import { useAdminPortalStore } from "@/stores/admin-portal-store";
 import type { AdminAffiliate } from "@/lib/admin/types";
+import { fuseSearch } from "@/lib/search/fuse";
+import { AFFILIATE_SEARCH_KEYS } from "@/lib/search/keys";
 import { showError, toast } from "@/lib/toast";
 
 function StatusPill({ status }: { status: string }) {
@@ -170,39 +173,27 @@ function EditAffiliateModal({
 }
 
 export function AdminAffiliateSection() {
-  const [affiliates, setAffiliates] = useState<AdminAffiliate[]>([]);
+  const { affiliates, isLoading, refreshAffiliates } = useAdminPortalStore(
+    useShallow((state) => ({
+      affiliates: state.affiliates,
+      isLoading: state.isLoading,
+      refreshAffiliates: state.refreshAffiliates,
+    })),
+  );
   const [search, setSearch] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [email, setEmail] = useState("");
   const [editingAffiliate, setEditingAffiliate] = useState<AdminAffiliate | null>(null);
 
   const loadAffiliates = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await listAffiliates({ page: 1, limit: 100 });
-      setAffiliates(response.affiliates);
-    } catch (error) {
-      showError(error, "Unable to load affiliates.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    await refreshAffiliates(true);
+  }, [refreshAffiliates]);
 
-  useEffect(() => {
-    void loadAffiliates();
-  }, [loadAffiliates]);
-
-  const filtered = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) return affiliates;
-    return affiliates.filter(
-      (affiliate) =>
-        affiliate.email.toLowerCase().includes(query) ||
-        affiliate.affiliate_code.toLowerCase().includes(query),
-    );
-  }, [affiliates, search]);
+  const filtered = useMemo(
+    () => fuseSearch(affiliates, search, AFFILIATE_SEARCH_KEYS),
+    [affiliates, search],
+  );
 
   const activeCount = affiliates.filter((a) => a.status === "active").length;
   const totalReferrals = affiliates.reduce((sum, a) => sum + a.clinic_referral_count, 0);

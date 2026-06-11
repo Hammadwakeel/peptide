@@ -9,6 +9,9 @@ import {
   defaultRetailPrice,
   getPrimaryImage,
 } from "@/lib/products/catalog-types";
+import { TruncateTooltip } from "@/components/ui/Tippy";
+import { fuseSearch } from "@/lib/search/fuse";
+import { CATALOG_PRODUCT_SEARCH_KEYS } from "@/lib/search/keys";
 
 type AddItemsModalProps = {
   open: boolean;
@@ -25,18 +28,13 @@ export function AddItemsModal({ open, onClose, excludedIds, onAddSelected }: Add
   const [categoryFilter, setCategoryFilter] = useState("all");
 
   const catalog = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    return fullCatalogProducts.filter((product) => {
+    const filtered = fullCatalogProducts.filter((product) => {
       if (excludedIds.has(product.id)) return false;
       if (typeFilter && product.product_type !== typeFilter) return false;
       if (categoryFilter !== "all" && product.category.name !== categoryFilter) return false;
-      if (!query) return true;
-      return (
-        product.name.toLowerCase().includes(query) ||
-        product.sku.toLowerCase().includes(query) ||
-        (product.category.name?.toLowerCase().includes(query) ?? false)
-      );
+      return true;
     });
+    return fuseSearch(filtered, search, CATALOG_PRODUCT_SEARCH_KEYS);
   }, [fullCatalogProducts, excludedIds, search, typeFilter, categoryFilter]);
 
   const categories = useMemo(
@@ -156,7 +154,9 @@ export function AddItemsModal({ open, onClose, excludedIds, onAddSelected }: Add
                         />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-deep-teal">{product.name}</p>
+                        <TruncateTooltip content={product.name}>
+                          <p className="truncate text-sm font-medium text-deep-teal">{product.name}</p>
+                        </TruncateTooltip>
                         <p className="text-xs text-deep-teal/50">
                           {product.category.name ?? "Uncategorized"} ·{" "}
                           {CATALOG_PRODUCT_TYPE_LABELS[product.product_type]} · Clinic $

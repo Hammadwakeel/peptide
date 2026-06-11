@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { MOCK_ALL_PAYOUTS } from "@/lib/finance/mock-data";
 import {
   isDateInRange,
   PAYOUT_STATUS_LABELS,
@@ -15,7 +14,7 @@ function StatusPill({ status }: { status: PayoutStatus }) {
   const styles: Record<PayoutStatus, string> = {
     paid: "bg-pacific-teal/10 text-pacific-teal",
     processing: "bg-coral-blush text-deep-teal/70",
-    failed: "bg-red-100 text-red-700",
+    failed: "bg-coral-blush/60 text-deep-teal",
   };
   return (
     <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${styles[status]}`}>
@@ -33,7 +32,7 @@ function formatDate(value: string) {
 }
 
 export function AdminPayoutsDashboard() {
-  const [payouts, setPayouts] = useState<ProviderPayout[]>(MOCK_ALL_PAYOUTS);
+  const [payouts, setPayouts] = useState<ProviderPayout[]>([]);
   const [clinicFilter, setClinicFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<"all" | PayoutStatus>("all");
   const [dateRange, setDateRange] = useState<AccountingTimeRange>("last_3_months");
@@ -105,11 +104,11 @@ export function AdminPayoutsDashboard() {
       </div>
 
       {errors.length > 0 ? (
-        <section className="rounded-2xl border border-red-200 bg-red-50 p-4">
-          <h3 className="text-sm font-medium text-red-800">Payout errors</h3>
+        <section className="rounded-2xl border border-coral-blush bg-coral-blush/40 p-4">
+          <h3 className="text-sm font-medium text-deep-teal">Payout errors</h3>
           <ul className="mt-2 space-y-2">
             {errors.map((payout) => (
-              <li key={payout.id} className="text-sm text-red-700">
+              <li key={payout.id} className="text-sm text-deep-teal/80">
                 <span className="font-mono text-xs">{payout.batchId}</span> — {payout.clinicName}: {payout.error}
               </li>
             ))}

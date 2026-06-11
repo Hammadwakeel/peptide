@@ -82,7 +82,7 @@ export function AdminStockOverview() {
         <button
           type="button"
           onClick={() => void loadProducts()}
-          className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm text-deep-teal hover:border-pacific-teal"
+          className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm text-deep-teal hover:border-deep-teal"
         >
           Refresh
         </button>
@@ -142,7 +142,7 @@ export function AdminStockOverview() {
                       type="button"
                       disabled={savingId === product.id}
                       onClick={() => void handleSaveStock(product)}
-                      className="text-xs text-pacific-teal hover:underline disabled:opacity-50"
+                      className="text-xs text-deep-teal hover:underline disabled:opacity-50"
                     >
                       {savingId === product.id ? "Saving…" : "Save"}
                     </button>
@@ -154,7 +154,7 @@ export function AdminStockOverview() {
         </table>
       </div>
 
-      <Link href="/portal/admin/catalog" className="text-sm text-pacific-teal hover:underline">
+      <Link href="/portal/admin/catalog" className="text-sm text-deep-teal hover:underline">
         ← Back to catalog
       </Link>
     </div>

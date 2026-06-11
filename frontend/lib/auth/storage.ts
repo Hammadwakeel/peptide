@@ -70,6 +70,13 @@ export function clearSession() {
   clearCookie(AUTH_ROLE_COOKIE);
 }
 
+/** Clears all client-side auth tokens and related session data (used on sign out). */
+export function destroyAuthSession() {
+  clearSession();
+  clearPendingLogin();
+  clearResetToken();
+}
+
 export function storePendingLogin(data: PendingLogin) {
   if (typeof window === "undefined") return;
   window.sessionStorage.setItem(PENDING_LOGIN_KEY, JSON.stringify(data));

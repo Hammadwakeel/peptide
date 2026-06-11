@@ -1,33 +1,13 @@
 "use client";
 
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Line,
-  LineChart,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-  Legend,
-} from "recharts";
-import {
-  CHANNEL_SPLIT,
-  REPORTS_KPIS,
-  REVENUE_BY_REGION,
-  REVENUE_PROFIT_TREND,
-  TOP_PRODUCTS_REPORT,
-} from "@/lib/admin/mock-data";
+import { formatCurrency } from "@/lib/format/currency";
 
-const CHANNEL_COLORS = ["#0d717b", "#3a9aa3", "#8ec5c9"];
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
-}
+const EMPTY_KPIS = {
+  gmv: 0,
+  activeClinics: 0,
+  totalOrders: 0,
+  platformRevenue: 0,
+};
 
 export function AdminReportsDashboard() {
   return (
@@ -39,10 +19,10 @@ export function AdminReportsDashboard() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: "GMV", value: formatCurrency(REPORTS_KPIS.gmv) },
-          { label: "Active Clinics", value: REPORTS_KPIS.activeClinics.toString() },
-          { label: "Total Orders", value: REPORTS_KPIS.totalOrders.toLocaleString() },
-          { label: "Platform Revenue", value: formatCurrency(REPORTS_KPIS.platformRevenue) },
+          { label: "GMV", value: formatCurrency(EMPTY_KPIS.gmv) },
+          { label: "Active Clinics", value: EMPTY_KPIS.activeClinics.toString() },
+          { label: "Total Orders", value: EMPTY_KPIS.totalOrders.toLocaleString() },
+          { label: "Platform Revenue", value: formatCurrency(EMPTY_KPIS.platformRevenue) },
         ].map((kpi) => (
           <div key={kpi.label} className="rounded-2xl border border-deep-teal/10 bg-pure-white px-4 py-5 shadow-sm">
             <p className="text-xs uppercase tracking-wide text-deep-teal/45">{kpi.label}</p>
@@ -52,73 +32,22 @@ export function AdminReportsDashboard() {
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <section className="rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm">
-          <h2 className="text-sm font-medium text-deep-teal">Revenue vs Profit</h2>
-          <div className="mt-4 h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={REVENUE_PROFIT_TREND}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#0d717b15" />
-                <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                <YAxis tickFormatter={(v) => `$${v / 1000}k`} tick={{ fontSize: 11 }} />
-                <Tooltip formatter={(v) => formatCurrency(Number(v ?? 0))} />
-                <Legend />
-                <Line type="monotone" dataKey="revenue" stroke="#0d717b" strokeWidth={2} name="Revenue" />
-                <Line type="monotone" dataKey="profit" stroke="#3a9aa3" strokeWidth={2} name="Profit" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm">
-          <h2 className="text-sm font-medium text-deep-teal">Channel Split</h2>
-          <div className="mt-4 h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={CHANNEL_SPLIT} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label={({ name, value }) => `${name} ${value}%`}>
-                  {CHANNEL_SPLIT.map((_, i) => (
-                    <Cell key={i} fill={CHANNEL_COLORS[i % CHANNEL_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm">
-          <h2 className="text-sm font-medium text-deep-teal">Top Products</h2>
-          <div className="mt-4 h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={TOP_PRODUCTS_REPORT} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#0d717b15" horizontal={false} />
-                <XAxis type="number" tickFormatter={(v) => `$${v}`} />
-                <YAxis type="category" dataKey="name" width={90} tick={{ fontSize: 11 }} />
-                <Tooltip formatter={(v) => formatCurrency(Number(v ?? 0))} />
-                <Bar dataKey="profit" fill="#0d717b" radius={[0, 6, 6, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm">
-          <h2 className="text-sm font-medium text-deep-teal">Revenue by Region</h2>
-          <div className="mt-4 overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead className="text-xs uppercase text-deep-teal/45">
-                <tr><th className="py-2 text-left">Region</th><th className="py-2 text-right">Revenue</th><th className="py-2 text-right">Share</th></tr>
-              </thead>
-              <tbody>
-                {REVENUE_BY_REGION.map((row) => (
-                  <tr key={row.region} className="border-t border-deep-teal/5">
-                    <td className="py-2 text-deep-teal">{row.region}</td>
-                    <td className="py-2 text-right text-deep-teal">{formatCurrency(row.revenue)}</td>
-                    <td className="py-2 text-right text-deep-teal/55">{Math.round((row.revenue / REPORTS_KPIS.gmv) * 100)}%</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        {[
+          "Revenue vs Profit",
+          "Channel Split",
+          "Top Products",
+          "Revenue by Region",
+        ].map((title) => (
+          <section
+            key={title}
+            className="flex min-h-64 flex-col rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm"
+          >
+            <h2 className="text-sm font-medium text-deep-teal">{title}</h2>
+            <div className="flex flex-1 items-center justify-center">
+              <p className="text-sm text-deep-teal/50">No report data available yet.</p>
+            </div>
+          </section>
+        ))}
       </div>
     </div>
   );

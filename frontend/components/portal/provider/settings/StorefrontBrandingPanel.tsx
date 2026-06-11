@@ -7,6 +7,7 @@ import {
   authLabelClassName,
 } from "@/components/auth/AuthShell";
 import { useProviderPortal } from "@/context/ProviderPortalProvider";
+import { DEFAULT_THEME_COLOR } from "@/lib/brand/colors";
 import { toast } from "@/lib/toast";
 
 function isValidHex(color: string): boolean {
@@ -110,19 +111,19 @@ export function StorefrontBrandingPanel() {
             <span
               aria-hidden="true"
               className="size-12 shrink-0 rounded-xl border border-deep-teal/15"
-              style={{ backgroundColor: isValidHex(branding.themeColor) ? branding.themeColor : "#0d717b" }}
+              style={{ backgroundColor: isValidHex(branding.themeColor) ? branding.themeColor : DEFAULT_THEME_COLOR }}
             />
             <input
               id="branding-theme-color"
               type="color"
-              value={isValidHex(branding.themeColor) ? branding.themeColor : "#0d717b"}
+              value={isValidHex(branding.themeColor) ? branding.themeColor : DEFAULT_THEME_COLOR}
               onChange={(e) => handleColorChange(e.target.value)}
               className="size-12 cursor-pointer rounded-xl border border-deep-teal/15 bg-transparent"
             />
             <input
               value={branding.themeColor}
               onChange={(e) => handleColorChange(e.target.value)}
-              placeholder="#0d717b"
+              placeholder={DEFAULT_THEME_COLOR}
               className={`${authInputClassName} font-mono`}
             />
           </div>

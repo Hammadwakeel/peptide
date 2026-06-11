@@ -1,0 +1,329 @@
+"use client";
+
+import { create } from "zustand";
+import {
+  getMyConversation,
+  listConversations,
+  listMessages,
+  markConversationRead,
+  sendTextMessage,
+  uploadChatMedia,
+} from "@/lib/chat/api";
+import {
+  apiConversationToThread,
+  apiMessageToThreadMessage,
+  mergeThreadMessage,
+  replacePendingMessage,
+  type ApiMessage,
+  type ChatSender,
+  type ChatThread,
+  type ChatMediaMessageType,
+  type ThreadMessage,
+} from "@/lib/chat/types";
+import { createLocalPreviewUrl, revokePreviewUrl } from "@/lib/chat/preview";
+import { readSession } from "@/lib/auth/storage";
+import { chatSubscribe } from "@/lib/chat/ws-bridge";
+import type { ChatWsEvent } from "@/lib/chat/ws";
+import { patchIfChanged } from "@/lib/cache/set-if-changed";
+
+function chatSenderFromSession(): ChatSender {
+  const role = readSession()?.role;
+  return role === "patient" ? "patient" : "provider";
+}
+
+type ChatState = {
+  threads: ChatThread[];
+  loading: boolean;
+  error: string | null;
+  isHydrated: boolean;
+  refreshInFlight: Promise<void> | null;
+  setThreads: (updater: ChatThread[] | ((current: ChatThread[]) => ChatThread[])) => void;
+  applyWsEvent: (event: ChatWsEvent) => void;
+  refreshThreads: (options?: { force?: boolean }) => Promise<void>;
+  reset: () => void;
+  loadMessages: (conversationId: string) => Promise<void>;
+  sendMessage: (conversationId: string, content: string) => Promise<void>;
+  sendMedia: (
+    conversationId: string,
+    file: File,
+    messageType: ChatMediaMessageType,
+    options?: { content?: string; mediaDurationMs?: number },
+  ) => Promise<void>;
+  markRead: (conversationId: string, role: "provider" | "patient") => Promise<void>;
+  ensureDoctorThread: (patientId: string) => Promise<ChatThread | undefined>;
+  getThread: (patientId: string) => ChatThread | undefined;
+  getThreadByConversationId: (conversationId: string) => ChatThread | undefined;
+};
+
+export const useChatStore = create<ChatState>((set, get) => ({
+  threads: [],
+  loading: true,
+  error: null,
+  isHydrated: false,
+  refreshInFlight: null,
+
+  reset: () =>
+    set({ threads: [], loading: true, error: null, isHydrated: false, refreshInFlight: null }),
+
+  setThreads: (updater) => {
+    set((state) => ({
+      threads: typeof updater === "function" ? updater(state.threads) : updater,
+    }));
+  },
+
+  getThread: (patientId) => get().threads.find((thread) => thread.patientId === patientId),
+
+  getThreadByConversationId: (conversationId) =>
+    get().threads.find((thread) => thread.conversationId === conversationId),
+
+  applyWsEvent: (event) => {
+    if (event.type === "message.new" && event.conversation_id && event.message) {
+      const message = apiMessageToThreadMessage(event.message as ApiMessage);
+      set((state) => {
+        const hasThread = state.threads.some(
+          (thread) => thread.conversationId === event.conversation_id,
+        );
+        if (!hasThread) {
+          void get().refreshThreads({ force: true });
+          return state;
+        }
+        return {
+          threads: state.threads.map((thread) =>
+            thread.conversationId === event.conversation_id
+              ? {
+                  ...thread,
+                  messages: mergeThreadMessage(thread.messages, message),
+                  unreadProvider:
+                    message.sender === "patient" ? thread.unreadProvider + 1 : thread.unreadProvider,
+                  unreadPatient:
+                    message.sender === "provider" ? thread.unreadPatient + 1 : thread.unreadPatient,
+                }
+              : thread,
+          ),
+        };
+      });
+    }
+    if (event.type === "message.read" && event.conversation_id) {
+      set((state) => ({
+        threads: state.threads.map((thread) =>
+          thread.conversationId === event.conversation_id
+            ? {
+                ...thread,
+                unreadProvider:
+                  event.role === "provider" ? 0 : thread.unreadProvider,
+                unreadPatient: event.role === "patient" ? 0 : thread.unreadPatient,
+              }
+            : thread,
+        ),
+      }));
+    }
+  },
+
+  refreshThreads: async (options = {}) => {
+    const { force = false } = options;
+    if (!force && get().isHydrated) return;
+    if (get().refreshInFlight) return get().refreshInFlight!;
+
+    const promise = (async () => {
+      if (!get().isHydrated) set({ loading: true, error: null });
+      try {
+        let conversations;
+        try {
+          conversations = await listConversations();
+        } catch {
+          const mine = await getMyConversation();
+          conversations = [mine];
+        }
+
+        const nextThreads = conversations.map((conversation) => apiConversationToThread(conversation));
+        set((state) => ({
+          threads: patchIfChanged(state.threads, nextThreads),
+          isHydrated: true,
+        }));
+        for (const thread of nextThreads) {
+          chatSubscribe(thread.conversationId);
+        }
+      } catch (err) {
+        set({
+          error: err instanceof Error ? err.message : "Failed to load conversations",
+          threads: force ? [] : get().threads,
+        });
+      } finally {
+        set({ loading: false, refreshInFlight: null });
+      }
+    })();
+
+    set({ refreshInFlight: promise });
+    return promise;
+  },
+
+  loadMessages: async (conversationId) => {
+    const messages = await listMessages(conversationId);
+    set((state) => ({
+      threads: state.threads.map((thread) =>
+        thread.conversationId === conversationId
+          ? { ...thread, messages: messages.map(apiMessageToThreadMessage) }
+          : thread,
+      ),
+    }));
+    chatSubscribe(conversationId);
+  },
+
+  sendMessage: async (conversationId, content) => {
+    const trimmed = content.trim();
+    if (!trimmed) return;
+
+    const sender = chatSenderFromSession();
+    const thread = get().threads.find((item) => item.conversationId === conversationId);
+    const tempId = `pending-${crypto.randomUUID()}`;
+    const optimistic: ThreadMessage = {
+      id: tempId,
+      sender,
+      senderName:
+        sender === "provider" ? (thread?.providerName ?? "You") : (thread?.patientName ?? "You"),
+      content: trimmed,
+      sentAt: new Date().toISOString(),
+      messageType: "text",
+      pending: true,
+    };
+
+    set((state) => ({
+      threads: state.threads.map((item) =>
+        item.conversationId === conversationId
+          ? { ...item, messages: [...item.messages, optimistic] }
+          : item,
+      ),
+    }));
+
+    try {
+      const message = await sendTextMessage(conversationId, trimmed);
+      const mapped = apiMessageToThreadMessage(message);
+      set((state) => ({
+        threads: state.threads.map((item) => {
+          if (item.conversationId !== conversationId) return item;
+          const withoutPending = item.messages.filter((m) => m.id !== tempId);
+          return { ...item, messages: mergeThreadMessage(withoutPending, mapped) };
+        }),
+      }));
+    } catch (err) {
+      set((state) => ({
+        threads: state.threads.map((item) =>
+          item.conversationId === conversationId
+            ? { ...item, messages: item.messages.filter((m) => m.id !== tempId) }
+            : item,
+        ),
+      }));
+      throw err;
+    }
+  },
+
+  sendMedia: async (conversationId, file, messageType, options) => {
+    const sender = chatSenderFromSession();
+    const thread = get().threads.find((item) => item.conversationId === conversationId);
+    const tempId = `pending-${crypto.randomUUID()}`;
+    const caption =
+      options?.content ??
+      (messageType === "image" ? "Image" : messageType === "document" ? file.name : "Voice message");
+
+    const optimistic: ThreadMessage = {
+      id: tempId,
+      sender,
+      senderName:
+        sender === "provider" ? (thread?.providerName ?? "You") : (thread?.patientName ?? "You"),
+      content: caption,
+      sentAt: new Date().toISOString(),
+      messageType,
+      mediaUrl: null,
+      mediaMime: file.type || null,
+      mediaDurationMs: options?.mediaDurationMs ?? null,
+      pending: true,
+    };
+
+    set((state) => ({
+      threads: state.threads.map((item) =>
+        item.conversationId === conversationId
+          ? { ...item, messages: [...item.messages, optimistic] }
+          : item,
+      ),
+    }));
+
+    let localPreviewUrl = "";
+    try {
+      localPreviewUrl = await createLocalPreviewUrl(file, messageType);
+      if (localPreviewUrl) {
+        set((state) => ({
+          threads: state.threads.map((item) =>
+            item.conversationId === conversationId
+              ? {
+                  ...item,
+                  messages: item.messages.map((message) =>
+                    message.id === tempId ? { ...message, mediaUrl: localPreviewUrl } : message,
+                  ),
+                }
+              : item,
+          ),
+        }));
+      }
+    } catch {
+      localPreviewUrl = "";
+    }
+
+    try {
+      const message = await uploadChatMedia(conversationId, file, messageType, options);
+      const mapped = apiMessageToThreadMessage(message);
+      set((state) => ({
+        threads: state.threads.map((item) => {
+          if (item.conversationId !== conversationId) return item;
+          return {
+            ...item,
+            messages: replacePendingMessage(item.messages, tempId, mapped),
+          };
+        }),
+      }));
+    } catch (err) {
+      set((state) => ({
+        threads: state.threads.map((item) =>
+          item.conversationId === conversationId
+            ? { ...item, messages: item.messages.filter((m) => m.id !== tempId) }
+            : item,
+        ),
+      }));
+      throw err;
+    } finally {
+      if (localPreviewUrl) {
+        revokePreviewUrl(localPreviewUrl);
+      }
+    }
+  },
+
+  markRead: async (conversationId, role) => {
+    await markConversationRead(conversationId, role);
+    set((state) => ({
+      threads: state.threads.map((thread) =>
+        thread.conversationId === conversationId
+          ? {
+              ...thread,
+              unreadProvider: role === "provider" ? 0 : thread.unreadProvider,
+              unreadPatient: role === "patient" ? 0 : thread.unreadPatient,
+            }
+          : thread,
+      ),
+    }));
+  },
+
+  ensureDoctorThread: async (patientId) => {
+    const existing = get().threads.find((thread) => thread.patientId === patientId);
+    if (existing) return existing;
+    const { createConversation } = await import("@/lib/chat/api");
+    const conversation = await createConversation(patientId);
+    const thread = apiConversationToThread(conversation);
+    set((state) => {
+      if (state.threads.some((item) => item.conversationId === thread.conversationId)) {
+        return state;
+      }
+      return { threads: [...state.threads, thread] };
+    });
+    chatSubscribe(thread.conversationId);
+    return thread;
+  },
+}));

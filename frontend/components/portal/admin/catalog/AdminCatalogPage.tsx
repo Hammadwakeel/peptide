@@ -1,25 +1,59 @@
 "use client";
 
 import Link from "next/link";
+import { PackagePlus, Upload, Warehouse } from "lucide-react";
 import { AdminCategoriesPanel } from "@/components/portal/admin/catalog/AdminCategoriesPanel";
 import { AdminProductList } from "@/components/portal/admin/products/AdminProductList";
+
+const CATALOG_ACTIONS = [
+  {
+    href: "/portal/admin/products/new",
+    label: "Add Product",
+    icon: PackagePlus,
+    primary: true,
+  },
+  {
+    href: "/portal/admin/products/import",
+    label: "Bulk Import",
+    icon: Upload,
+    primary: false,
+  },
+  {
+    href: "/portal/admin/catalog/stock",
+    label: "Stock Management",
+    icon: Warehouse,
+    primary: false,
+  },
+] as const;
 
 export function AdminCatalogPage() {
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="font-serif text-2xl font-light text-deep-teal">Catalog Management</h1>
-          <p className="mt-1 text-sm text-deep-teal/55">Full product catalog with admin controls</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/portal/admin/products/new" className="rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal">Add Product</Link>
-          <Link href="/portal/admin/products/import" className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal">Bulk Import</Link>
-          <Link href="/portal/admin/catalog/stock" className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal">Stock Management</Link>
+      <div className="flex items-center gap-4 rounded-2xl border border-deep-teal/20 bg-pure-white px-4 py-3 shadow-[0_2px_12px_rgba(1,26,36,0.08)] sm:px-5">
+        <h1 className="shrink-0 font-serif text-xl font-light text-deep-teal sm:text-2xl">Catalog</h1>
+        <div className="min-w-4 flex-1" aria-hidden="true" />
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {CATALOG_ACTIONS.map(({ href, label, icon: Icon, primary }) => (
+            <Link
+              key={href}
+              href={href}
+              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                primary
+                  ? "bg-deep-teal text-pure-white hover:opacity-90"
+                  : "border border-deep-teal/25 text-deep-teal hover:bg-deep-teal/5"
+              }`}
+            >
+              <Icon className="size-4" aria-hidden="true" />
+              {label}
+            </Link>
+          ))}
         </div>
       </div>
-      <AdminCategoriesPanel />
-      <AdminProductList />
+
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+        <AdminCategoriesPanel />
+        <AdminProductList />
+      </div>
     </div>
   );
 }

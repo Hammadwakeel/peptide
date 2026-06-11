@@ -1,6 +1,7 @@
 "use client";
 
 import { Mic, Send, Smile } from "lucide-react";
+import { Tooltip } from "@/components/ui/Tippy";
 import { useRef, useState } from "react";
 import { ChatAttachmentMenu } from "@/components/chat/ChatAttachmentMenu";
 import { ChatMediaPreview, type PendingAttachment } from "@/components/chat/ChatMediaPreview";
@@ -177,14 +178,16 @@ export function ChatMessageInput({
         ) : null}
 
         <div className="flex min-h-10 flex-1 items-end gap-2 rounded-3xl border border-deep-teal/12 bg-deep-teal/[0.03] px-3 py-2">
-          <button
-            type="button"
-            className="mb-0.5 shrink-0 text-deep-teal/45 hover:text-deep-teal"
-            aria-label="Emoji"
-            tabIndex={-1}
-          >
-            <Smile className="size-5" />
-          </button>
+          <Tooltip content="Emoji picker (coming soon)">
+            <button
+              type="button"
+              className="mb-0.5 shrink-0 text-deep-teal/45 hover:text-deep-teal"
+              aria-label="Emoji"
+              tabIndex={-1}
+            >
+              <Smile className="size-5" />
+            </button>
+          </Tooltip>
 
           <textarea
             value={draft}
@@ -202,35 +205,41 @@ export function ChatMessageInput({
         </div>
 
         {hasText ? (
-          <button
-            type="button"
-            onClick={handleSendText}
-            disabled={disabled}
-            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-deep-teal text-pure-white hover:bg-pacific-teal disabled:opacity-40"
-            aria-label="Send message"
-          >
-            <Send className="size-4" />
-          </button>
+          <Tooltip content="Send message">
+            <button
+              type="button"
+              onClick={handleSendText}
+              disabled={disabled}
+              className="flex size-10 shrink-0 items-center justify-center rounded-full bg-deep-teal text-pure-white hover:bg-pacific-teal disabled:opacity-40"
+              aria-label="Send message"
+            >
+              <Send className="size-4" />
+            </button>
+          </Tooltip>
         ) : onUpload ? (
-          <button
-            type="button"
-            onClick={() => setIsRecording(true)}
-            disabled={disabled}
-            className="flex size-10 shrink-0 items-center justify-center rounded-full text-deep-teal/70 hover:bg-deep-teal/5 hover:text-deep-teal disabled:opacity-40"
-            aria-label="Record voice message"
-          >
-            <Mic className="size-5" />
-          </button>
+          <Tooltip content="Record voice message">
+            <button
+              type="button"
+              onClick={() => setIsRecording(true)}
+              disabled={disabled}
+              className="flex size-10 shrink-0 items-center justify-center rounded-full text-deep-teal/70 hover:bg-deep-teal/5 hover:text-deep-teal disabled:opacity-40"
+              aria-label="Record voice message"
+            >
+              <Mic className="size-5" />
+            </button>
+          </Tooltip>
         ) : (
-          <button
-            type="button"
-            onClick={handleSendText}
-            disabled={disabled}
-            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-deep-teal text-pure-white hover:bg-pacific-teal disabled:opacity-40"
-            aria-label="Send message"
-          >
-            <Send className="size-4" />
-          </button>
+          <Tooltip content="Send message">
+            <button
+              type="button"
+              onClick={handleSendText}
+              disabled={disabled}
+              className="flex size-10 shrink-0 items-center justify-center rounded-full bg-deep-teal text-pure-white hover:bg-pacific-teal disabled:opacity-40"
+              aria-label="Send message"
+            >
+              <Send className="size-4" />
+            </button>
+          </Tooltip>
         )}
       </div>
     </div>

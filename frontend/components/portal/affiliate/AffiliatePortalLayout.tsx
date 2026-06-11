@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
+import { RoleOnboardingJoyride } from "@/components/onboarding/RoleOnboardingJoyride";
 import { PortalSidebarLayout, type SidebarLink } from "@/components/portal/shared/PortalSidebarLayout";
+import { PortalBootstrap } from "@/components/bootstrap/PortalBootstrap";
 import { AffiliatePortalProvider, useAffiliatePortal } from "@/context/AffiliatePortalProvider";
 
 const BASE_AFFILIATE_LINKS: SidebarLink[] = [
@@ -25,6 +27,10 @@ function AffiliatePortalShell({ children }: { children: React.ReactNode }) {
 
   return (
     <PortalSidebarLayout portalLabel="Affiliate portal" links={links}>
+      <RoleOnboardingJoyride
+        role="affiliate"
+        filterStepIds={isMain ? undefined : ["sub-affiliates"]}
+      />
       {children}
     </PortalSidebarLayout>
   );
@@ -33,6 +39,7 @@ function AffiliatePortalShell({ children }: { children: React.ReactNode }) {
 export function AffiliatePortalLayout({ children }: { children: React.ReactNode }) {
   return (
     <AffiliatePortalProvider>
+      <PortalBootstrap role="affiliate" />
       <AffiliatePortalShell>{children}</AffiliatePortalShell>
     </AffiliatePortalProvider>
   );
@@ -49,27 +56,29 @@ export function MainAffiliateOnly({
 
   if (isLoading) {
     return (
-      <p className="rounded-2xl border border-deep-teal/10 bg-pure-white px-6 py-12 text-center text-sm text-deep-teal/50">
-        Loading affiliate account…
-      </p>
+      <p className="py-12 text-center text-sm text-deep-teal/50">Loading affiliate account…</p>
     );
   }
 
   if (!isMain) {
     return (
       fallback ?? (
-        <div className="rounded-2xl border border-deep-teal/10 bg-pure-white p-6 text-center shadow-sm">
-          <h2 className="font-serif text-xl font-light text-deep-teal">Main affiliate only</h2>
-          <p className="mt-2 text-sm text-deep-teal/60">
-            Sub-affiliates can view their account, invite clinics, and see their own referrals.
-          </p>
-          <Link
-            href="/portal/affiliate"
-            className="mt-4 inline-block text-sm text-pacific-teal hover:underline"
-          >
-            Back to dashboard
-          </Link>
-        </div>
+        <section className="overflow-hidden rounded-2xl border border-deep-teal/25 bg-pure-white shadow-[0_4px_24px_rgba(1,26,36,0.12)]">
+          <div className="bg-deep-teal px-5 py-4 text-pure-white">
+            <h2 className="font-serif text-lg font-light">Main affiliate only</h2>
+          </div>
+          <div className="p-6 text-center">
+            <p className="text-sm text-deep-teal/60">
+              Sub-affiliates can view their account, invite clinics, and see their own referrals.
+            </p>
+            <Link
+              href="/portal/affiliate"
+              className="mt-4 inline-flex rounded-full border border-deep-teal/25 px-4 py-2 text-sm font-medium text-deep-teal hover:bg-deep-teal/5"
+            >
+              Back to dashboard
+            </Link>
+          </div>
+        </section>
       )
     );
   }
