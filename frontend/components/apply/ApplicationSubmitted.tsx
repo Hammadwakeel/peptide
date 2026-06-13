@@ -40,7 +40,7 @@ export function ApplicationSubmitted() {
           </svg>
         </div>
 
-        <h1 className="mt-5 font-sans text-2xl font-semibold text-deep-teal">
+        <h1 className="mt-5 font-sans text-2xl font-light text-deep-teal">
           Application submitted
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-deep-teal/65">
@@ -51,25 +51,25 @@ export function ApplicationSubmitted() {
           <div className="mt-5 rounded-xl border border-deep-teal/10 bg-deep-teal/[0.03] px-4 py-3 text-sm text-deep-teal/75">
             {application.clinic_name ? (
               <p>
-                <span className="font-medium text-deep-teal">Clinic:</span> {application.clinic_name}
+                <span className="font-light text-deep-teal">Clinic:</span> {application.clinic_name}
               </p>
             ) : null}
             {application.email ? (
               <p className="mt-1">
-                <span className="font-medium text-deep-teal">Email:</span> {application.email}
+                <span className="font-light text-deep-teal">Email:</span> {application.email}
               </p>
             ) : null}
             {formatApplicantName(application) ? (
               <p className="mt-1">
-                <span className="font-medium text-deep-teal">Applicant:</span>{" "}
+                <span className="font-light text-deep-teal">Applicant:</span>{" "}
                 {formatApplicantName(application)}
               </p>
             ) : null}
             <p className="mt-1">
-              <span className="font-medium text-deep-teal">Reference:</span> {application.id}
+              <span className="font-light text-deep-teal">Reference:</span> {application.id}
             </p>
             <p className="mt-1">
-              <span className="font-medium text-deep-teal">Status:</span>{" "}
+              <span className="font-light text-deep-teal">Status:</span>{" "}
               {application.application_status.replaceAll("_", " ")}
             </p>
           </div>

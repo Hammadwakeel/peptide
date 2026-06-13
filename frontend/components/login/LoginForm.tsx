@@ -48,7 +48,9 @@ const ROLE_HEADINGS: Record<
 
 const ROLE_QUERY_VALUES = ["admin", "affiliate", "doctor", "patient"] as const;
 
-function roleFromPathname(pathname: string): UserRole | undefined {
+function roleFromPathname(
+  pathname: string,
+): Extract<UserRole, "admin" | "affiliate"> | undefined {
   if (pathname === "/login/admin") return "admin";
   if (pathname === "/login/affiliate") return "affiliate";
   return undefined;
@@ -139,14 +141,14 @@ export function LoginForm({ fixedRole }: LoginFormProps = {}) {
             variants={staggerContainer}
           >
             <motion.span
-              className="font-sans text-xs font-medium text-pacific-teal"
+              className="font-sans text-xs font-light text-pacific-teal"
               variants={fadeInUp}
               transition={transition}
             >
               Sign in
             </motion.span>
             <motion.h1
-              className="mt-3 font-sans text-2xl font-semibold tracking-[-0.02em] text-deep-teal sm:text-3xl"
+              className="mt-3 font-sans text-2xl font-light tracking-[-0.02em] text-deep-teal sm:text-3xl"
               variants={fadeInUp}
               transition={transition}
             >
@@ -166,7 +168,7 @@ export function LoginForm({ fixedRole }: LoginFormProps = {}) {
                 transition={transition}
               >
                 Sign in to access{" "}
-                <span className="font-medium text-deep-teal">{redirectTarget}</span>.
+                <span className="font-light text-deep-teal">{redirectTarget}</span>.
               </motion.p>
             ) : null}
           </motion.div>
@@ -241,7 +243,7 @@ export function LoginForm({ fixedRole }: LoginFormProps = {}) {
               transition={transition}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
-              className="mt-2 w-full rounded-full bg-deep-teal px-6 py-3.5 text-sm font-medium text-pure-white transition-all duration-300 hover:bg-pacific-teal disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-2 w-full rounded-full bg-deep-teal px-6 py-3.5 text-sm font-light text-pure-white transition-all duration-300 hover:bg-pacific-teal disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? "Signing in…" : "Sign in"}
             </motion.button>
@@ -269,7 +271,7 @@ export function LoginForm({ fixedRole }: LoginFormProps = {}) {
           >
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-sm font-medium text-deep-teal/70 transition-colors hover:text-deep-teal"
+              className="inline-flex items-center gap-2 text-sm font-light text-deep-teal/70 transition-colors hover:text-deep-teal"
             >
               <svg
                 width="16"

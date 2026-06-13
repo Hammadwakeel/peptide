@@ -58,7 +58,7 @@ function InviteUserModal({ open, onClose, onInvite }: InviteUserModalProps) {
         aria-labelledby="invite-user-title"
         className="w-full max-w-md rounded-2xl border border-deep-teal/10 bg-pure-white p-6 shadow-xl"
       >
-        <h2 id="invite-user-title" className="font-sans text-xl font-semibold text-deep-teal">
+        <h2 id="invite-user-title" className="font-sans text-xl font-light text-deep-teal">
           Invite organization member
         </h2>
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
@@ -90,7 +90,7 @@ function InviteUserModal({ open, onClose, onInvite }: InviteUserModalProps) {
             <button type="button" onClick={onClose} className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm text-deep-teal">
               Cancel
             </button>
-            <button type="submit" className="rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal">
+            <button type="submit" className="rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white hover:bg-pacific-teal">
               Send invite
             </button>
           </div>
@@ -109,7 +109,7 @@ function StatusPill({ status }: { status: ClinicMember["status"] }) {
         : "bg-deep-teal/5 text-deep-teal/60";
   const label = status === "active" ? "Active" : status === "pending" ? "Pending" : "Inactive";
   return (
-    <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium ${styles}`}>
+    <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-light ${styles}`}>
       {label}
     </span>
   );
@@ -228,12 +228,12 @@ export function OrganizationUsers() {
             <table className="min-w-full text-left text-sm">
               <thead className="border-b border-deep-teal/10 bg-surface-muted/50 text-xs uppercase tracking-wide text-deep-teal/45">
                 <tr>
-                  <th className="px-4 py-3 font-medium sm:px-6">Name</th>
-                  <th className="px-4 py-3 font-medium sm:px-6">Email</th>
-                  <th className="px-4 py-3 font-medium sm:px-6">Role</th>
-                  <th className="px-4 py-3 font-medium sm:px-6">Status</th>
-                  <th className="px-4 py-3 font-medium sm:px-6">Access</th>
-                  {canManage ? <th className="px-4 py-3 font-medium sm:px-6">Actions</th> : null}
+                  <th className="px-4 py-3 font-light sm:px-6">Name</th>
+                  <th className="px-4 py-3 font-light sm:px-6">Email</th>
+                  <th className="px-4 py-3 font-light sm:px-6">Role</th>
+                  <th className="px-4 py-3 font-light sm:px-6">Status</th>
+                  <th className="px-4 py-3 font-light sm:px-6">Access</th>
+                  {canManage ? <th className="px-4 py-3 font-light sm:px-6">Actions</th> : null}
                 </tr>
               </thead>
               <tbody>
@@ -246,7 +246,7 @@ export function OrganizationUsers() {
                 ) : (
                   filtered.map((user) => (
                     <tr key={user.id} className="border-b border-deep-teal/5 last:border-0">
-                      <td className="px-4 py-3 font-medium sm:px-6">{user.name}</td>
+                      <td className="px-4 py-3 font-light sm:px-6">{user.name}</td>
                       <td className="px-4 py-3 text-deep-teal/70 sm:px-6">{user.email}</td>
                       <td className="px-4 py-3 sm:px-6">
                         {ACCESS_LEVEL_LABELS[user.access_level]}
@@ -276,7 +276,7 @@ export function OrganizationUsers() {
                             <button
                               type="button"
                               onClick={() => void handleRemove(user)}
-                              className="text-xs font-medium text-deep-teal/45 hover:text-deep-teal"
+                              className="text-xs font-light text-deep-teal/45 hover:text-deep-teal"
                             >
                               {user.status === "pending" ? "Cancel" : "Remove"}
                             </button>

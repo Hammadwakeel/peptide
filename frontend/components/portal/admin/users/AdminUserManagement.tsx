@@ -42,7 +42,7 @@ function PasswordModal({
         aria-modal="true"
         className="relative z-10 w-full max-w-md rounded-2xl border border-deep-teal/10 bg-pure-white p-6 shadow-xl"
       >
-        <h2 className="font-sans text-xl font-semibold text-deep-teal">Change password</h2>
+        <h2 className="font-sans text-xl font-light text-deep-teal">Change password</h2>
         <p className="mt-2 text-sm text-deep-teal/60">
           Update password for {patient.first_name} {patient.last_name} ({patient.email})
         </p>
@@ -212,13 +212,13 @@ export function AdminUserManagement() {
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-4 rounded-2xl border border-deep-teal/20 bg-pure-white px-4 py-2.5 shadow-[0_2px_12px_rgba(1,26,36,0.08)] sm:px-5">
-        <h1 className="shrink-0 font-sans text-xl font-semibold text-deep-teal sm:text-2xl">Users</h1>
+        <h1 className="shrink-0 font-sans text-xl font-light text-deep-teal sm:text-2xl">Users</h1>
         <div className="min-w-4 flex-1" aria-hidden="true" />
         <button
           type="button"
           onClick={() => void loadAllData()}
           disabled={isLoading}
-          className="inline-flex items-center gap-2 rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           <RefreshCw className={`size-4 ${isLoading ? "animate-spin" : ""}`} aria-hidden="true" />
           Refresh
@@ -236,7 +236,7 @@ export function AdminUserManagement() {
                 <Building2 className="size-4" />
               </div>
               <div>
-                <h2 className="font-sans text-lg font-semibold">Clinics</h2>
+                <h2 className="font-sans text-lg font-light">Clinics</h2>
                 <p className="text-xs text-pure-white/75">
                   {isLoading ? "Loading…" : `${filteredClinics.length} shown`}
                 </p>
@@ -284,7 +284,7 @@ export function AdminUserManagement() {
                         }`}
                       >
                         <div
-                          className={`flex size-10 shrink-0 items-center justify-center rounded-xl text-sm font-medium ${
+                          className={`flex size-10 shrink-0 items-center justify-center rounded-xl text-sm font-light ${
                             isSelected
                               ? "bg-deep-teal text-pure-white"
                               : "bg-deep-teal/10 text-deep-teal"
@@ -294,13 +294,13 @@ export function AdminUserManagement() {
                           {clinic.clinic_name.slice(0, 1).toUpperCase()}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate font-medium text-deep-teal">{clinic.clinic_name}</p>
+                          <p className="truncate font-light text-deep-teal">{clinic.clinic_name}</p>
                           <p className="mt-0.5 truncate text-xs text-deep-teal/55">{clinic.email}</p>
                           <p className="mt-1.5 text-xs text-deep-teal/45">
                             {clinic.patient_count} patients · {clinic.staff_count} staff
                           </p>
                           <span
-                            className={`mt-1.5 inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${
+                            className={`mt-1.5 inline-flex rounded-full px-2 py-0.5 text-[10px] font-light uppercase tracking-wide ${
                               clinic.status === "approved"
                                 ? "bg-deep-teal/10 text-deep-teal"
                                 : "bg-coral-blush/80 text-deep-teal"
@@ -328,7 +328,7 @@ export function AdminUserManagement() {
                 <Users className="size-4" />
               </div>
               <div className="min-w-0">
-                <h2 className="truncate font-sans text-lg font-semibold">
+                <h2 className="truncate font-sans text-lg font-light">
                   {selectedClinic ? `${selectedClinic.clinic_name} — Patients` : "Patients"}
                 </h2>
                 <p className="text-xs text-pure-white/75">
@@ -363,11 +363,11 @@ export function AdminUserManagement() {
             <table className="min-w-full text-left text-sm">
               <thead className="border-b border-deep-teal/10 text-[10px] text-deep-teal/60">
                 <tr>
-                  <th className="px-5 py-3 font-medium">Name</th>
-                  <th className="hidden px-4 py-3 font-medium sm:table-cell">Email</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="hidden px-4 py-3 font-medium md:table-cell">Account</th>
-                  <th className="px-5 py-3 text-right font-medium">
+                  <th className="px-5 py-3 font-light">Name</th>
+                  <th className="hidden px-4 py-3 font-light sm:table-cell">Email</th>
+                  <th className="px-4 py-3 font-light">Status</th>
+                  <th className="hidden px-4 py-3 font-light md:table-cell">Account</th>
+                  <th className="px-5 py-3 text-right font-light">
                     <span className="sr-only">Actions</span>
                   </th>
                 </tr>
@@ -396,11 +396,11 @@ export function AdminUserManagement() {
                     <tr key={patient.id} className="transition-colors hover:bg-deep-teal/[0.03]">
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-deep-teal text-sm font-medium text-pure-white">
+                          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-deep-teal text-sm font-light text-pure-white">
                             {(patient.first_name?.[0] ?? patient.email[0] ?? "?").toUpperCase()}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-medium text-deep-teal">
+                            <p className="font-light text-deep-teal">
                               {patient.first_name} {patient.last_name}
                             </p>
                             <p className="mt-0.5 truncate text-xs text-deep-teal/45 sm:hidden">
@@ -412,7 +412,7 @@ export function AdminUserManagement() {
                       <td className="hidden px-4 py-4 text-deep-teal/70 sm:table-cell">{patient.email}</td>
                       <td className="px-4 py-4">
                         <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium capitalize ${
+                          className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-light capitalize ${
                             patient.status === "active"
                               ? "bg-deep-teal/10 text-deep-teal"
                               : "bg-coral-blush/80 text-deep-teal"

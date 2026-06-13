@@ -128,7 +128,7 @@ export function ChatMessageBubble({
                     : "border-pacific-teal bg-pure-white/70 text-deep-teal/70"
                 }`}
               >
-                <p className="font-medium">{replyToMessage.senderName}</p>
+                <p className="font-light">{replyToMessage.senderName}</p>
                 <p className="mt-0.5 line-clamp-2">{replyPreviewText(replyToMessage)}</p>
               </div>
             ) : null}
@@ -136,7 +136,7 @@ export function ChatMessageBubble({
             {message.messageType === "image" ? (
               <div className="overflow-hidden rounded-2xl border border-deep-teal/10 bg-pure-white shadow-sm">
                 {clinicalLabel ? (
-                  <div className="flex items-center gap-1.5 border-b border-deep-teal/8 bg-surface-muted/60 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wide text-pacific-teal">
+                  <div className="flex items-center gap-1.5 border-b border-deep-teal/8 bg-surface-muted/60 px-3 py-1.5 text-[10px] font-light uppercase tracking-wide text-pacific-teal">
                     <ScanLine className="size-3" aria-hidden="true" />
                     {clinicalLabel}
                   </div>
@@ -153,7 +153,7 @@ export function ChatMessageBubble({
                         <button
                           type="button"
                           onClick={handleDownload}
-                          className="inline-flex items-center gap-1.5 rounded-full bg-pure-white/95 px-3 py-1.5 text-xs font-medium text-deep-teal shadow-sm transition-opacity hover:opacity-90"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-pure-white/95 px-3 py-1.5 text-xs font-light text-deep-teal shadow-sm transition-opacity hover:opacity-90"
                           aria-label={`Download ${message.content || "image"}`}
                         >
                           <Download className="size-3.5" aria-hidden="true" />
@@ -184,7 +184,7 @@ export function ChatMessageBubble({
             {message.messageType === "document" && message.mediaUrl ? (
               <div className="min-w-[12rem]">
                 {clinicalLabel ? (
-                  <p className="mb-2 flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wide text-pacific-teal">
+                  <p className="mb-2 flex items-center gap-1.5 text-[10px] font-light uppercase tracking-wide text-pacific-teal">
                     <ScanLine className="size-3" aria-hidden="true" />
                     {clinicalLabel}
                   </p>
@@ -202,7 +202,7 @@ export function ChatMessageBubble({
                     <FileText className="size-5" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-medium">{message.content || "Document"}</span>
+                    <span className="block truncate font-light">{message.content || "Document"}</span>
                     <span className={`text-xs ${isOwn ? "text-pure-white/70" : "text-deep-teal/50"}`}>
                       Report / document
                     </span>

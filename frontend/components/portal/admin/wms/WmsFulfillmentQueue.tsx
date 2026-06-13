@@ -47,7 +47,7 @@ function WmsUpdateTrackingModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-deep-teal/40 p-4">
       <div role="dialog" aria-modal="true" className="w-full max-w-md rounded-2xl border border-deep-teal/10 bg-pure-white p-6 shadow-xl">
-        <h2 className="font-sans text-xl font-semibold text-deep-teal">Update tracking</h2>
+        <h2 className="font-sans text-xl font-light text-deep-teal">Update tracking</h2>
         <p className="mt-1 font-mono text-xs text-deep-teal/45">{orderId}</p>
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
           <div>
@@ -68,7 +68,7 @@ function WmsUpdateTrackingModal({
           </div>
           <div className="flex justify-end gap-2">
             <button type="button" onClick={onClose} className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm text-deep-teal">Cancel</button>
-            <button type="submit" className="rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal">Save</button>
+            <button type="submit" className="rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white hover:bg-pacific-teal">Save</button>
           </div>
         </form>
       </div>
@@ -93,7 +93,7 @@ export function WmsFulfillmentQueue() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-sans text-2xl font-semibold text-deep-teal">Fulfillment Queue</h1>
+        <h1 className="font-sans text-2xl font-light text-deep-teal">Fulfillment Queue</h1>
         <p className="mt-1 text-sm text-deep-teal/55">{queue.length} paid orders awaiting shipment</p>
       </div>
 
@@ -117,13 +117,13 @@ export function WmsFulfillmentQueue() {
               const pendingDays = daysSince(order.paymentDate);
               return (
                 <tr key={order.id} className={`border-b border-deep-teal/5 ${pendingDays >= 3 ? "bg-coral-blush/10" : ""}`}>
-                  <td className="px-4 py-3 font-mono text-xs font-medium text-deep-teal">{order.id}</td>
+                  <td className="px-4 py-3 font-mono text-xs font-light text-deep-teal">{order.id}</td>
                   <td className="px-4 py-3 text-deep-teal/70">{order.clinicName}</td>
                   <td className="px-4 py-3 text-deep-teal">{order.customerName ?? "—"}</td>
                   <td className="px-4 py-3 text-deep-teal/70">{order.itemsCount}</td>
                   <td className="px-4 py-3 text-deep-teal/70">{order.paymentDate ?? "—"}</td>
                   <td className="px-4 py-3">
-                    <span className={pendingDays >= 3 ? "font-medium text-coral-blush" : "text-deep-teal/70"}>
+                    <span className={pendingDays >= 3 ? "font-light text-coral-blush" : "text-deep-teal/70"}>
                       {pendingDays}d
                     </span>
                   </td>
@@ -131,7 +131,7 @@ export function WmsFulfillmentQueue() {
                     <button
                       type="button"
                       onClick={() => setTrackingOrderId(order.id)}
-                      className="rounded-full bg-deep-teal px-3 py-1.5 text-xs font-medium text-pure-white hover:bg-pacific-teal"
+                      className="rounded-full bg-deep-teal px-3 py-1.5 text-xs font-light text-pure-white hover:bg-pacific-teal"
                     >
                       Update Tracking
                     </button>

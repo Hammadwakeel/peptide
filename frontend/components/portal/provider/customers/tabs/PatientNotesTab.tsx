@@ -25,7 +25,7 @@ export function PatientNotesTab({ patientId, notes }: PatientNotesTabProps) {
   return (
     <div className="space-y-5">
       <div className="rounded-xl border border-deep-teal/10 p-4">
-        <label htmlFor="patient-note" className="mb-2 block text-sm font-medium text-deep-teal">
+        <label htmlFor="patient-note" className="mb-2 block text-sm font-light text-deep-teal">
           Add Note
         </label>
         <textarea
@@ -40,7 +40,7 @@ export function PatientNotesTab({ patientId, notes }: PatientNotesTabProps) {
           type="button"
           onClick={handleSave}
           disabled={!draft.trim()}
-          className="mt-3 rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-40"
+          className="mt-3 rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white hover:bg-pacific-teal disabled:opacity-40"
         >
           Save
         </button>

@@ -34,7 +34,7 @@ function StockBadge({ product }: { product: BrowseProduct }) {
   };
   return (
     <Tooltip content={PATIENT_STOCK_TIPS[status]}>
-      <span className={`cursor-help rounded-full px-2 py-0.5 text-[10px] font-medium ${styles[status]}`}>
+      <span className={`cursor-help rounded-full px-2 py-0.5 text-[10px] font-light ${styles[status]}`}>
         {STOCK_STATUS_LABELS[status]}
       </span>
     </Tooltip>
@@ -64,7 +64,7 @@ export function PatientProductCard({ product, view, onRequest, onOrder, onInfo }
         type="button"
         disabled={product.stockStatus === "out_of_stock"}
         onClick={onOrder}
-        className="rounded-full bg-deep-teal px-3 py-1.5 text-xs font-medium text-pure-white disabled:opacity-50"
+        className="rounded-full bg-deep-teal px-3 py-1.5 text-xs font-light text-pure-white disabled:opacity-50"
       >
         Order
       </button>
@@ -128,7 +128,7 @@ export function PatientProductCard({ product, view, onRequest, onOrder, onInfo }
           type="button"
           disabled={product.stockStatus === "out_of_stock"}
           onClick={onOrder}
-          className="w-full rounded-full bg-deep-teal py-2 text-xs font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-50"
+          className="w-full rounded-full bg-deep-teal py-2 text-xs font-light text-pure-white hover:bg-pacific-teal disabled:opacity-50"
         >
           Order
         </button>

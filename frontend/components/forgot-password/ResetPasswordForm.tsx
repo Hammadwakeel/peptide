@@ -46,7 +46,7 @@ export function ResetPasswordForm() {
     return (
       <AuthShell background="hands">
         <AuthCard>
-          <h1 className="font-sans text-2xl font-semibold text-deep-teal">
+          <h1 className="font-sans text-2xl font-light text-deep-teal">
             Invalid reset link
           </h1>
           <p className="mt-3 text-sm text-deep-teal/60">
@@ -65,10 +65,10 @@ export function ResetPasswordForm() {
     <AuthShell background="hands">
       <AuthCard>
         <div className="mb-8">
-          <span className="font-sans text-xs font-medium text-pacific-teal">
+          <span className="font-sans text-xs font-light text-pacific-teal">
             Account recovery
           </span>
-          <h1 className="mt-3 font-sans text-2xl font-semibold tracking-[-0.02em] text-deep-teal sm:text-3xl">
+          <h1 className="mt-3 font-sans text-2xl font-light tracking-[-0.02em] text-deep-teal sm:text-3xl">
             Reset password
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-deep-teal/60">
@@ -124,7 +124,7 @@ export function ResetPasswordForm() {
             disabled={isSubmitting}
             variants={fadeInUp}
             transition={transition}
-            className="w-full rounded-full bg-deep-teal px-6 py-3.5 text-sm font-medium text-pure-white transition-all duration-300 hover:bg-pacific-teal disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-full bg-deep-teal px-6 py-3.5 text-sm font-light text-pure-white transition-all duration-300 hover:bg-pacific-teal disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting ? "Saving…" : "Update password"}
           </motion.button>

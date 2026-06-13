@@ -14,7 +14,7 @@ type ChatMessageListProps = {
 function ChatDateSeparator({ label }: { label: string }) {
   return (
     <div className="flex justify-center py-2">
-      <span className="rounded-lg bg-deep-teal/10 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-deep-teal/60 shadow-sm">
+      <span className="rounded-lg bg-deep-teal/10 px-3 py-1 text-[11px] font-light uppercase tracking-wide text-deep-teal/60 shadow-sm">
         {label}
       </span>
     </div>

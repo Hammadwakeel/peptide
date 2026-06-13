@@ -114,7 +114,7 @@ export function HintPopover({ hint, label = "Field help" }: HintPopoverProps) {
     <Popover content={<p className="text-sm leading-relaxed">{hint}</p>} trigger="mouseenter focus click">
       <button
         type="button"
-        className="inline-flex size-5 items-center justify-center rounded-full border border-deep-teal/15 text-[11px] font-medium text-deep-teal/50 transition-colors hover:bg-pacific-teal/12 hover:text-pacific-teal"
+        className="inline-flex size-5 items-center justify-center rounded-full border border-deep-teal/15 text-[11px] font-light text-deep-teal/50 transition-colors hover:bg-pacific-teal/12 hover:text-pacific-teal"
         aria-label={label}
       >
         ?

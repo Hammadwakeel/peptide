@@ -21,10 +21,10 @@ export function ApplyField({
   return (
     <div className={className}>
       <div className="mb-2 flex items-center gap-2">
-        <label htmlFor={htmlFor} className="text-sm font-medium text-deep-teal">
+        <label htmlFor={htmlFor} className="text-sm font-light text-deep-teal">
           {label}
           {optional ? (
-            <span className="ml-1.5 font-normal text-deep-teal/40">(optional)</span>
+            <span className="ml-1.5 font-light text-deep-teal/40">(optional)</span>
           ) : null}
         </label>
         {hint ? <HintPopover hint={hint} label={`Help for ${label}`} /> : null}

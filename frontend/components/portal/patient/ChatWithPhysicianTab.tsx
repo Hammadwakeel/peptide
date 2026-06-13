@@ -48,7 +48,7 @@ export function ChatWithPhysicianTab() {
     <div className="flex h-[calc(100dvh-72px)] min-h-[520px] overflow-hidden rounded-2xl border border-deep-teal/10 bg-pure-white shadow-[0_4px_24px_rgba(1,26,36,0.08)]">
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-center gap-3 border-b border-deep-teal/10 bg-surface-muted/30 px-4 py-3">
-          <span className="relative flex size-10 shrink-0 items-center justify-center rounded-full bg-pacific-teal/15 text-sm font-semibold text-deep-teal">
+          <span className="relative flex size-10 shrink-0 items-center justify-center rounded-full bg-pacific-teal/15 text-sm font-light text-deep-teal">
             DR
             <span
               className={`absolute bottom-0 right-0 size-3 rounded-full border-2 border-pure-white ${
@@ -58,7 +58,7 @@ export function ChatWithPhysicianTab() {
             />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate font-semibold text-deep-teal">{thread.providerName}</p>
+            <p className="truncate font-light text-deep-teal">{thread.providerName}</p>
             <OnlineIndicator online={thread.providerOnline} />
           </div>
         </div>

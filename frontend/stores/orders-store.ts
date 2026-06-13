@@ -38,6 +38,13 @@ type OrdersState = {
   applyTrackingImport: (
     rows: { orderId: string; carrier: string; trackingNumber: string; shippedDate: string }[],
   ) => { updated: number; failed: number };
+  updateTracking: (orderId: string, tracking: OrderTracking) => void;
+  applyRefund: (
+    orderId: string,
+    amount: number,
+    reason: string,
+    isFull: boolean,
+  ) => void;
   upsertOrder: (order: Order) => void;
 };
 
@@ -134,6 +141,41 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
       }),
     }));
     return { updated, failed: rows.length - updated };
+  },
+
+  updateTracking: (orderId, tracking) => {
+    set((state) => ({
+      orders: state.orders.map((order) => {
+        if (order.id !== orderId && order.orderNumber !== orderId) return order;
+        const trackingUrl = buildTrackingUrl(tracking.carrier, tracking.trackingNumber);
+        return {
+          ...order,
+          tracking: { ...tracking, trackingUrl },
+          shipmentStatus: "shipped" as ShipmentStatus,
+        };
+      }),
+    }));
+  },
+
+  applyRefund: (orderId, _amount, reason, isFull) => {
+    set((state) => ({
+      orders: state.orders.map((order) => {
+        if (order.id !== orderId && order.orderNumber !== orderId) return order;
+        return {
+          ...order,
+          paymentStatus: isFull ? ("refunded" as const) : ("partial_refund" as const),
+          timeline: [
+            ...order.timeline,
+            {
+              id: `refund-${Date.now()}`,
+              status: isFull ? "Refunded" : "Partial refund",
+              date: new Date().toISOString(),
+              note: reason,
+            },
+          ],
+        };
+      }),
+    }));
   },
 }));
 

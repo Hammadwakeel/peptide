@@ -166,11 +166,11 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
           </div>
           <div>
             <dt className="text-xs text-deep-teal/45">Total</dt>
-            <dd className="text-sm font-medium text-deep-teal">${order.total.toFixed(2)}</dd>
+            <dd className="text-sm font-light text-deep-teal">${order.total.toFixed(2)}</dd>
           </div>
           <div>
             <dt className="text-xs text-deep-teal/45">Profit</dt>
-            <dd className="text-sm font-medium text-pacific-teal">${order.profit.toFixed(2)}</dd>
+            <dd className="text-sm font-light text-pacific-teal">${order.profit.toFixed(2)}</dd>
           </div>
         </dl>
 
@@ -206,7 +206,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
                     <td className="px-3 py-2 font-mono text-xs text-deep-teal/60">{item.sku}</td>
                     <td className="px-3 py-2 text-right text-deep-teal">{item.qty}</td>
                     <td className="px-3 py-2 text-right text-deep-teal">${item.unitPrice.toFixed(2)}</td>
-                    <td className="px-3 py-2 text-right font-medium text-deep-teal">
+                    <td className="px-3 py-2 text-right font-light text-deep-teal">
                       ${item.total.toFixed(2)}
                     </td>
                   </tr>
@@ -219,11 +219,11 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
         {order.customerName ? (
           <ProviderPageSection icon={Package} title="Patient info">
             <div className="mt-4 flex items-center gap-3">
-              <span className="flex size-12 items-center justify-center rounded-full bg-deep-teal/10 text-sm font-medium text-deep-teal">
+              <span className="flex size-12 items-center justify-center rounded-full bg-deep-teal/10 text-sm font-light text-deep-teal">
                 {getPatientInitials(order.customerName)}
               </span>
               <div>
-                <p className="font-medium text-deep-teal">{order.customerName}</p>
+                <p className="font-light text-deep-teal">{order.customerName}</p>
                 {order.patientEmail ? (
                   <p className="text-xs text-deep-teal/60">{order.patientEmail}</p>
                 ) : null}
@@ -235,7 +235,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
             {order.customerId ? (
               <Link
                 href={`/portal/doctor/customers/${order.customerId}`}
-                className="mt-4 inline-block text-xs font-medium text-pacific-teal hover:underline"
+                className="mt-4 inline-block text-xs font-light text-pacific-teal hover:underline"
               >
                 View patient profile
               </Link>
@@ -268,7 +268,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
             href={order.tracking.trackingUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-4 inline-block text-sm font-medium text-pacific-teal hover:underline"
+            className="mt-4 inline-block text-sm font-light text-pacific-teal hover:underline"
           >
             Track shipment →
           </a>
@@ -281,7 +281,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
             {order.timeline.map((entry) => (
               <li key={entry.id} className="relative">
                 <span className="absolute -left-[1.35rem] top-1.5 size-2 rounded-full bg-pacific-teal" />
-                <p className="text-sm font-medium text-deep-teal">{entry.status}</p>
+                <p className="text-sm font-light text-deep-teal">{entry.status}</p>
                 <p className="text-xs text-deep-teal/50">{formatDateTime(entry.date)}</p>
                 <p className="mt-1 text-sm text-deep-teal/65">{entry.note}</p>
               </li>

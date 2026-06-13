@@ -35,7 +35,7 @@ function PayoutStatusPill({ status }: { status: PayoutStatus }) {
     failed: "bg-coral-blush/60 text-deep-teal",
   };
   return (
-    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${styles[status]}`}>
+    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-light ${styles[status]}`}>
       {PAYOUT_STATUS_LABELS[status]}
     </span>
   );
@@ -43,7 +43,7 @@ function PayoutStatusPill({ status }: { status: PayoutStatus }) {
 
 function PaidStatusPill({ status }: { status: PaidOrderRow["status"] }) {
   return (
-    <span className="inline-flex rounded-full bg-pacific-teal/10 px-2 py-0.5 text-xs font-medium text-pacific-teal">
+    <span className="inline-flex rounded-full bg-pacific-teal/10 px-2 py-0.5 text-xs font-light text-pacific-teal">
       {PAID_ORDER_STATUS_LABELS[status]}
     </span>
   );
@@ -183,7 +183,7 @@ export function AccountingPage() {
                     ["status", "Status"],
                   ] as [SortKey, string][]
                 ).map(([key, label]) => (
-                  <th key={key} className="px-4 py-3 font-medium">
+                  <th key={key} className="px-4 py-3 font-light">
                     <button type="button" onClick={() => handleSort(key)} className="hover:text-deep-teal">
                       {label}
                       {sortKey === key ? (sortAsc ? " ↑" : " ↓") : ""}
@@ -201,7 +201,7 @@ export function AccountingPage() {
                   <td className="px-4 py-3 text-deep-teal/70">{row.customer}</td>
                   <td className="px-4 py-3 text-deep-teal">{row.qty}</td>
                   <td className="px-4 py-3 text-deep-teal/70">${row.basePrice}</td>
-                  <td className="px-4 py-3 font-medium text-pacific-teal">${row.netProfit}</td>
+                  <td className="px-4 py-3 font-light text-pacific-teal">${row.netProfit}</td>
                   <td className="px-4 py-3 text-deep-teal">${row.total}</td>
                   <td className="px-4 py-3"><PaidStatusPill status={row.status} /></td>
                 </tr>
@@ -224,11 +224,11 @@ export function AccountingPage() {
           <table className="min-w-full text-left text-sm">
             <thead className="border-b border-deep-teal/10 bg-surface-muted/50 text-xs uppercase tracking-wide text-deep-teal/45">
               <tr>
-                <th className="px-4 py-3 font-medium">Batch ID</th>
-                <th className="px-4 py-3 font-medium">Date</th>
-                <th className="px-4 py-3 font-medium">Amount</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Breakdown</th>
+                <th className="px-4 py-3 font-light">Batch ID</th>
+                <th className="px-4 py-3 font-light">Date</th>
+                <th className="px-4 py-3 font-light">Amount</th>
+                <th className="px-4 py-3 font-light">Status</th>
+                <th className="px-4 py-3 font-light">Breakdown</th>
               </tr>
             </thead>
             <tbody>
@@ -236,13 +236,13 @@ export function AccountingPage() {
                 <tr key={payout.id} className="border-b border-deep-teal/5">
                   <td className="px-4 py-3 font-mono text-xs text-deep-teal">{payout.batchId}</td>
                   <td className="px-4 py-3 text-deep-teal/70">{formatDate(payout.date)}</td>
-                  <td className="px-4 py-3 font-medium text-deep-teal">${payout.amount.toLocaleString()}</td>
+                  <td className="px-4 py-3 font-light text-deep-teal">${payout.amount.toLocaleString()}</td>
                   <td className="px-4 py-3"><PayoutStatusPill status={payout.status} /></td>
                   <td className="px-4 py-3">
                     <button
                       type="button"
                       onClick={() => setBreakdownId(payout.id)}
-                      className="text-xs font-medium text-pacific-teal hover:underline"
+                      className="text-xs font-light text-pacific-teal hover:underline"
                     >
                       View breakdown
                     </button>
@@ -260,7 +260,7 @@ export function AccountingPage() {
       {breakdown ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-deep-teal/40 p-4">
           <div className="w-full max-w-md rounded-2xl border border-deep-teal/10 bg-pure-white p-6 shadow-xl">
-            <h3 className="font-sans text-xl font-semibold text-deep-teal">Payout breakdown</h3>
+            <h3 className="font-sans text-xl font-light text-deep-teal">Payout breakdown</h3>
             <p className="mt-1 font-mono text-xs text-deep-teal/50">{breakdown.batchId}</p>
             <dl className="mt-4 space-y-2 text-sm">
               <div className="flex justify-between">
@@ -269,15 +269,15 @@ export function AccountingPage() {
               </div>
               <div className="flex justify-between">
                 <dt className="text-deep-teal/60">Gross payout</dt>
-                <dd className="font-medium text-deep-teal">${breakdown.amount.toLocaleString()}</dd>
+                <dd className="font-light text-deep-teal">${breakdown.amount.toLocaleString()}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-deep-teal/60">Platform fees</dt>
                 <dd className="text-deep-teal">${Math.round(breakdown.amount * 0.1).toLocaleString()}</dd>
               </div>
               <div className="flex justify-between border-t border-deep-teal/10 pt-2">
-                <dt className="font-medium text-deep-teal">Net to clinic</dt>
-                <dd className="font-medium text-pacific-teal">
+                <dt className="font-light text-deep-teal">Net to clinic</dt>
+                <dd className="font-light text-pacific-teal">
                   ${Math.round(breakdown.amount * 0.9).toLocaleString()}
                 </dd>
               </div>
@@ -288,7 +288,7 @@ export function AccountingPage() {
             <button
               type="button"
               onClick={() => setBreakdownId(null)}
-              className="mt-5 rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white"
+              className="mt-5 rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white"
             >
               Close
             </button>

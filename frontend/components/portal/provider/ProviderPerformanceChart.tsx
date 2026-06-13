@@ -92,7 +92,7 @@ function PerformanceTooltip({
 
   return (
     <div className="rounded-xl border border-deep-teal/10 bg-pure-white px-4 py-3 shadow-[0_8px_24px_rgba(1,26,36,0.1)]">
-      <p className="text-xs font-medium text-deep-teal/50">{formatAxisDate(String(label))}</p>
+      <p className="text-xs font-light text-deep-teal/50">{formatAxisDate(String(label))}</p>
       <ul className="mt-2 space-y-1.5">
         {payload.map((entry) => {
           const series = SERIES.find((item) => item.key === entry.dataKey);
@@ -108,7 +108,7 @@ function PerformanceTooltip({
                 style={{ backgroundColor: entry.color }}
               />
               <span className="text-deep-teal/60">{series.label}</span>
-              <span className="ml-auto font-semibold tabular-nums">{formatted}</span>
+              <span className="ml-auto font-light tabular-nums">{formatted}</span>
             </li>
           );
         })}
@@ -147,7 +147,7 @@ export function ProviderPerformanceChart({ data }: ProviderPerformanceChartProps
               onClick={() =>
                 setFocusedSeries((current) => (current === series.key ? null : series.key))
               }
-              className={`inline-flex items-center gap-2 text-xs font-medium transition-opacity ${
+              className={`inline-flex items-center gap-2 text-xs font-light transition-opacity ${
                 active ? "opacity-100" : "opacity-40"
               }`}
             >

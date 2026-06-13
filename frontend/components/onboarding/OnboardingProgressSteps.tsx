@@ -46,7 +46,7 @@ export function OnboardingProgressSteps({
             <Fragment key={step.id}>
               <div className="flex min-w-0 shrink-0 flex-col items-center gap-1.5">
                 <div
-                  className={`flex size-8 items-center justify-center rounded-lg border-2 text-xs font-semibold transition-colors sm:size-9 sm:text-sm ${
+                  className={`flex size-8 items-center justify-center rounded-lg border-2 text-xs font-light transition-colors sm:size-9 sm:text-sm ${
                     isComplete
                       ? "border-pacific-teal bg-pacific-teal text-pure-white"
                       : isActive
@@ -62,7 +62,7 @@ export function OnboardingProgressSteps({
                 </div>
                 {!compact ? (
                   <p
-                    className={`hidden max-w-[5.5rem] truncate text-center text-[10px] font-medium leading-tight sm:block sm:max-w-[7rem] sm:text-xs ${
+                    className={`hidden max-w-[5.5rem] truncate text-center text-[10px] font-light leading-tight sm:block sm:max-w-[7rem] sm:text-xs ${
                       isUpcoming ? "text-deep-teal/40" : "text-deep-teal"
                     }`}
                     title={variant === "funnel" && step.stageLabel ? step.stageLabel : step.title}

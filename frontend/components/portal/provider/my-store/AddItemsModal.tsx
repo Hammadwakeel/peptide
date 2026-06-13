@@ -88,7 +88,7 @@ export function AddItemsModal({ open, onClose, excludedIds, onAddSelected }: Add
         className="relative z-10 flex max-h-[90dvh] w-full max-w-3xl flex-col overflow-hidden rounded-[1.5rem] border border-deep-teal/10 bg-pure-white shadow-xl"
       >
         <div className="border-b border-deep-teal/10 px-5 py-4 sm:px-6">
-          <h2 id="add-items-title" className="font-sans text-xl font-semibold text-deep-teal">
+          <h2 id="add-items-title" className="font-sans text-xl font-light text-deep-teal">
             Add items to My Store
           </h2>
           <p className="mt-1 text-sm text-deep-teal/55">
@@ -188,12 +188,12 @@ export function AddItemsModal({ open, onClose, excludedIds, onAddSelected }: Add
                         </div>
                         {isSelected ? (
                           <div className="mt-2 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3">
-                            <span className="text-xs font-medium uppercase tracking-wide text-deep-teal/65">
+                            <span className="text-xs font-light uppercase tracking-wide text-deep-teal/65">
                               Retail price
                             </span>
                             <div className="flex justify-end">
                               <div className="flex w-full max-w-[7.5rem] items-center rounded-lg border border-deep-teal/20 bg-surface-muted/30 px-2 py-1">
-                                <span className="text-xs font-medium text-deep-teal/70">$</span>
+                                <span className="text-xs font-light text-deep-teal/70">$</span>
                                 <input
                                   type="number"
                                   min="0"
@@ -206,7 +206,7 @@ export function AddItemsModal({ open, onClose, excludedIds, onAddSelected }: Add
                                       return next;
                                     })
                                   }
-                                  className="w-full bg-transparent pl-1 text-xs font-medium text-deep-teal outline-none"
+                                  className="w-full bg-transparent pl-1 text-xs font-light text-deep-teal outline-none"
                                 />
                               </div>
                             </div>
@@ -227,7 +227,7 @@ export function AddItemsModal({ open, onClose, excludedIds, onAddSelected }: Add
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal"
+              className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-light text-deep-teal"
             >
               Cancel
             </button>
@@ -235,7 +235,7 @@ export function AddItemsModal({ open, onClose, excludedIds, onAddSelected }: Add
               type="button"
               disabled={selected.size === 0}
               onClick={handleAddSelected}
-              className="rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white hover:bg-pacific-teal disabled:cursor-not-allowed disabled:opacity-40"
             >
               Add Selected
             </button>

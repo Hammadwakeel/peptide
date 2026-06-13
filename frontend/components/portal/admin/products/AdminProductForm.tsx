@@ -306,7 +306,7 @@ export function AdminProductForm({ productId }: ProductFormProps) {
         <button
           type="submit"
           disabled={isSaving}
-          className="rounded-full bg-deep-teal px-5 py-2.5 text-sm font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-60"
+          className="rounded-full bg-deep-teal px-5 py-2.5 text-sm font-light text-pure-white hover:bg-pacific-teal disabled:opacity-60"
         >
           {isSaving ? "Saving…" : isEditing ? "Update product" : "Create product"}
         </button>

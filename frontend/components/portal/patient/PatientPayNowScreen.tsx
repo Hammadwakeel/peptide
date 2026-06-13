@@ -26,7 +26,7 @@ export function PatientPayNowScreen() {
           </p>
           <Link
             href="/portal/patient"
-            className="mt-6 inline-flex rounded-full bg-deep-teal px-5 py-2.5 text-sm font-medium text-pure-white hover:bg-pacific-teal"
+            className="mt-6 inline-flex rounded-full bg-deep-teal px-5 py-2.5 text-sm font-light text-pure-white hover:bg-pacific-teal"
           >
             Back to portal
           </Link>
@@ -53,7 +53,7 @@ export function PatientPayNowScreen() {
         <p className="text-sm text-deep-teal/65">
           This order is awaiting physician review before payment can be collected.
         </p>
-        <p className="mt-4 text-base font-medium text-deep-teal">Total: ${order.total.toFixed(2)}</p>
+        <p className="mt-4 text-base font-light text-deep-teal">Total: ${order.total.toFixed(2)}</p>
       </PortalPageSection>
     </div>
   );

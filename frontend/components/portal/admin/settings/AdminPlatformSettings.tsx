@@ -78,7 +78,7 @@ export function AdminPlatformSettings() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="font-sans text-2xl font-semibold text-deep-teal">Platform Settings</h1>
+        <h1 className="font-sans text-2xl font-light text-deep-teal">Platform Settings</h1>
         <p className="mt-1 text-sm text-deep-teal/55">
           Commission defaults and affiliate profit margins
         </p>
@@ -92,7 +92,7 @@ export function AdminPlatformSettings() {
       <div className="rounded-2xl border border-deep-teal/10 bg-pure-white shadow-sm">
         <div className="space-y-4 p-4 sm:p-6">
           <div>
-            <h2 className="text-sm font-medium text-deep-teal">Commission & Fees</h2>
+            <h2 className="text-sm font-light text-deep-teal">Commission & Fees</h2>
             <p className="mt-1 text-sm text-deep-teal/60">
               Default profit margin is applied automatically when you create a new main affiliate.
               Per-affiliate overrides remain available on the Affiliates page.
@@ -148,7 +148,7 @@ export function AdminPlatformSettings() {
             type="button"
             disabled={isSaving}
             onClick={() => void handleSave()}
-            className="rounded-full bg-deep-teal px-5 py-2.5 text-sm font-medium text-pure-white disabled:opacity-60"
+            className="rounded-full bg-deep-teal px-5 py-2.5 text-sm font-light text-pure-white disabled:opacity-60"
           >
             {isSaving ? "Saving…" : "Save changes"}
           </button>

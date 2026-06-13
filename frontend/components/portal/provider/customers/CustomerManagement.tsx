@@ -27,13 +27,13 @@ function AccountPill({ patient }: { patient: DoctorPatient }) {
   if (patient.has_account) {
     const verified = patient.email_verified;
     return (
-      <span className="inline-flex rounded-full bg-pacific-teal/10 px-2.5 py-0.5 text-xs font-medium text-pacific-teal">
+      <span className="inline-flex rounded-full bg-pacific-teal/10 px-2.5 py-0.5 text-xs font-light text-pacific-teal">
         {verified === false ? "Account (unverified)" : "Active"}
       </span>
     );
   }
   return (
-    <span className="inline-flex rounded-full bg-deep-teal/10 px-2.5 py-0.5 text-xs font-medium text-deep-teal/55">
+    <span className="inline-flex rounded-full bg-deep-teal/10 px-2.5 py-0.5 text-xs font-light text-deep-teal/55">
       Invited
     </span>
   );
@@ -150,11 +150,11 @@ export function CustomerManagement() {
           <table className="min-w-full text-left text-sm">
             <thead className="border-b border-deep-teal/10 bg-surface-muted/50 text-xs uppercase tracking-wide text-deep-teal/45">
               <tr>
-                <th className="px-4 py-3 font-medium">Patient</th>
-                <th className="px-4 py-3 font-medium">Email</th>
-                <th className="px-4 py-3 font-medium">Phone</th>
-                <th className="px-4 py-3 font-medium">Account</th>
-                <th className="px-4 py-3 font-medium">Actions</th>
+                <th className="px-4 py-3 font-light">Patient</th>
+                <th className="px-4 py-3 font-light">Email</th>
+                <th className="px-4 py-3 font-light">Phone</th>
+                <th className="px-4 py-3 font-light">Account</th>
+                <th className="px-4 py-3 font-light">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -167,10 +167,10 @@ export function CustomerManagement() {
                         href={`/portal/doctor/customers/${patient.id}`}
                         className="flex items-center gap-3 hover:opacity-80"
                       >
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-deep-teal/10 text-xs font-medium text-deep-teal">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-deep-teal/10 text-xs font-light text-deep-teal">
                           {getPatientInitials(name)}
                         </span>
-                        <span className="font-medium text-deep-teal">{name}</span>
+                        <span className="font-light text-deep-teal">{name}</span>
                       </Link>
                     </td>
                     <td className="px-4 py-3 text-deep-teal/70">{patient.email}</td>
@@ -181,7 +181,7 @@ export function CustomerManagement() {
                     <td className="px-4 py-3">
                       <Link
                         href={`/portal/doctor/messages?patient=${patient.id}`}
-                        className="text-xs font-medium text-pacific-teal hover:underline"
+                        className="text-xs font-light text-pacific-teal hover:underline"
                       >
                         Chat
                       </Link>

@@ -106,7 +106,7 @@ export function HelpSupport() {
           </div>
           <button
             type="submit"
-            className="rounded-full bg-deep-teal px-5 py-2.5 text-sm font-medium text-pure-white hover:bg-pacific-teal"
+            className="rounded-full bg-deep-teal px-5 py-2.5 text-sm font-light text-pure-white hover:bg-pacific-teal"
           >
             Submit ticket
           </button>
@@ -116,19 +116,19 @@ export function HelpSupport() {
       <ProviderPageSection icon={Headphones} title="Contact us">
         <ul className="space-y-3 text-sm text-deep-teal/70">
           <li>
-            <span className="font-medium text-deep-teal">Email:</span>{" "}
+            <span className="font-light text-deep-teal">Email:</span>{" "}
             <a href="mailto:support@frontierbiomed.com" className="text-pacific-teal hover:underline">
               support@frontierbiomed.com
             </a>
           </li>
           <li>
-            <span className="font-medium text-deep-teal">Phone:</span>{" "}
+            <span className="font-light text-deep-teal">Phone:</span>{" "}
             <a href="tel:+18005551234" className="text-pacific-teal hover:underline">
               (800) 555-1234
             </a>
           </li>
           <li>
-            <span className="font-medium text-deep-teal">Live chat:</span>{" "}
+            <span className="font-light text-deep-teal">Live chat:</span>{" "}
             <button
               type="button"
               onClick={() => toast.info("Live chat scaffold — connect Intercom or Zendesk here.")}

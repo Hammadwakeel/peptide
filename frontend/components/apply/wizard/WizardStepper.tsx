@@ -26,7 +26,7 @@ export function WizardStepper({ currentStep, variant = "compact" }: WizardSteppe
                 }`}
               >
                 <span
-                  className={`mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
+                  className={`mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-light ${
                     isComplete
                       ? "bg-pacific-teal text-pure-white"
                       : isCurrent
@@ -38,7 +38,7 @@ export function WizardStepper({ currentStep, variant = "compact" }: WizardSteppe
                 </span>
                 <div className="min-w-0 pt-0.5">
                   <p
-                    className={`text-sm font-medium ${
+                    className={`text-sm font-light ${
                       isCurrent ? "text-pure-white" : "text-pure-white/55"
                     }`}
                   >
@@ -59,7 +59,7 @@ export function WizardStepper({ currentStep, variant = "compact" }: WizardSteppe
   return (
     <nav aria-label="Application progress">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <p className="text-xs font-medium text-deep-teal/55">
+        <p className="text-xs font-light text-deep-teal/55">
           {Math.round((currentStep / WIZARD_STEPS.length) * 100)}% complete
         </p>
         <p className="text-xs text-deep-teal/40">
@@ -80,7 +80,7 @@ export function WizardStepper({ currentStep, variant = "compact" }: WizardSteppe
           return (
             <li key={step.id} className="min-w-0 text-center">
               <span
-                className={`mx-auto flex size-8 items-center justify-center rounded-full text-xs font-semibold ${
+                className={`mx-auto flex size-8 items-center justify-center rounded-full text-xs font-light ${
                   isComplete
                     ? "bg-pacific-teal text-pure-white"
                     : isCurrent
@@ -91,7 +91,7 @@ export function WizardStepper({ currentStep, variant = "compact" }: WizardSteppe
                 {isComplete ? "✓" : step.id}
               </span>
               <p
-                className={`mt-2 truncate text-[11px] font-medium ${
+                className={`mt-2 truncate text-[11px] font-light ${
                   isCurrent ? "text-deep-teal" : "text-deep-teal/45"
                 }`}
               >

@@ -29,7 +29,7 @@ export function ChatMediaPreview({ attachment, onCancel, onSend, disabled = fals
   return (
     <div className="border-t border-deep-teal/10 bg-deep-teal/[0.03]">
       <div className="flex items-center justify-between px-4 py-2">
-        <p className="text-xs font-medium uppercase tracking-wide text-deep-teal/50">Preview</p>
+        <p className="text-xs font-light uppercase tracking-wide text-deep-teal/50">Preview</p>
         <Tooltip content="Cancel attachment">
           <button
             type="button"
@@ -66,7 +66,7 @@ export function ChatMediaPreview({ attachment, onCancel, onSend, disabled = fals
             </span>
             <div className="min-w-0 flex-1">
               <TruncateTooltip content={attachment.file.name}>
-                <p className="truncate text-sm font-medium text-deep-teal">{attachment.file.name}</p>
+                <p className="truncate text-sm font-light text-deep-teal">{attachment.file.name}</p>
               </TruncateTooltip>
               <p className="text-xs text-deep-teal/50">
                 {(attachment.file.size / 1024).toFixed(1)} KB · Document
@@ -80,7 +80,7 @@ export function ChatMediaPreview({ attachment, onCancel, onSend, disabled = fals
             <div className="mb-3 flex items-center gap-2 text-deep-teal">
               <Music className="size-5" />
               <TruncateTooltip content={attachment.file.name}>
-                <span className="truncate text-sm font-medium">{attachment.file.name}</span>
+                <span className="truncate text-sm font-light">{attachment.file.name}</span>
               </TruncateTooltip>
             </div>
             {attachment.previewUrl ? (

@@ -38,7 +38,7 @@ function PaymentPill({ status }: { status: PaymentStatus }) {
     partial_refund: "bg-deep-teal/10 text-deep-teal/70",
   };
   return (
-    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${styles[status]}`}>
+    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-light ${styles[status]}`}>
       {PAYMENT_STATUS_LABELS[status]}
     </span>
   );
@@ -53,7 +53,7 @@ function ShipmentPill({ status }: { status: ShipmentStatus }) {
     cancelled: "bg-deep-teal/10 text-deep-teal/45",
   };
   return (
-    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${styles[status]}`}>
+    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-light ${styles[status]}`}>
       {SHIPMENT_STATUS_LABELS[status]}
     </span>
   );
@@ -142,15 +142,15 @@ export function OrderManagement() {
           <table className="min-w-full text-left text-sm">
             <thead className="border-b border-deep-teal/10 bg-surface-muted/50 text-xs uppercase tracking-wide text-deep-teal/45">
               <tr>
-                <th className="px-4 py-3 font-medium">Order</th>
-                <th className="px-4 py-3 font-medium">Patient</th>
-                <th className="px-4 py-3 font-medium">Review</th>
-                <th className="px-4 py-3 font-medium">Payment</th>
-                <th className="px-4 py-3 font-medium">Shipment</th>
-                <th className="px-4 py-3 font-medium">Items</th>
-                <th className="px-4 py-3 font-medium">Total</th>
-                <th className="px-4 py-3 font-medium">Profit</th>
-                <th className="px-4 py-3 font-medium" aria-label="Action" />
+                <th className="px-4 py-3 font-light">Order</th>
+                <th className="px-4 py-3 font-light">Patient</th>
+                <th className="px-4 py-3 font-light">Review</th>
+                <th className="px-4 py-3 font-light">Payment</th>
+                <th className="px-4 py-3 font-light">Shipment</th>
+                <th className="px-4 py-3 font-light">Items</th>
+                <th className="px-4 py-3 font-light">Total</th>
+                <th className="px-4 py-3 font-light">Profit</th>
+                <th className="px-4 py-3 font-light" aria-label="Action" />
               </tr>
             </thead>
             <tbody>
@@ -163,13 +163,13 @@ export function OrderManagement() {
               ) : (
                 orders.map((order) => (
                   <tr key={order.id} className="border-b border-deep-teal/5 last:border-0">
-                    <td className="px-4 py-3 font-mono text-xs font-medium text-deep-teal">
+                    <td className="px-4 py-3 font-mono text-xs font-light text-deep-teal">
                       {order.orderNumber ?? order.id}
                     </td>
                     <td className="px-4 py-3">
                       {order.customerName ? (
                         <div className="flex items-center gap-2">
-                          <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-deep-teal/10 text-[10px] font-medium text-deep-teal">
+                          <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-deep-teal/10 text-[10px] font-light text-deep-teal">
                             {getPatientInitials(order.customerName)}
                           </span>
                           <span className="text-deep-teal">{order.customerName}</span>
@@ -189,7 +189,7 @@ export function OrderManagement() {
                     </td>
                     <td className="px-4 py-3 text-deep-teal">{order.itemsCount}</td>
                     <td className="px-4 py-3 text-deep-teal">${order.total.toFixed(2)}</td>
-                    <td className="px-4 py-3 font-medium text-pacific-teal">
+                    <td className="px-4 py-3 font-light text-pacific-teal">
                       ${order.profit.toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-right">

@@ -24,7 +24,7 @@ export function RoleToggle({
 }: RoleToggleProps) {
   return (
     <fieldset>
-      <legend className="mb-3 block text-sm font-medium text-deep-teal">Role</legend>
+      <legend className="mb-3 block text-sm font-light text-deep-teal">Role</legend>
       <div className="grid grid-cols-2 gap-2">
         {roles.map((roleValue) => {
           const label = ROLE_LABELS[roleValue];
@@ -32,7 +32,7 @@ export function RoleToggle({
           return (
             <label
               key={roleValue}
-              className={`flex min-h-11 cursor-pointer items-center justify-center rounded-xl border px-2 py-2.5 text-xs font-medium transition-all sm:px-3 sm:py-3 sm:text-sm ${
+              className={`flex min-h-11 cursor-pointer items-center justify-center rounded-xl border px-2 py-2.5 text-xs font-light transition-all sm:px-3 sm:py-3 sm:text-sm ${
                 isSelected
                   ? "border-pacific-teal bg-pacific-teal/10 text-deep-teal ring-2 ring-pacific-teal/25"
                   : "border-deep-teal/15 bg-pure-white text-deep-teal/70 hover:bg-deep-teal/[0.03]"

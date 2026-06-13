@@ -11,7 +11,7 @@ import {
   authLinkClassName,
 } from "@/components/auth/AuthShell";
 import { fadeInUp, motion, scaleIn, staggerContainer, transition } from "@/components/motion";
-import { checkSetPasswordToken, setPassword } from "@/lib/onboarding/api";
+import { checkSetPasswordToken, setPassword as submitSetPassword } from "@/lib/onboarding/api";
 import { loginPathForBackendRole } from "@/lib/onboarding/configs";
 import type { CheckSetPasswordResponse } from "@/lib/onboarding/types";
 import { showError, toast } from "@/lib/toast";
@@ -73,7 +73,7 @@ export function SetPasswordForm() {
     const toastId = toast.loading("Setting password…");
 
     try {
-      const result = await setPassword({ token, new_password: password });
+      const result = await submitSetPassword({ token, new_password: password });
       toast.dismiss(toastId);
       toast.success(result.message);
       setLoginHref(loginPathForBackendRole(result.user.role));
@@ -90,7 +90,7 @@ export function SetPasswordForm() {
     return (
       <AuthShell background="hands">
         <AuthCard>
-          <h1 className="font-sans text-2xl font-semibold text-deep-teal">Invalid link</h1>
+          <h1 className="font-sans text-2xl font-light text-deep-teal">Invalid link</h1>
           <p className="mt-3 text-sm text-deep-teal/60">
             This password setup link is missing or incomplete. Use the link from your
             invitation email.
@@ -119,7 +119,7 @@ export function SetPasswordForm() {
     return (
       <AuthShell background="hands">
         <AuthCard>
-          <h1 className="font-sans text-2xl font-semibold text-deep-teal">
+          <h1 className="font-sans text-2xl font-light text-deep-teal">
             {tokenInfo?.token_status === "already_used"
               ? "Password already set"
               : "Link unavailable"}
@@ -127,7 +127,7 @@ export function SetPasswordForm() {
           <p className="mt-3 text-sm text-deep-teal/60">{tokenInfo?.message}</p>
           {tokenInfo?.email ? (
             <p className="mt-2 text-sm text-deep-teal/70">
-              Account: <span className="font-medium">{tokenInfo.email}</span>
+              Account: <span className="font-light">{tokenInfo.email}</span>
             </p>
           ) : null}
           <Link
@@ -145,13 +145,13 @@ export function SetPasswordForm() {
     return (
       <AuthShell background="hands">
         <AuthCard>
-          <h1 className="font-sans text-2xl font-semibold text-deep-teal">You&apos;re all set</h1>
+          <h1 className="font-sans text-2xl font-light text-deep-teal">You&apos;re all set</h1>
           <p className="mt-3 text-sm text-deep-teal/60">
             Your password has been created. Sign in to continue.
           </p>
           <Link
             href={loginHref}
-            className="mt-6 block w-full rounded-full bg-deep-teal px-6 py-3.5 text-center text-sm font-medium text-pure-white transition-all duration-300 hover:bg-pacific-teal"
+            className="mt-6 block w-full rounded-full bg-deep-teal px-6 py-3.5 text-center text-sm font-light text-pure-white transition-all duration-300 hover:bg-pacific-teal"
           >
             Go to sign in
           </Link>
@@ -171,14 +171,14 @@ export function SetPasswordForm() {
             variants={staggerContainer}
           >
             <motion.span
-              className="font-sans text-xs font-medium text-pacific-teal"
+              className="font-sans text-xs font-light text-pacific-teal"
               variants={fadeInUp}
               transition={transition}
             >
               Account setup
             </motion.span>
             <motion.h1
-              className="mt-3 font-sans text-2xl font-semibold tracking-[-0.02em] text-deep-teal sm:text-3xl"
+              className="mt-3 font-sans text-2xl font-light tracking-[-0.02em] text-deep-teal sm:text-3xl"
               variants={fadeInUp}
               transition={transition}
             >
@@ -192,7 +192,7 @@ export function SetPasswordForm() {
               {tokenInfo.email ? (
                 <>
                   Set a password for{" "}
-                  <span className="font-medium text-deep-teal">{tokenInfo.email}</span>.
+                  <span className="font-light text-deep-teal">{tokenInfo.email}</span>.
                 </>
               ) : (
                 "Choose a secure password for your new account."
@@ -246,7 +246,7 @@ export function SetPasswordForm() {
               disabled={isSubmitting}
               variants={fadeInUp}
               transition={transition}
-              className="w-full rounded-full bg-deep-teal px-6 py-3.5 text-sm font-medium text-pure-white transition-all duration-300 hover:bg-pacific-teal disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-full bg-deep-teal px-6 py-3.5 text-sm font-light text-pure-white transition-all duration-300 hover:bg-pacific-teal disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? "Saving…" : "Set password"}
             </motion.button>

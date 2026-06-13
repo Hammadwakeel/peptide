@@ -123,7 +123,7 @@ export function CustomerInformationTab({ patient }: CustomerInformationTabProps)
           <input value={zip} onChange={(e) => setZip(e.target.value)} className={authInputClassName} placeholder="ZIP" />
         </div>
         <div className="sm:col-span-2">
-          <button type="button" onClick={saveContact} className="rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal">
+          <button type="button" onClick={saveContact} className="rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white hover:bg-pacific-teal">
             Save contact info
           </button>
         </div>
@@ -131,8 +131,8 @@ export function CustomerInformationTab({ patient }: CustomerInformationTabProps)
 
       <section>
         <div className="mb-3 flex items-center justify-between gap-3">
-          <h3 className="text-sm font-medium text-deep-teal">Shipping addresses</h3>
-          <button type="button" onClick={startAddAddress} className="text-sm font-medium text-pacific-teal hover:underline">
+          <h3 className="text-sm font-light text-deep-teal">Shipping addresses</h3>
+          <button type="button" onClick={startAddAddress} className="text-sm font-light text-pacific-teal hover:underline">
             Add address
           </button>
         </div>
@@ -141,10 +141,10 @@ export function CustomerInformationTab({ patient }: CustomerInformationTabProps)
             <div key={address.id} className="rounded-xl border border-deep-teal/10 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="font-medium text-deep-teal">
+                  <p className="font-light text-deep-teal">
                     {address.label}
                     {address.isDefault ? (
-                      <span className="ml-2 text-xs font-normal text-deep-teal/45">Default</span>
+                      <span className="ml-2 text-xs font-light text-deep-teal/45">Default</span>
                     ) : null}
                   </p>
                   <p className="mt-1 text-sm text-deep-teal/65">
@@ -190,7 +190,7 @@ export function CustomerInformationTab({ patient }: CustomerInformationTabProps)
       </section>
 
       <section className="rounded-xl border border-deep-teal/10 bg-deep-teal/[0.02] p-4">
-        <h3 className="text-sm font-medium text-deep-teal">Payment method on file</h3>
+        <h3 className="text-sm font-light text-deep-teal">Payment method on file</h3>
         <p className="mt-2 text-sm text-deep-teal/70">
           {patient.paymentMethod.brand} ending in {patient.paymentMethod.last4}
         </p>

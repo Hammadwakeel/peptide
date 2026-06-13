@@ -68,13 +68,13 @@ function SubAffiliateContent() {
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-4 rounded-2xl border border-deep-teal/20 bg-pure-white px-4 py-2.5 shadow-[0_2px_12px_rgba(1,26,36,0.08)] sm:px-5">
-        <h1 className="shrink-0 font-sans text-xl font-semibold text-deep-teal sm:text-2xl">Sub-Affiliates</h1>
+        <h1 className="shrink-0 font-sans text-xl font-light text-deep-teal sm:text-2xl">Sub-Affiliates</h1>
         <div className="min-w-4 flex-1" aria-hidden="true" />
         <button
           type="button"
           onClick={() => void loadSubAffiliates()}
           disabled={isLoading}
-          className="inline-flex items-center gap-2 rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white transition-opacity hover:opacity-90 disabled:opacity-50"
           aria-label="Refresh sub-affiliates"
         >
           <RefreshCw className={`size-4 ${isLoading ? "animate-spin" : ""}`} aria-hidden="true" />
@@ -91,7 +91,7 @@ function SubAffiliateContent() {
               <UserPlus className="size-4" />
             </div>
             <div>
-              <h2 className="font-sans text-lg font-semibold">Invite sub-affiliate</h2>
+              <h2 className="font-sans text-lg font-light">Invite sub-affiliate</h2>
               <p className="text-xs text-pure-white/75">A set-password email will be sent to the invitee</p>
             </div>
           </div>
@@ -113,7 +113,7 @@ function SubAffiliateContent() {
           <button
             type="submit"
             disabled={isInviting}
-            className="inline-flex items-center gap-2 rounded-full bg-deep-teal px-5 py-2.5 text-sm font-medium text-pure-white hover:opacity-90 disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-full bg-deep-teal px-5 py-2.5 text-sm font-light text-pure-white hover:opacity-90 disabled:opacity-60"
           >
             <Send className="size-4" aria-hidden="true" />
             {isInviting ? "Inviting…" : "Send invite"}
@@ -131,7 +131,7 @@ function SubAffiliateContent() {
               <UsersRound className="size-4" />
             </div>
             <div>
-              <h2 className="font-sans text-lg font-semibold">Network members</h2>
+              <h2 className="font-sans text-lg font-light">Network members</h2>
               <p className="text-xs text-pure-white/75">
                 {isLoading ? "Loading…" : `${subAffiliates.length} sub-affiliate${subAffiliates.length === 1 ? "" : "s"}`}
               </p>
@@ -143,12 +143,12 @@ function SubAffiliateContent() {
           <table className="min-w-full text-left text-sm">
             <thead className="border-b border-deep-teal/10 bg-surface-muted/50 text-xs uppercase tracking-wide text-deep-teal/45">
               <tr>
-                <th className="px-4 py-3 font-medium">Email</th>
-                <th className="px-4 py-3 font-medium">Code</th>
-                <th className="px-4 py-3 font-medium">Clinics referred</th>
-                <th className="px-4 py-3 font-medium">Margin %</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Joined</th>
+                <th className="px-4 py-3 font-light">Email</th>
+                <th className="px-4 py-3 font-light">Code</th>
+                <th className="px-4 py-3 font-light">Clinics referred</th>
+                <th className="px-4 py-3 font-light">Margin %</th>
+                <th className="px-4 py-3 font-light">Status</th>
+                <th className="px-4 py-3 font-light">Joined</th>
               </tr>
             </thead>
             <tbody>
@@ -167,7 +167,7 @@ function SubAffiliateContent() {
               ) : (
                 subAffiliates.map((sub) => (
                   <tr key={sub.id} className="border-b border-deep-teal/5">
-                    <td className="px-4 py-3 font-medium text-deep-teal">{sub.email}</td>
+                    <td className="px-4 py-3 font-light text-deep-teal">{sub.email}</td>
                     <td className="px-4 py-3 font-mono text-xs text-deep-teal/70">{sub.affiliate_code}</td>
                     <td className="px-4 py-3 text-deep-teal/70">{sub.clinic_referral_count}</td>
                     <td className="px-4 py-3 text-deep-teal/70">{sub.profit_margin_percent}%</td>

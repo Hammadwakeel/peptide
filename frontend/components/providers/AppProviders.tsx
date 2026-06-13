@@ -10,7 +10,7 @@ import { usePatientRequestsStore } from "@/stores/patient-requests-store";
 
 const TOAST_CLASS_NAMES = {
   toast: "rounded-xl border border-deep-teal/10 bg-pure-white text-deep-teal shadow-lg",
-  title: "text-sm font-medium",
+  title: "text-sm font-light",
   description: "text-sm text-deep-teal/70",
 } as const;
 

@@ -19,7 +19,7 @@ export function PortalPageToolbar({ title, subtitle, children }: PortalPageToolb
       <h1 className={`min-w-0 shrink-0 ${typePageTitle}`}>
         {title}
         {subtitle ? (
-          <span className="font-normal text-deep-teal/50"> · {subtitle}</span>
+          <span className="font-light text-deep-teal/50"> · {subtitle}</span>
         ) : null}
       </h1>
       {children ? (

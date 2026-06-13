@@ -40,11 +40,11 @@ export function ProviderActiveThread({ thread, compact = false, onBack }: Provid
             <ArrowLeft className="size-5" />
           </button>
         ) : null}
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-pacific-teal/15 text-sm font-semibold text-deep-teal">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-pacific-teal/15 text-sm font-light text-deep-teal">
           {getPatientInitials(thread.patientName)}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold text-deep-teal">{thread.patientName}</p>
+          <p className="truncate font-light text-deep-teal">{thread.patientName}</p>
           <p className="text-xs text-deep-teal/50">Patient</p>
         </div>
       </div>

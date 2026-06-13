@@ -33,14 +33,14 @@ export function ProductDetailModal({ product, open, onClose, onRequest, onOrder 
           />
         </div>
         <div className="p-6">
-          <span className="rounded-full bg-deep-teal/5 px-2 py-0.5 text-[10px] font-medium text-deep-teal/60">
+          <span className="rounded-full bg-deep-teal/5 px-2 py-0.5 text-[10px] font-light text-deep-teal/60">
             {product.category}
           </span>
-          <h2 className="mt-2 font-sans text-2xl font-semibold text-deep-teal">{product.name}</h2>
-          <p className="mt-1 text-lg font-medium text-deep-teal">${product.price}</p>
+          <h2 className="mt-2 font-sans text-2xl font-light text-deep-teal">{product.name}</h2>
+          <p className="mt-1 text-lg font-light text-deep-teal">${product.price}</p>
           <p className="mt-4 text-sm leading-relaxed text-deep-teal/70">{product.description}</p>
           <div className="mt-4 rounded-xl bg-deep-teal/[0.03] px-4 py-3">
-            <p className="text-[10px] font-medium uppercase tracking-wide text-deep-teal/45">Dosing / directions</p>
+            <p className="text-[10px] font-light uppercase tracking-wide text-deep-teal/45">Dosing / directions</p>
             <p className="mt-1 text-sm text-deep-teal/70">{product.directions}</p>
           </div>
           <div className="mt-6 flex gap-2">
@@ -54,7 +54,7 @@ export function ProductDetailModal({ product, open, onClose, onRequest, onOrder 
                 onClose();
                 onOrder();
               }}
-              className="rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-50"
+              className="rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white hover:bg-pacific-teal disabled:opacity-50"
             >
               Place order
             </button>

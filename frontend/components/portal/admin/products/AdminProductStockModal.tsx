@@ -67,7 +67,7 @@ export function AdminProductStockModal({
         aria-modal="true"
         className="relative z-10 w-full max-w-md rounded-2xl border border-deep-teal/10 bg-pure-white p-6 shadow-xl"
       >
-        <h2 className="font-sans text-xl font-semibold text-deep-teal">Update stock</h2>
+        <h2 className="font-sans text-xl font-light text-deep-teal">Update stock</h2>
         {isLoading ? (
           <p className="mt-4 text-sm text-deep-teal/60">Loading…</p>
         ) : product ? (

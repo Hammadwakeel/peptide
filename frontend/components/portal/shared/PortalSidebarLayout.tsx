@@ -135,7 +135,7 @@ export const PortalSidebarLayout = memo(function PortalSidebarLayout({
     return (
       <span
         aria-hidden="true"
-        className={`pointer-events-none absolute left-[calc(100%+0.625rem)] top-1/2 z-[100] flex -translate-y-1/2 items-center gap-2.5 whitespace-nowrap rounded-xl border px-3 py-2 text-sm font-medium opacity-0 shadow-[0_8px_24px_rgba(1,26,36,0.12)] transition-opacity duration-150 group-hover/nav:opacity-100 lg:flex ${
+        className={`pointer-events-none absolute left-[calc(100%+0.625rem)] top-1/2 z-[100] flex -translate-y-1/2 items-center gap-2.5 whitespace-nowrap rounded-xl border px-3 py-2 text-sm font-light opacity-0 shadow-[0_8px_24px_rgba(1,26,36,0.12)] transition-opacity duration-150 group-hover/nav:opacity-100 lg:flex ${
           active
             ? "border-deep-teal/15 bg-deep-teal text-pure-white"
             : "border-deep-teal/10 bg-pure-white text-deep-teal"
@@ -145,7 +145,7 @@ export const PortalSidebarLayout = memo(function PortalSidebarLayout({
         <span>{label}</span>
         {badge && badge > 0 ? (
           <span
-            className={`flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ${
+            className={`flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-light ${
               active ? "bg-pure-white text-deep-teal" : "bg-pacific-teal text-pure-white"
             }`}
           >
@@ -183,7 +183,7 @@ export const PortalSidebarLayout = memo(function PortalSidebarLayout({
             <Icon className="size-[1.125rem]" strokeWidth={1.75} aria-hidden="true" />
           </span>
           <span
-            className={`truncate text-sm font-medium max-lg:block ${
+            className={`truncate text-sm font-light max-lg:block ${
               desktopExpanded ? "lg:block lg:max-w-[11rem]" : "lg:hidden"
             }`}
           >
@@ -193,7 +193,7 @@ export const PortalSidebarLayout = memo(function PortalSidebarLayout({
 
         {link.badge && link.badge > 0 ? (
           <span
-            className={`flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ${
+            className={`flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-light ${
               active ? "bg-pure-white text-deep-teal" : "bg-pacific-teal text-pure-white"
             } max-lg:static ${desktopExpanded ? "lg:absolute lg:right-2 lg:top-1/2 lg:-translate-y-1/2" : "lg:hidden"}`}
           >
@@ -332,7 +332,7 @@ export const PortalSidebarLayout = memo(function PortalSidebarLayout({
                 </button>
               </Tooltip>
               {!hideHeaderTitle ? (
-                <h1 className="truncate font-sans text-xl font-semibold text-deep-teal sm:text-2xl">
+                <h1 className="truncate font-sans text-xl font-light text-deep-teal sm:text-2xl">
                   {activeLink?.label ?? "Dashboard"}
                 </h1>
               ) : null}

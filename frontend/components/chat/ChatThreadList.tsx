@@ -49,18 +49,18 @@ export function ChatThreadList({
                 active ? "bg-deep-teal/[0.07]" : "bg-pure-white"
               }`}
             >
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-pacific-teal/15 text-sm font-semibold text-deep-teal">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-pacific-teal/15 text-sm font-light text-deep-teal">
                 {getPatientInitials(thread.patientName)}
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-2">
                   <TruncateTooltip content={thread.patientName}>
-                    <p className="truncate font-semibold text-deep-teal">{thread.patientName}</p>
+                    <p className="truncate font-light text-deep-teal">{thread.patientName}</p>
                   </TruncateTooltip>
                   {lastActivityAt ? (
                     <span
                       className={`shrink-0 text-[11px] tabular-nums ${
-                        unread > 0 ? "font-semibold text-pacific-teal" : "text-deep-teal/45"
+                        unread > 0 ? "font-light text-pacific-teal" : "text-deep-teal/45"
                       }`}
                     >
                       {formatThreadPreviewTime(lastActivityAt)}
@@ -72,7 +72,7 @@ export function ChatThreadList({
                     <p className="truncate text-sm text-deep-teal/55">{preview}</p>
                   </TruncateTooltip>
                   {unread > 0 ? (
-                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-pacific-teal text-[10px] font-semibold text-pure-white">
+                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-pacific-teal text-[10px] font-light text-pure-white">
                       {unread > 9 ? "9+" : unread}
                     </span>
                   ) : null}

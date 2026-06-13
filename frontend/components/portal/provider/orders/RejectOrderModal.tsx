@@ -36,7 +36,7 @@ export function RejectOrderModal({ open, orderLabel, onClose, onConfirm }: Rejec
         onSubmit={(event) => void handleSubmit(event)}
         className="relative z-10 w-full max-w-md rounded-[1.5rem] border border-deep-teal/10 bg-pure-white p-6 shadow-xl"
       >
-        <h2 className="font-sans text-xl font-semibold text-deep-teal">Reject order</h2>
+        <h2 className="font-sans text-xl font-light text-deep-teal">Reject order</h2>
         <p className="mt-1 text-sm text-deep-teal/60">{orderLabel}</p>
         <div className="mt-4">
           <label className={authLabelClassName}>Reason</label>
@@ -61,7 +61,7 @@ export function RejectOrderModal({ open, orderLabel, onClose, onConfirm }: Rejec
           <button
             type="submit"
             disabled={isSubmitting || reason.trim().length < 3}
-            className="flex-1 rounded-full bg-coral-blush px-4 py-2 text-sm font-medium text-deep-teal disabled:opacity-60"
+            className="flex-1 rounded-full bg-coral-blush px-4 py-2 text-sm font-light text-deep-teal disabled:opacity-60"
           >
             {isSubmitting ? "Rejecting…" : "Reject order"}
           </button>

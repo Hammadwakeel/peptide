@@ -32,7 +32,7 @@ function StatusPill({ status }: { status: PatientStatus }) {
     inactive: "bg-deep-teal/10 text-deep-teal/55",
   };
   return (
-    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[status]}`}>
+    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-light ${styles[status]}`}>
       {PATIENT_STATUS_LABELS[status]}
     </span>
   );
@@ -123,7 +123,7 @@ export function PatientProfile({ patientId }: PatientProfileProps) {
         subtitle={`${patient.totalOrders} order${patient.totalOrders === 1 ? "" : "s"} · ${PATIENT_STATUS_LABELS[patient.status]}`}
       >
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
-          <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-deep-teal/10 text-lg font-medium text-deep-teal">
+          <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-deep-teal/10 text-lg font-light text-deep-teal">
             {getPatientInitials(patient.name)}
           </span>
           <div className="flex-1">
@@ -163,7 +163,7 @@ export function PatientProfile({ patientId }: PatientProfileProps) {
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab)}
-              className={`rounded-full px-4 py-2 text-xs font-medium sm:text-sm ${
+              className={`rounded-full px-4 py-2 text-xs font-light sm:text-sm ${
                 activeTab === tab
                   ? "bg-deep-teal text-pure-white"
                   : "text-deep-teal/65 hover:bg-deep-teal/5"

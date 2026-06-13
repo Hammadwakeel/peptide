@@ -21,7 +21,7 @@ function StatusCell({ status }: { status: ComplianceStatus }) {
     expired: "text-coral-blush",
     missing: "text-deep-teal",
   };
-  return <span className={`text-xs font-medium ${styles[status]}`}>{COMPLIANCE_STATUS_LABELS[status]}</span>;
+  return <span className={`text-xs font-light ${styles[status]}`}>{COMPLIANCE_STATUS_LABELS[status]}</span>;
 }
 
 export function AdminComplianceView() {
@@ -45,14 +45,14 @@ export function AdminComplianceView() {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={() => setTab("compliance")} className={`rounded-full px-4 py-2 text-sm font-medium ${tab === "compliance" ? "bg-deep-teal text-pure-white" : "border border-deep-teal/15 text-deep-teal/70"}`}>Compliance</button>
-        <button type="button" onClick={() => setTab("audit")} className={`rounded-full px-4 py-2 text-sm font-medium ${tab === "audit" ? "bg-deep-teal text-pure-white" : "border border-deep-teal/15 text-deep-teal/70"}`}>Audit Log</button>
+        <button type="button" onClick={() => setTab("compliance")} className={`rounded-full px-4 py-2 text-sm font-light ${tab === "compliance" ? "bg-deep-teal text-pure-white" : "border border-deep-teal/15 text-deep-teal/70"}`}>Compliance</button>
+        <button type="button" onClick={() => setTab("audit")} className={`rounded-full px-4 py-2 text-sm font-light ${tab === "audit" ? "bg-deep-teal text-pure-white" : "border border-deep-teal/15 text-deep-teal/70"}`}>Audit Log</button>
       </div>
 
       {tab === "compliance" ? (
         <>
           <div>
-            <h1 className="font-sans text-2xl font-semibold text-deep-teal">Compliance</h1>
+            <h1 className="font-sans text-2xl font-light text-deep-teal">Compliance</h1>
             <p className="mt-1 text-sm text-deep-teal/55">Clinic credential verification status</p>
           </div>
           <div className="overflow-x-auto rounded-2xl border border-deep-teal/10 bg-pure-white shadow-sm">
@@ -71,7 +71,7 @@ export function AdminComplianceView() {
               <tbody>
                 {COMPLIANCE_ROWS.map((row) => (
                   <tr key={row.id} className="border-b border-deep-teal/5">
-                    <td className="px-4 py-3 font-medium text-deep-teal">{row.clinicName}</td>
+                    <td className="px-4 py-3 font-light text-deep-teal">{row.clinicName}</td>
                     <td className="px-4 py-3"><StatusCell status={row.npiStatus} /></td>
                     <td className="px-4 py-3"><StatusCell status={row.deaStatus} /></td>
                     <td className="px-4 py-3"><StatusCell status={row.stateLicenseStatus} /></td>
@@ -92,7 +92,7 @@ export function AdminComplianceView() {
       ) : (
         <>
           <div>
-            <h1 className="font-sans text-2xl font-semibold text-deep-teal">Audit Log</h1>
+            <h1 className="font-sans text-2xl font-light text-deep-teal">Audit Log</h1>
             <p className="mt-1 text-sm text-deep-teal/55">Timestamped platform activity</p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -114,7 +114,7 @@ export function AdminComplianceView() {
               <article key={entry.id} className="rounded-xl border border-deep-teal/10 bg-pure-white p-4 shadow-sm">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <p className="font-mono text-xs text-deep-teal/45">{new Date(entry.timestamp).toLocaleString()}</p>
-                  <span className="rounded-full bg-deep-teal/5 px-2 py-0.5 text-[10px] font-medium text-deep-teal/60">{entry.action}</span>
+                  <span className="rounded-full bg-deep-teal/5 px-2 py-0.5 text-[10px] font-light text-deep-teal/60">{entry.action}</span>
                 </div>
                 <p className="mt-2 text-sm text-deep-teal"><span className="text-deep-teal/50">Actor:</span> {entry.actor}</p>
                 <p className="text-sm text-deep-teal"><span className="text-deep-teal/50">Entity:</span> {entry.entity}</p>

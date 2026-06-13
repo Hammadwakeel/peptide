@@ -111,7 +111,7 @@ export function Navbar() {
                 key={label}
                 href={linkHref}
                 onClick={() => handleNavClick(href)}
-                className={`relative whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium transition-colors duration-300 lg:px-4 ${
+                className={`relative whitespace-nowrap rounded-full px-3 py-2 text-sm font-light transition-colors duration-300 lg:px-4 ${
                   active ? "text-deep-teal" : "text-pure-white/70 hover:text-pure-white"
                 }`}
               >
@@ -131,14 +131,14 @@ export function Navbar() {
         <div className="flex items-center justify-self-end gap-2 sm:gap-3">
           <Link
             href="/login"
-            className="hidden rounded-full bg-pure-white px-5 py-2.5 text-sm font-medium text-deep-teal shadow-sm transition-all duration-300 hover:bg-coral-blush md:inline-flex"
+            className="hidden rounded-full bg-pure-white px-5 py-2.5 text-sm font-light text-deep-teal shadow-sm transition-all duration-300 hover:bg-coral-blush md:inline-flex"
           >
             Partner Portal
           </Link>
 
           <Link
             href="/login"
-            className="inline-flex rounded-full bg-pure-white px-4 py-2.5 text-xs font-medium text-deep-teal shadow-sm transition-all duration-300 hover:bg-coral-blush md:hidden"
+            className="inline-flex rounded-full bg-pure-white px-4 py-2.5 text-xs font-light text-deep-teal shadow-sm transition-all duration-300 hover:bg-coral-blush md:hidden"
           >
             Portal
           </Link>
@@ -173,7 +173,7 @@ export function Navbar() {
                   <Link
                     href={linkHref}
                     onClick={() => handleNavClick(href)}
-                    className={`block rounded-2xl px-4 py-3 text-base font-medium transition-colors duration-300 ${
+                    className={`block rounded-2xl px-4 py-3 text-base font-light transition-colors duration-300 ${
                       active
                         ? "bg-pure-white text-deep-teal shadow-sm"
                         : "text-pure-white/70 hover:bg-white/10 hover:text-pure-white"

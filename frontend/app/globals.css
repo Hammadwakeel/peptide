@@ -52,7 +52,7 @@ body {
   background: var(--color-deep-teal);
   color: var(--color-pure-white);
   font-family: var(--font-sans);
-  font-weight: 400;
+  font-weight: 300;
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -65,7 +65,7 @@ h4,
 h5,
 h6 {
   font-family: var(--font-sans);
-  font-weight: 600;
+  font-weight: 300;
 }
 
 html {

@@ -14,7 +14,7 @@ export function FunnelProgressBar({ steps, completedStepIds }: FunnelProgressBar
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3 text-sm">
-        <span className="font-medium text-deep-teal">Funnel progress</span>
+        <span className="font-light text-deep-teal">Funnel progress</span>
         <span className="text-deep-teal/60">
           {completedCount} of {steps.length} stages · {percent}%
         </span>
@@ -40,7 +40,7 @@ export function FunnelProgressBar({ steps, completedStepIds }: FunnelProgressBar
           return (
             <span
               key={step.id}
-              className={`rounded-full px-2.5 py-1 text-[10px] font-medium sm:text-xs ${
+              className={`rounded-full px-2.5 py-1 text-[10px] font-light sm:text-xs ${
                 done
                   ? "bg-pacific-teal/15 text-pacific-teal"
                   : "bg-deep-teal/5 text-deep-teal/45"

@@ -47,7 +47,7 @@ export function PatientActivationForm() {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-pure-white px-4">
         <AuthCard>
-          <h1 className="font-sans text-2xl font-semibold text-deep-teal">Invalid activation link</h1>
+          <h1 className="font-sans text-2xl font-light text-deep-teal">Invalid activation link</h1>
           <p className="mt-3 text-sm text-deep-teal/60">
             This invite link is missing or expired. Contact your clinic for a new invitation.
           </p>
@@ -64,19 +64,19 @@ export function PatientActivationForm() {
       <div className="flex min-h-dvh items-center justify-center bg-pure-white px-4">
         <AuthCard>
           <div
-            className="mb-5 inline-flex size-12 items-center justify-center rounded-full text-lg font-medium text-pure-white"
+            className="mb-5 inline-flex size-12 items-center justify-center rounded-full text-lg font-light text-pure-white"
             style={{ backgroundColor: themeColor }}
           >
             ✓
           </div>
-          <h1 className="font-sans text-2xl font-semibold text-deep-teal">You&apos;re all set</h1>
+          <h1 className="font-sans text-2xl font-light text-deep-teal">You&apos;re all set</h1>
           <p className="mt-3 text-sm leading-relaxed text-deep-teal/65">
             Your {clinicName} patient account is active. Sign in with your email and the password
             you just created.
           </p>
           <Link
             href="/login"
-            className="mt-6 inline-flex rounded-full px-5 py-2.5 text-sm font-medium text-pure-white"
+            className="mt-6 inline-flex rounded-full px-5 py-2.5 text-sm font-light text-pure-white"
             style={{ backgroundColor: themeColor }}
           >
             Sign in
@@ -95,17 +95,17 @@ export function PatientActivationForm() {
         <div>
           <div className="flex items-center gap-3">
             <div
-              className="flex size-12 items-center justify-center rounded-xl text-sm font-semibold text-pure-white"
+              className="flex size-12 items-center justify-center rounded-xl text-sm font-light text-pure-white"
               style={{ backgroundColor: themeColor }}
             >
               {clinicName.slice(0, 1).toUpperCase()}
             </div>
             <div>
-              <p className="font-medium text-deep-teal">{clinicName}</p>
+              <p className="font-light text-deep-teal">{clinicName}</p>
               <p className="font-editorial text-sm text-deep-teal/55">{tagline}</p>
             </div>
           </div>
-          <h1 className="mt-10 max-w-md font-sans text-3xl font-semibold leading-tight text-deep-teal sm:text-4xl">
+          <h1 className="mt-10 max-w-md font-sans text-3xl font-light leading-tight text-deep-teal sm:text-4xl">
             Activate your patient account
           </h1>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-deep-teal/65">
@@ -126,10 +126,10 @@ export function PatientActivationForm() {
       <div className="flex flex-1 items-center justify-center px-4 py-10 sm:px-8">
         <div className="w-full max-w-md">
           <AuthCard compact>
-          <p className="font-sans text-[10px] font-medium text-pacific-teal">
+          <p className="font-sans text-[10px] font-light text-pacific-teal">
             {clinicName}
           </p>
-          <h2 className="mt-2 font-sans text-2xl font-semibold text-deep-teal">Create your password</h2>
+          <h2 className="mt-2 font-sans text-2xl font-light text-deep-teal">Create your password</h2>
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
               <label htmlFor="activate-password" className={authLabelClassName}>
@@ -162,7 +162,7 @@ export function PatientActivationForm() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full rounded-full py-3 text-sm font-medium text-pure-white disabled:opacity-60"
+              className="w-full rounded-full py-3 text-sm font-light text-pure-white disabled:opacity-60"
               style={{ backgroundColor: themeColor }}
             >
               {isSubmitting ? "Activating…" : "Activate account"}

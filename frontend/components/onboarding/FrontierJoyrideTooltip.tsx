@@ -20,7 +20,7 @@ export function FrontierJoyrideTooltip({
     >
       <div className="px-5 py-4">
         {step.title ? (
-          <p className="font-sans text-xl font-semibold leading-snug text-deep-teal">{step.title}</p>
+          <p className="font-sans text-xl font-light leading-snug text-deep-teal">{step.title}</p>
         ) : null}
         {step.content ? (
           <p className={`text-sm leading-relaxed text-deep-teal/70 ${step.title ? "mt-2" : ""}`}>
@@ -28,7 +28,7 @@ export function FrontierJoyrideTooltip({
           </p>
         ) : null}
         {continuous && size > 1 ? (
-          <p className="mt-3 font-sans text-[10px] font-medium text-pacific-teal">
+          <p className="mt-3 font-sans text-[10px] font-light text-pacific-teal">
             Step {index + 1} of {size}
           </p>
         ) : null}
@@ -48,7 +48,7 @@ export function FrontierJoyrideTooltip({
             <button
               type="button"
               {...backProps}
-              className="rounded-full border border-deep-teal/15 px-3 py-1.5 text-sm font-medium text-deep-teal transition-colors hover:bg-pacific-teal/12 hover:text-pacific-teal"
+              className="rounded-full border border-deep-teal/15 px-3 py-1.5 text-sm font-light text-deep-teal transition-colors hover:bg-pacific-teal/12 hover:text-pacific-teal"
             >
               {backProps.title}
             </button>
@@ -56,7 +56,7 @@ export function FrontierJoyrideTooltip({
           <button
             type="button"
             {...primaryProps}
-            className="rounded-full bg-deep-teal px-4 py-1.5 text-sm font-medium text-pure-white transition-colors hover:bg-pacific-teal"
+            className="rounded-full bg-deep-teal px-4 py-1.5 text-sm font-light text-pure-white transition-colors hover:bg-pacific-teal"
           >
             {primaryProps.title}
           </button>

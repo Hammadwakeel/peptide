@@ -32,7 +32,7 @@ export function PasswordStrengthIndicator({ password }: PasswordStrengthIndicato
         ))}
       </div>
       <p className="text-[11px] text-deep-teal/55">
-        Strength: <span className="font-medium text-deep-teal">{strength.label}</span>
+        Strength: <span className="font-light text-deep-teal">{strength.label}</span>
       </p>
       <ul className="grid grid-cols-2 gap-1 text-[10px] text-deep-teal/45">
         <li className={strength.checks.length ? "text-pacific-teal" : ""}>8+ characters</li>

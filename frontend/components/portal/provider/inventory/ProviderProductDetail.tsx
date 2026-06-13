@@ -231,7 +231,7 @@ export function ProviderProductDetail({ productId }: ProviderProductDetailProps)
 
           {product.directions ? (
             <div className="rounded-2xl border border-deep-teal/10 bg-deep-teal/[0.02] p-4">
-              <p className="text-sm font-medium text-deep-teal">Directions / dosing</p>
+              <p className="text-sm font-light text-deep-teal">Directions / dosing</p>
               <p className="mt-2 text-sm leading-relaxed text-deep-teal/65">{product.directions}</p>
             </div>
           ) : null}

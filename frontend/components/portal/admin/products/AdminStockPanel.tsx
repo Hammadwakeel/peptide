@@ -66,7 +66,7 @@ export function AdminStockPanel({ productId }: AdminStockPanelProps) {
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border border-deep-teal/10 bg-pure-white p-6 shadow-sm">
-        <p className="font-medium text-deep-teal">{product.name}</p>
+        <p className="font-light text-deep-teal">{product.name}</p>
         <p className="mt-1 font-mono text-xs text-deep-teal/50">{product.sku}</p>
         <p className="mt-2 text-sm text-deep-teal/60">
           Current status: {STOCK_STATUS_LABELS[product.stock_status]}
@@ -99,7 +99,7 @@ export function AdminStockPanel({ productId }: AdminStockPanelProps) {
           type="button"
           disabled={isSaving}
           onClick={() => void handleSave()}
-          className="mt-4 rounded-full bg-deep-teal px-5 py-2.5 text-sm font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-60"
+          className="mt-4 rounded-full bg-deep-teal px-5 py-2.5 text-sm font-light text-pure-white hover:bg-pacific-teal disabled:opacity-60"
         >
           {isSaving ? "Saving…" : "Save stock settings"}
         </button>

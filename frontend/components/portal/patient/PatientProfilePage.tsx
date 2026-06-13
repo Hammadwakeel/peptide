@@ -260,7 +260,7 @@ export function PatientProfilePage() {
           <button
             type="button"
             onClick={() => setAddressDraft(emptyAddress())}
-            className="text-sm font-medium text-pacific-teal hover:underline"
+            className="text-sm font-light text-pacific-teal hover:underline"
           >
             Add address
           </button>
@@ -273,7 +273,7 @@ export function PatientProfilePage() {
               <li key={address.id} className="rounded-xl border border-deep-teal/10 p-3 text-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-medium text-deep-teal">
+                    <p className="font-light text-deep-teal">
                       {address.label}
                       {address.isDefault ? (
                         <span className="ml-2 rounded-full bg-pacific-teal/10 px-2 py-0.5 text-xs text-pacific-teal">
@@ -335,7 +335,7 @@ export function PatientProfilePage() {
           <button
             type="button"
             onClick={() => setShowPaymentForm((value) => !value)}
-            className="text-sm font-medium text-pacific-teal hover:underline"
+            className="text-sm font-light text-pacific-teal hover:underline"
           >
             {showPaymentForm ? "Cancel" : "Add card"}
           </button>

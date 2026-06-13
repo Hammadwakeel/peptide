@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 const categoryPillClass =
-  "max-w-[9rem] shrink-0 truncate rounded-full bg-deep-teal/8 px-2.5 py-1 text-[11px] font-medium text-deep-teal/75";
+  "max-w-[9rem] shrink-0 truncate rounded-full bg-deep-teal/8 px-2.5 py-1 text-[11px] font-light text-deep-teal/75";
 
 export function ProductCardNameRow({
   name,
@@ -12,7 +12,7 @@ export function ProductCardNameRow({
 }) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1">
-      <div className="min-w-0 font-sans text-sm font-semibold leading-snug text-deep-teal">{name}</div>
+      <div className="min-w-0 font-sans text-sm font-light leading-snug text-deep-teal">{name}</div>
       <span className={categoryPillClass}>{category}</span>
     </div>
   );
@@ -53,5 +53,5 @@ export function productCardBodyClass() {
 }
 
 export function productStatValue(value: ReactNode) {
-  return <span className="font-semibold text-deep-teal">{value}</span>;
+  return <span className="font-light text-deep-teal">{value}</span>;
 }

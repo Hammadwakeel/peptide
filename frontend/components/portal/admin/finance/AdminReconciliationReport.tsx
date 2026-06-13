@@ -46,7 +46,7 @@ export function AdminReconciliationReport() {
   return (
     <div className="space-y-5">
       <div className="rounded-2xl border border-deep-teal/10 bg-deep-teal/[0.02] px-4 py-4 sm:px-5">
-        <h2 className="font-sans text-xl font-semibold text-deep-teal">Payment Reconciliation</h2>
+        <h2 className="font-sans text-xl font-light text-deep-teal">Payment Reconciliation</h2>
         <p className="mt-1 text-sm text-deep-teal/60">
           Platform-wide collection, disbursement, and revenue reporting.
         </p>
@@ -85,7 +85,7 @@ export function AdminReconciliationReport() {
             className="rounded-2xl border border-deep-teal/10 bg-pure-white px-4 py-5 shadow-sm"
           >
             <p className="text-xs uppercase tracking-wide text-deep-teal/45">{card.label}</p>
-            <p className="mt-2 font-sans text-3xl font-semibold text-deep-teal">
+            <p className="mt-2 font-sans text-3xl font-light text-deep-teal">
               {formatCurrency(card.value)}
             </p>
           </div>
@@ -96,13 +96,13 @@ export function AdminReconciliationReport() {
         <table className="min-w-full text-left text-sm">
           <thead className="border-b border-deep-teal/10 bg-deep-teal/[0.02] text-xs uppercase tracking-wide text-deep-teal/45">
             <tr>
-              <th className="px-4 py-3 font-medium">Date</th>
-              <th className="px-4 py-3 font-medium">Clinic</th>
-              <th className="px-4 py-3 font-medium">Order</th>
-              <th className="px-4 py-3 font-medium">Collected</th>
-              <th className="px-4 py-3 font-medium">Disbursed</th>
-              <th className="px-4 py-3 font-medium">Platform Fee</th>
-              <th className="px-4 py-3 font-medium">Net Platform</th>
+              <th className="px-4 py-3 font-light">Date</th>
+              <th className="px-4 py-3 font-light">Clinic</th>
+              <th className="px-4 py-3 font-light">Order</th>
+              <th className="px-4 py-3 font-light">Collected</th>
+              <th className="px-4 py-3 font-light">Disbursed</th>
+              <th className="px-4 py-3 font-light">Platform Fee</th>
+              <th className="px-4 py-3 font-light">Net Platform</th>
             </tr>
           </thead>
           <tbody>
@@ -114,7 +114,7 @@ export function AdminReconciliationReport() {
                 <td className="px-4 py-3 text-deep-teal">${row.collected}</td>
                 <td className="px-4 py-3 text-deep-teal/70">${row.disbursed}</td>
                 <td className="px-4 py-3 text-deep-teal/70">${row.platformFee}</td>
-                <td className="px-4 py-3 font-medium text-pacific-teal">${row.netPlatform}</td>
+                <td className="px-4 py-3 font-light text-pacific-teal">${row.netPlatform}</td>
               </tr>
             ))}
           </tbody>

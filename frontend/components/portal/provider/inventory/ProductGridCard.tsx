@@ -37,7 +37,7 @@ function StockBadge({ status }: { status: CatalogStockStatus }) {
   };
   return (
     <Tooltip content={STOCK_TIPS[status]}>
-      <span className={`cursor-help rounded-full px-2 py-0.5 text-[10px] font-medium ${styles[status]}`}>
+      <span className={`cursor-help rounded-full px-2 py-0.5 text-[10px] font-light ${styles[status]}`}>
         {CATALOG_STOCK_STATUS_LABELS[status]}
       </span>
     </Tooltip>

@@ -91,8 +91,8 @@ function MessageDisplay() {
           isVisible ? "opacity-100" : "opacity-0"
         }`}
       >
-        <div className="m-[1%] text-[35px] font-semibold text-black">Page Not Found</div>
-        <div className="m-[1%] text-[80px] font-bold text-black">404</div>
+        <div className="m-[1%] text-[35px] font-light text-black">Page Not Found</div>
+        <div className="m-[1%] text-[80px] font-light text-black">404</div>
         <div className="m-[1%] w-1/2 min-w-[40%] text-center text-[15px] text-black">
           The page you are looking for might have been removed, had its name changed, or is
           temporarily unavailable.
@@ -101,7 +101,7 @@ function MessageDisplay() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="group flex h-auto items-center gap-2 border-2 border-black px-6 py-2 text-base font-medium text-black transition-all duration-300 ease-in-out hover:scale-105 hover:bg-black hover:text-white"
+            className="group flex h-auto items-center gap-2 border-2 border-black px-6 py-2 text-base font-light text-black transition-all duration-300 ease-in-out hover:scale-105 hover:bg-black hover:text-white"
           >
             <ArrowLeft className="size-5 transition-transform group-hover:-translate-x-0.5" />
             Go Back
@@ -109,7 +109,7 @@ function MessageDisplay() {
           <button
             type="button"
             onClick={() => router.push("/")}
-            className="group flex h-auto items-center gap-2 bg-black px-6 py-2 text-base font-medium text-white transition-all duration-300 ease-in-out hover:scale-105 hover:bg-gray-900"
+            className="group flex h-auto items-center gap-2 bg-black px-6 py-2 text-base font-light text-white transition-all duration-300 ease-in-out hover:scale-105 hover:bg-gray-900"
           >
             <Home className="size-5 transition-transform group-hover:translate-x-0.5" />
             Go Home

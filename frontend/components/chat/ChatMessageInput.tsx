@@ -108,10 +108,12 @@ export function ChatMessageInput({
     revokePreviewUrl(current.previewUrl);
     setAttachment(null);
 
-    void onUpload(current.file, current.messageType, {
-      content: caption || (current.messageType === "document" ? current.file.name : undefined),
-      replyToMessageId: replyTo?.id,
-    }).catch(() => {
+    void Promise.resolve(
+      onUpload(current.file, current.messageType, {
+        content: caption || (current.messageType === "document" ? current.file.name : undefined),
+        replyToMessageId: replyTo?.id,
+      }),
+    ).catch(() => {
       // Optimistic rollback handled in ChatProvider.
     });
     clearReply();

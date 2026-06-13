@@ -42,7 +42,7 @@ export function AdminBulkImport() {
           isDragging ? "border-pacific-teal bg-pacific-teal/5" : "border-deep-teal/15"
         }`}
       >
-        <p className="text-sm font-medium text-deep-teal">Drag and drop CSV here</p>
+        <p className="text-sm font-light text-deep-teal">Drag and drop CSV here</p>
         <p className="mt-1 text-xs text-deep-teal/50">Columns: SKU, Name, Category, Type, Price, Stock</p>
         <input
           type="file"
@@ -89,7 +89,7 @@ export function AdminBulkImport() {
 
           {errorRows.length > 0 ? (
             <div className="rounded-xl border border-coral-blush bg-coral-blush/40 p-4">
-              <p className="text-sm font-medium text-deep-teal">Failed rows</p>
+              <p className="text-sm font-light text-deep-teal">Failed rows</p>
               <ul className="mt-2 space-y-1 text-xs text-deep-teal/80">
                 {errorRows.map((row) => (
                   <li key={row.row}>Row {row.row}: {row.error}</li>
@@ -102,7 +102,7 @@ export function AdminBulkImport() {
             type="button"
             onClick={() => toast.success(`Imported ${validRows.length} products.`)}
             disabled={validRows.length === 0}
-            className="rounded-full bg-deep-teal px-5 py-2.5 text-sm font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-60"
+            className="rounded-full bg-deep-teal px-5 py-2.5 text-sm font-light text-pure-white hover:bg-pacific-teal disabled:opacity-60"
           >
             Confirm import ({validRows.length} rows)
           </button>

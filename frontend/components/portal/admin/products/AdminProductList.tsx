@@ -107,7 +107,7 @@ export function AdminProductList() {
               <Package className="size-4" />
             </div>
             <div>
-              <h2 className="font-sans text-lg font-semibold">Products</h2>
+              <h2 className="font-sans text-lg font-light">Products</h2>
               <p className="text-xs text-pure-white/75">
                 {isLoading ? "Loading…" : `${sortedProducts.length} shown`}
               </p>
@@ -117,7 +117,7 @@ export function AdminProductList() {
             type="button"
             onClick={() => void loadData()}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 rounded-full bg-pure-white/15 px-3 py-1.5 text-xs font-medium hover:bg-pure-white/25 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-full bg-pure-white/15 px-3 py-1.5 text-xs font-light hover:bg-pure-white/25 disabled:opacity-50"
           >
             <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} aria-hidden="true" />
             Refresh
@@ -181,11 +181,11 @@ export function AdminProductList() {
           <p className="px-5 py-16 text-center text-sm text-deep-teal/50">Loading products…</p>
         ) : sortedProducts.length === 0 ? (
           <div className="px-5 py-16 text-center">
-            <p className="text-sm font-medium text-deep-teal/70">No products found</p>
+            <p className="text-sm font-light text-deep-teal/70">No products found</p>
             <p className="mt-1 text-xs text-deep-teal/45">Try adjusting your filters.</p>
             <Link
               href="/portal/admin/products/new"
-              className="mt-4 inline-flex rounded-full bg-deep-teal px-4 py-2 text-xs font-medium text-pure-white hover:opacity-90"
+              className="mt-4 inline-flex rounded-full bg-deep-teal px-4 py-2 text-xs font-light text-pure-white hover:opacity-90"
             >
               Add product
             </Link>
@@ -194,12 +194,12 @@ export function AdminProductList() {
           <table className="min-w-full text-left text-sm">
             <thead className="border-b border-deep-teal/10 text-[10px] text-deep-teal/60">
               <tr>
-                <th className="px-5 py-3 font-medium">Product</th>
-                <th className="hidden px-4 py-3 font-medium sm:table-cell">SKU</th>
-                <th className="hidden px-4 py-3 font-medium lg:table-cell">Category</th>
-                <th className="px-4 py-3 font-medium">Stock</th>
-                <th className="hidden px-4 py-3 font-medium md:table-cell">Cost</th>
-                <th className="px-5 py-3 text-right font-medium">
+                <th className="px-5 py-3 font-light">Product</th>
+                <th className="hidden px-4 py-3 font-light sm:table-cell">SKU</th>
+                <th className="hidden px-4 py-3 font-light lg:table-cell">Category</th>
+                <th className="px-4 py-3 font-light">Stock</th>
+                <th className="hidden px-4 py-3 font-light md:table-cell">Cost</th>
+                <th className="px-5 py-3 text-right font-light">
                   <span className="sr-only">Actions</span>
                 </th>
               </tr>
@@ -221,20 +221,20 @@ export function AdminProductList() {
                           />
                         </div>
                       ) : (
-                        <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-deep-teal text-sm font-medium text-pure-white">
+                        <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-deep-teal text-sm font-light text-pure-white">
                           {product.name.slice(0, 1).toUpperCase()}
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="truncate font-medium text-deep-teal">{product.name}</p>
+                        <p className="truncate font-light text-deep-teal">{product.name}</p>
                         <div className="mt-1 flex flex-wrap items-center gap-2">
                           <span
-                            className={`text-[10px] font-medium uppercase tracking-wide ${STATUS_STYLES[product.status] ?? "text-deep-teal/50"}`}
+                            className={`text-[10px] font-light uppercase tracking-wide ${STATUS_STYLES[product.status] ?? "text-deep-teal/50"}`}
                           >
                             {product.status}
                           </span>
                           <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${TYPE_BADGE_STYLES[product.product_type]}`}
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-light uppercase tracking-wide ${TYPE_BADGE_STYLES[product.product_type]}`}
                           >
                             {PRODUCT_TYPE_LABELS[product.product_type]}
                           </span>
@@ -250,17 +250,17 @@ export function AdminProductList() {
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-2">
-                      <span className="font-sans text-sm font-medium text-deep-teal">
+                      <span className="font-sans text-sm font-light text-deep-teal">
                         {product.stock_count}
                       </span>
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${STOCK_BADGE_STYLES[product.stock_status]}`}
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-light ${STOCK_BADGE_STYLES[product.stock_status]}`}
                       >
                         {STOCK_STATUS_LABELS[product.stock_status]}
                       </span>
                     </div>
                   </td>
-                  <td className="hidden px-4 py-4 font-medium text-deep-teal/70 md:table-cell">
+                  <td className="hidden px-4 py-4 font-light text-deep-teal/70 md:table-cell">
                     {product.clinic_cost != null ? `$${product.clinic_cost.toFixed(2)}` : "—"}
                   </td>
                   <td className="relative px-5 py-4 text-right">

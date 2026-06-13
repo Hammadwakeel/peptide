@@ -47,7 +47,7 @@ export function AffiliateReferrals() {
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-4 rounded-2xl border border-deep-teal/20 bg-pure-white px-4 py-2.5 shadow-[0_2px_12px_rgba(1,26,36,0.08)] sm:px-5">
-        <h1 className="shrink-0 font-sans text-xl font-semibold text-deep-teal sm:text-2xl">Clinic Referrals</h1>
+        <h1 className="shrink-0 font-sans text-xl font-light text-deep-teal sm:text-2xl">Clinic Referrals</h1>
         <div className="min-w-4 flex-1" aria-hidden="true" />
         <div className="flex flex-wrap items-center justify-end gap-2">
           {isMain ? (
@@ -64,7 +64,7 @@ export function AffiliateReferrals() {
             type="button"
             onClick={() => void loadReferrals()}
             disabled={isLoading}
-            className="inline-flex items-center gap-2 rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white transition-opacity hover:opacity-90 disabled:opacity-50"
             aria-label="Refresh referrals"
           >
             <RefreshCw className={`size-4 ${isLoading ? "animate-spin" : ""}`} aria-hidden="true" />
@@ -82,7 +82,7 @@ export function AffiliateReferrals() {
               <Building2 className="size-4" />
             </div>
             <div>
-              <h2 className="font-sans text-lg font-semibold">Referred clinics</h2>
+              <h2 className="font-sans text-lg font-light">Referred clinics</h2>
               <p className="text-xs text-pure-white/75">
                 {isLoading ? "Loading…" : `${referrals.length} referral${referrals.length === 1 ? "" : "s"}`}
               </p>
@@ -94,14 +94,14 @@ export function AffiliateReferrals() {
           <table className="min-w-full text-left text-sm">
             <thead className="border-b border-deep-teal/10 bg-surface-muted/50 text-xs uppercase tracking-wide text-deep-teal/45">
               <tr>
-                <th className="px-4 py-3 font-medium">Clinic</th>
-                <th className="px-4 py-3 font-medium">Email</th>
-                <th className="px-4 py-3 font-medium">Clinic status</th>
-                <th className="px-4 py-3 font-medium">Referral status</th>
+                <th className="px-4 py-3 font-light">Clinic</th>
+                <th className="px-4 py-3 font-light">Email</th>
+                <th className="px-4 py-3 font-light">Clinic status</th>
+                <th className="px-4 py-3 font-light">Referral status</th>
                 {isMain && scope === "all" ? (
-                  <th className="px-4 py-3 font-medium">Referred by</th>
+                  <th className="px-4 py-3 font-light">Referred by</th>
                 ) : null}
-                <th className="px-4 py-3 font-medium">Date</th>
+                <th className="px-4 py-3 font-light">Date</th>
               </tr>
             </thead>
             <tbody>
@@ -120,7 +120,7 @@ export function AffiliateReferrals() {
               ) : (
                 referrals.map((referral) => (
                   <tr key={referral.id} className="border-b border-deep-teal/5">
-                    <td className="px-4 py-3 font-medium text-deep-teal">{referral.clinic.clinic_name}</td>
+                    <td className="px-4 py-3 font-light text-deep-teal">{referral.clinic.clinic_name}</td>
                     <td className="px-4 py-3 text-deep-teal/70">{referral.clinic.email}</td>
                     <td className="px-4 py-3 capitalize text-deep-teal/70">{referral.clinic.status}</td>
                     <td className="px-4 py-3 capitalize text-deep-teal/70">{referral.status}</td>

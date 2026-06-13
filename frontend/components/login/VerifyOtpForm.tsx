@@ -112,14 +112,14 @@ export function VerifyOtpForm() {
             variants={staggerContainer}
           >
             <motion.span
-              className="font-sans text-xs font-medium text-pacific-teal"
+              className="font-sans text-xs font-light text-pacific-teal"
               variants={fadeInUp}
               transition={transition}
             >
               Verify email
             </motion.span>
             <motion.h1
-              className="mt-3 font-sans text-2xl font-semibold tracking-[-0.02em] text-deep-teal sm:text-3xl"
+              className="mt-3 font-sans text-2xl font-light tracking-[-0.02em] text-deep-teal sm:text-3xl"
               variants={fadeInUp}
               transition={transition}
             >
@@ -131,7 +131,7 @@ export function VerifyOtpForm() {
               transition={transition}
             >
               Enter the 6-digit code sent to{" "}
-              <span className="font-medium text-deep-teal">{email || "your email"}</span>.
+              <span className="font-light text-deep-teal">{email || "your email"}</span>.
             </motion.p>
           </motion.div>
 
@@ -155,7 +155,7 @@ export function VerifyOtpForm() {
                 onChange={(event) => setOtp(event.target.value.replace(/\D/g, "").slice(0, 6))}
                 placeholder="000000"
                 maxLength={6}
-                className={`${authInputClassName} text-center font-sans text-lg font-medium tracking-[0.35em]`}
+                className={`${authInputClassName} text-center font-sans text-lg font-light tracking-[0.35em]`}
               />
             </motion.div>
 
@@ -165,7 +165,7 @@ export function VerifyOtpForm() {
               disabled={isResending}
               variants={fadeInUp}
               transition={transition}
-              className="text-sm font-medium text-pacific-teal hover:underline disabled:opacity-60"
+              className="text-sm font-light text-pacific-teal hover:underline disabled:opacity-60"
             >
               {isResending ? "Resending…" : "Resend code"}
             </motion.button>
@@ -175,7 +175,7 @@ export function VerifyOtpForm() {
               disabled={isSubmitting}
               variants={fadeInUp}
               transition={transition}
-              className="w-full rounded-full bg-deep-teal px-6 py-3.5 text-sm font-medium text-pure-white transition-all duration-300 hover:bg-pacific-teal disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-full bg-deep-teal px-6 py-3.5 text-sm font-light text-pure-white transition-all duration-300 hover:bg-pacific-teal disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? "Verifying…" : "Verify and continue"}
             </motion.button>

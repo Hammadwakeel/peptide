@@ -62,7 +62,7 @@ export function Hero() {
                   Or it doesn&apos;t arrive.
                 </h1>
 
-                <p className="mt-5 max-w-2xl text-base font-normal leading-relaxed text-pure-white/90 sm:mt-6 sm:text-lg">
+                <p className="mt-5 max-w-2xl text-base font-light leading-relaxed text-pure-white/90 sm:mt-6 sm:text-lg">
                   For pharmacies and practitioners who need unconditional trust,
                   Frontier Biomed verifies purity at every bond, domestic by
                   design.
@@ -74,7 +74,7 @@ export function Hero() {
                   href="/login"
                   className={`group flex w-full items-center justify-between bg-deep-teal px-6 py-5 text-pure-white shadow-lg transition-[background-color,opacity] duration-300 ease-out hover:bg-pacific-teal sm:px-10 sm:py-7 ${shapeHeroCards[1]}`}
                 >
-                  <span className="text-lg font-medium sm:text-xl">Partner Portal</span>
+                  <span className="text-lg font-light sm:text-xl">Partner Portal</span>
                   <ArrowRightIcon className="h-6 w-6 transition-transform duration-300 ease-out group-hover:translate-x-1.5 sm:h-7 sm:w-7" />
                 </Link>
               </motion.div>

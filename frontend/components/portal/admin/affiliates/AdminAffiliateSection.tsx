@@ -27,7 +27,7 @@ function StatusPill({ status }: { status: string }) {
         : "bg-deep-teal/5 text-deep-teal/60";
 
   return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${styles}`}>
+    <span className={`rounded-full px-2 py-0.5 text-xs font-light capitalize ${styles}`}>
       {status}
     </span>
   );
@@ -94,7 +94,7 @@ function EditAffiliateModal({
         aria-modal="true"
         className="relative z-10 w-full max-w-md rounded-2xl border border-deep-teal/10 bg-pure-white p-6 shadow-xl"
       >
-        <h2 className="font-sans text-xl font-semibold text-deep-teal">Affiliate settings</h2>
+        <h2 className="font-sans text-xl font-light text-deep-teal">Affiliate settings</h2>
         <p className="mt-2 text-sm text-deep-teal/60">
           {affiliate.email} · {affiliate.affiliate_code}
         </p>
@@ -228,7 +228,7 @@ export function AdminAffiliateSection() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-sans text-2xl font-semibold text-deep-teal">Affiliates</h1>
+          <h1 className="font-sans text-2xl font-light text-deep-teal">Affiliates</h1>
           <p className="mt-1 text-sm text-deep-teal/55">
             Create affiliate accounts, set profit margins, and manage sub-affiliate limits
           </p>
@@ -236,7 +236,7 @@ export function AdminAffiliateSection() {
         <button
           type="button"
           onClick={() => setShowCreateForm((value) => !value)}
-          className="rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal"
+          className="rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white hover:bg-pacific-teal"
         >
           {showCreateForm ? "Cancel" : "Create affiliate"}
         </button>
@@ -247,7 +247,7 @@ export function AdminAffiliateSection() {
           onSubmit={(event) => void handleCreateAffiliate(event)}
           className="rounded-2xl border border-deep-teal/10 bg-pure-white p-5 shadow-sm"
         >
-          <h2 className="font-sans text-lg font-semibold text-deep-teal">New affiliate</h2>
+          <h2 className="font-sans text-lg font-light text-deep-teal">New affiliate</h2>
           <p className="mt-1 text-sm text-deep-teal/55">
             A set-password email will be sent to the affiliate after creation.
           </p>
@@ -265,7 +265,7 @@ export function AdminAffiliateSection() {
           <button
             type="submit"
             disabled={isCreating}
-            className="mt-4 rounded-full bg-pacific-teal px-5 py-2.5 text-sm font-medium text-pure-white hover:bg-deep-teal disabled:opacity-60"
+            className="mt-4 rounded-full bg-pacific-teal px-5 py-2.5 text-sm font-light text-pure-white hover:bg-deep-teal disabled:opacity-60"
           >
             {isCreating ? "Creating…" : "Create affiliate"}
           </button>
@@ -283,13 +283,13 @@ export function AdminAffiliateSection() {
             className="rounded-2xl border border-deep-teal/10 bg-pure-white px-4 py-5 shadow-sm"
           >
             <p className="text-xs uppercase tracking-wide text-deep-teal/45">{kpi.label}</p>
-            <p className="mt-2 font-sans text-3xl font-semibold text-deep-teal">{kpi.value}</p>
+            <p className="mt-2 font-sans text-3xl font-light text-deep-teal">{kpi.value}</p>
           </div>
         ))}
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-sm font-medium text-deep-teal">Affiliate accounts</h2>
+        <h2 className="text-sm font-light text-deep-teal">Affiliate accounts</h2>
         <input
           type="search"
           value={search}
@@ -330,7 +330,7 @@ export function AdminAffiliateSection() {
             ) : (
               filtered.map((affiliate) => (
                 <tr key={affiliate.id} className="border-b border-deep-teal/5">
-                  <td className="px-4 py-3 font-medium text-deep-teal">{affiliate.email}</td>
+                  <td className="px-4 py-3 font-light text-deep-teal">{affiliate.email}</td>
                   <td className="px-4 py-3 font-mono text-xs text-deep-teal/70">{affiliate.affiliate_code}</td>
                   <td className="px-4 py-3 capitalize text-deep-teal/70">{affiliate.affiliate_type}</td>
                   <td className="px-4 py-3 text-deep-teal/70">

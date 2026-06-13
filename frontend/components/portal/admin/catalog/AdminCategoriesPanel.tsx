@@ -81,7 +81,7 @@ export function AdminCategoriesPanel() {
             <FolderTree className="size-4" />
           </div>
           <div>
-            <h2 className="font-sans text-lg font-semibold">Categories</h2>
+            <h2 className="font-sans text-lg font-light">Categories</h2>
             <p className="text-xs text-pure-white/75">
               {isLoading ? "Loading…" : `${categories.length} in catalog`}
             </p>
@@ -91,7 +91,7 @@ export function AdminCategoriesPanel() {
           <button
             type="button"
             onClick={() => setShowForm((current) => !current)}
-            className="inline-flex items-center gap-1.5 rounded-full bg-pure-white/15 px-3 py-1.5 text-xs font-medium hover:bg-pure-white/25"
+            className="inline-flex items-center gap-1.5 rounded-full bg-pure-white/15 px-3 py-1.5 text-xs font-light hover:bg-pure-white/25"
           >
             <Plus className="size-3.5" aria-hidden="true" />
             {showForm ? "Cancel" : "New"}
@@ -100,7 +100,7 @@ export function AdminCategoriesPanel() {
             type="button"
             onClick={() => void loadCategories()}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 rounded-full bg-pure-white/15 px-3 py-1.5 text-xs font-medium hover:bg-pure-white/25 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-full bg-pure-white/15 px-3 py-1.5 text-xs font-light hover:bg-pure-white/25 disabled:opacity-50"
           >
             <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} aria-hidden="true" />
           </button>
@@ -112,7 +112,7 @@ export function AdminCategoriesPanel() {
           onSubmit={(event) => void handleCreate(event)}
           className="border-b border-deep-teal/10 bg-coral-blush/25 px-5 py-4"
         >
-          <p className="font-sans text-[10px] font-medium text-deep-teal">
+          <p className="font-sans text-[10px] font-light text-deep-teal">
             New category
           </p>
           <div className="mt-3 grid gap-3">
@@ -174,7 +174,7 @@ export function AdminCategoriesPanel() {
             <button
               type="submit"
               disabled={isCreating}
-              className="w-full rounded-full bg-deep-teal py-2 text-sm font-medium text-pure-white hover:opacity-90 disabled:opacity-60"
+              className="w-full rounded-full bg-deep-teal py-2 text-sm font-light text-pure-white hover:opacity-90 disabled:opacity-60"
             >
               {isCreating ? "Creating…" : "Create category"}
             </button>
@@ -187,11 +187,11 @@ export function AdminCategoriesPanel() {
           <p className="px-5 py-10 text-center text-sm text-deep-teal/50">Loading categories…</p>
         ) : sortedCategories.length === 0 ? (
           <div className="px-5 py-10 text-center">
-            <p className="text-sm font-medium text-deep-teal/70">No categories yet</p>
+            <p className="text-sm font-light text-deep-teal/70">No categories yet</p>
             <button
               type="button"
               onClick={() => setShowForm(true)}
-              className="mt-3 text-sm font-medium text-deep-teal hover:underline"
+              className="mt-3 text-sm font-light text-deep-teal hover:underline"
             >
               Create your first category
             </button>
@@ -204,16 +204,16 @@ export function AdminCategoriesPanel() {
                 className="flex items-center gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-deep-teal/5"
               >
                 <div
-                  className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-deep-teal text-sm font-medium text-pure-white"
+                  className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-deep-teal text-sm font-light text-pure-white"
                   aria-hidden="true"
                 >
                   {category.name.slice(0, 1).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate font-medium text-deep-teal">{category.name}</p>
+                    <p className="truncate font-light text-deep-teal">{category.name}</p>
                     <span
-                      className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${TYPE_BADGE_STYLES[category.product_type]}`}
+                      className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-light uppercase tracking-wide ${TYPE_BADGE_STYLES[category.product_type]}`}
                     >
                       {PRODUCT_TYPE_LABELS[category.product_type]}
                     </span>

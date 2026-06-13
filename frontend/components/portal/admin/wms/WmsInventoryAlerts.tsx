@@ -17,7 +17,7 @@ function AlertBadge({ level }: { level: InventoryAlertLevel }) {
     out_of_stock: "Out of stock",
   };
   return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${styles[level]}`}>
+    <span className={`rounded-full px-2 py-0.5 text-xs font-light ${styles[level]}`}>
       {labels[level]}
     </span>
   );
@@ -39,7 +39,7 @@ export function WmsInventoryAlerts() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-sans text-2xl font-semibold text-deep-teal">Inventory Alerts</h1>
+          <h1 className="font-sans text-2xl font-light text-deep-teal">Inventory Alerts</h1>
           <p className="mt-1 text-sm text-deep-teal/55">
             {isLoading ? "Loading inventory…" : `${inventoryAlerts.length} products need attention`}
           </p>
@@ -65,11 +65,11 @@ export function WmsInventoryAlerts() {
 
       {outOfStock.length > 0 ? (
         <section className="space-y-3">
-          <h2 className="text-sm font-medium text-deep-teal">Out of stock</h2>
+          <h2 className="text-sm font-light text-deep-teal">Out of stock</h2>
           {outOfStock.map((alert) => (
             <article key={alert.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-coral-blush bg-coral-blush/40 p-4">
               <div>
-                <p className="font-medium text-deep-teal">{alert.productName}</p>
+                <p className="font-light text-deep-teal">{alert.productName}</p>
                 <p className="text-xs text-deep-teal/45">{alert.sku} · 0 units (threshold {alert.threshold})</p>
               </div>
               <div className="flex items-center gap-3">
@@ -77,7 +77,7 @@ export function WmsInventoryAlerts() {
                 <button
                   type="button"
                   onClick={() => toast.success(`Restock request created for ${alert.productName}.`)}
-                  className="rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal"
+                  className="rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white hover:bg-pacific-teal"
                 >
                   Restock
                 </button>
@@ -89,11 +89,11 @@ export function WmsInventoryAlerts() {
 
       {lowStock.length > 0 ? (
         <section className="space-y-3">
-          <h2 className="text-sm font-medium text-deep-teal">Low stock</h2>
+          <h2 className="text-sm font-light text-deep-teal">Low stock</h2>
           {lowStock.map((alert) => (
             <article key={alert.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-deep-teal/10 bg-pure-white p-4 shadow-sm">
               <div>
-                <p className="font-medium text-deep-teal">{alert.productName}</p>
+                <p className="font-light text-deep-teal">{alert.productName}</p>
                 <p className="text-xs text-deep-teal/45">
                   {alert.sku} · {alert.currentStock} units (threshold {alert.threshold})
                 </p>
@@ -102,7 +102,7 @@ export function WmsInventoryAlerts() {
                 <AlertBadge level={alert.level} />
                 <Link
                   href={`/portal/admin/products/${alert.productId}/stock`}
-                  className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal hover:bg-pacific-teal/12"
+                  className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-light text-deep-teal hover:bg-pacific-teal/12"
                 >
                   Restock
                 </Link>

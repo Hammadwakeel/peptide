@@ -55,13 +55,13 @@ export function Footer() {
           </motion.div>
 
           <motion.div className="lg:col-span-3" variants={fadeInUp} transition={transition}>
-            <p className="font-sans text-xs font-medium text-pure-white/80">Explore</p>
+            <p className="font-sans text-xs font-light text-pure-white/80">Explore</p>
             <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 sm:mt-6 sm:block sm:space-y-3">
               {navLinks.map(({ href, label }) => (
                 <li key={label}>
                   <Link
                     href={href}
-                    className="text-sm font-medium text-pure-white/80 transition-colors hover:text-pure-white"
+                    className="text-sm font-light text-pure-white/80 transition-colors hover:text-pure-white"
                   >
                     {label}
                   </Link>
@@ -71,13 +71,13 @@ export function Footer() {
           </motion.div>
 
           <motion.div className="lg:col-span-4" variants={fadeInUp} transition={transition}>
-            <p className="font-sans text-xs font-medium text-pure-white/80">Partner Access</p>
+            <p className="font-sans text-xs font-light text-pure-white/80">Partner Access</p>
             <p className="mt-4 text-sm leading-relaxed text-pure-white/75 sm:mt-6">
               Join the network of verified suppliers and clinical partners.
             </p>
             <Link
               href="/login"
-              className="mt-4 inline-flex w-full rounded-full bg-pure-white px-6 py-3 text-sm font-medium text-deep-teal transition-colors duration-300 hover:bg-coral-blush sm:mt-6 sm:w-auto"
+              className="mt-4 inline-flex w-full rounded-full bg-pure-white px-6 py-3 text-sm font-light text-deep-teal transition-colors duration-300 hover:bg-coral-blush sm:mt-6 sm:w-auto"
             >
               Partner Portal
             </Link>
@@ -87,7 +87,7 @@ export function Footer() {
                 <li key={label}>
                   <Link
                     href={href}
-                    className="text-xs font-medium text-pure-white/55 transition-colors hover:text-pure-white/85"
+                    className="text-xs font-light text-pure-white/55 transition-colors hover:text-pure-white/85"
                   >
                     {label}
                   </Link>

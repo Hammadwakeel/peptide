@@ -83,11 +83,11 @@ export function OrderHistoryTab() {
             <table className="min-w-full text-left text-sm">
               <thead className="border-b border-deep-teal/10 bg-surface-muted/50 text-xs uppercase tracking-wide text-deep-teal/45">
                 <tr>
-                  <th className="px-4 py-3 font-medium">Order ID</th>
-                  <th className="px-4 py-3 font-medium">Date</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Total</th>
-                  <th className="px-4 py-3 font-medium" aria-label="View" />
+                  <th className="px-4 py-3 font-light">Order ID</th>
+                  <th className="px-4 py-3 font-light">Date</th>
+                  <th className="px-4 py-3 font-light">Status</th>
+                  <th className="px-4 py-3 font-light">Total</th>
+                  <th className="px-4 py-3 font-light" aria-label="View" />
                 </tr>
               </thead>
               <tbody>
@@ -97,7 +97,7 @@ export function OrderHistoryTab() {
                     <td className="px-4 py-3 text-deep-teal/70">{formatDate(order.date)}</td>
                     <td className="px-4 py-3">
                       <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        className={`rounded-full px-2 py-0.5 text-xs font-light ${
                           order.reviewStatus === "rejected"
                             ? "bg-coral-blush text-deep-teal/70"
                             : "bg-pacific-teal/10 text-pacific-teal"

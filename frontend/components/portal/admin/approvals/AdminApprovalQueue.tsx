@@ -58,7 +58,7 @@ function DetailPanel({
     >
       <div className="flex items-center gap-1.5 border-b border-deep-teal/8 pb-2">
         <Icon className="size-3 shrink-0 text-deep-teal" aria-hidden="true" />
-        <p className="font-sans text-[10px] font-medium text-deep-teal">{label}</p>
+        <p className="font-sans text-[10px] font-light text-deep-teal">{label}</p>
       </div>
       <div className="mt-2 flex flex-col gap-1.5 text-sm leading-snug text-deep-teal">{children}</div>
     </div>
@@ -132,13 +132,13 @@ function ApplicationCard({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-3">
             <div
-              className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-pure-white/15 text-sm font-medium"
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-pure-white/15 text-sm font-light"
               aria-hidden="true"
             >
               {application.clinic_name.slice(0, 1).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <h2 className="font-sans text-lg font-semibold leading-tight sm:text-xl">
+              <h2 className="font-sans text-lg font-light leading-tight sm:text-xl">
                 {application.clinic_name}
               </h2>
               <p className="text-xs text-pure-white/75">
@@ -147,7 +147,7 @@ function ApplicationCard({
             </div>
           </div>
           <span
-            className={`inline-flex shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-medium capitalize ${STATUS_STYLES[status]}`}
+            className={`inline-flex shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-light capitalize ${STATUS_STYLES[status]}`}
           >
             {application.application_status.replaceAll("_", " ")}
           </span>
@@ -205,7 +205,7 @@ function ApplicationCard({
                       href={doc.file_url}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center rounded-full border border-deep-teal/10 bg-surface-muted px-2.5 py-0.5 text-[11px] font-medium text-deep-teal transition-colors hover:bg-deep-teal/5"
+                      className="inline-flex items-center rounded-full border border-deep-teal/10 bg-surface-muted px-2.5 py-0.5 text-[11px] font-light text-deep-teal transition-colors hover:bg-deep-teal/5"
                     >
                       {DOCUMENT_TYPE_LABELS[doc.document_type] ?? doc.document_type}
                     </a>
@@ -218,19 +218,19 @@ function ApplicationCard({
 
         {application.admin_note ? (
           <p className="rounded-lg border border-deep-teal/15 bg-pure-white px-3 py-2 text-sm leading-snug text-deep-teal/75">
-            <span className="font-medium text-deep-teal">Admin note:</span> {application.admin_note}
+            <span className="font-light text-deep-teal">Admin note:</span> {application.admin_note}
           </p>
         ) : null}
 
         {application.rejection_reason ? (
           <p className="rounded-lg border border-coral-blush bg-coral-blush/30 px-3 py-2 text-sm leading-snug text-deep-teal">
-            <span className="font-medium">Rejection reason:</span> {application.rejection_reason}
+            <span className="font-light">Rejection reason:</span> {application.rejection_reason}
           </p>
         ) : null}
 
         {showRejectForm ? (
           <div className="space-y-2 rounded-lg border border-coral-blush bg-coral-blush/20 p-3">
-            <label htmlFor={`reject-${application.id}`} className="text-sm font-medium text-deep-teal">
+            <label htmlFor={`reject-${application.id}`} className="text-sm font-light text-deep-teal">
               Rejection reason
             </label>
             <textarea
@@ -271,7 +271,7 @@ function ApplicationCard({
 
         {showInfoForm ? (
           <div className="space-y-2 rounded-lg border border-deep-teal/10 bg-pure-white p-3">
-            <label htmlFor={`info-${application.id}`} className="text-sm font-medium text-deep-teal">
+            <label htmlFor={`info-${application.id}`} className="text-sm font-light text-deep-teal">
               Information request
             </label>
             <textarea
@@ -317,7 +317,7 @@ function ApplicationCard({
             type="button"
             disabled={isProcessing}
             onClick={onApprove}
-            className="rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white transition-opacity hover:opacity-90 disabled:opacity-60"
+            className="rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white transition-opacity hover:opacity-90 disabled:opacity-60"
           >
             Approve
           </button>
@@ -328,7 +328,7 @@ function ApplicationCard({
               setShowRejectForm((value) => !value);
               setShowInfoForm(false);
             }}
-            className="rounded-full border border-coral-blush px-4 py-2 text-sm font-medium text-deep-teal transition-colors hover:bg-coral-blush/40 disabled:opacity-60"
+            className="rounded-full border border-coral-blush px-4 py-2 text-sm font-light text-deep-teal transition-colors hover:bg-coral-blush/40 disabled:opacity-60"
           >
             Reject
           </button>
@@ -339,7 +339,7 @@ function ApplicationCard({
               setShowInfoForm((value) => !value);
               setShowRejectForm(false);
             }}
-            className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal transition-colors hover:bg-deep-teal/5 disabled:opacity-60"
+            className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-light text-deep-teal transition-colors hover:bg-deep-teal/5 disabled:opacity-60"
           >
             Request more info
           </button>
@@ -387,7 +387,7 @@ export function AdminApprovalQueue() {
       <RoleOnboardingChecklist role="admin" />
 
       <div className="flex items-center gap-4 rounded-2xl border border-deep-teal/20 bg-pure-white px-4 py-2.5 shadow-[0_2px_12px_rgba(1,26,36,0.08)] sm:px-5">
-        <h1 className="shrink-0 font-sans text-xl font-semibold text-deep-teal sm:text-2xl">
+        <h1 className="shrink-0 font-sans text-xl font-light text-deep-teal sm:text-2xl">
           Approval Queue
         </h1>
         <div className="min-w-4 flex-1" aria-hidden="true" />
@@ -395,7 +395,7 @@ export function AdminApprovalQueue() {
           type="button"
           onClick={() => void loadApplications()}
           disabled={isLoading}
-          className="inline-flex items-center gap-2 rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           <RefreshCw className={`size-4 ${isLoading ? "animate-spin" : ""}`} aria-hidden="true" />
           Refresh
@@ -414,7 +414,7 @@ export function AdminApprovalQueue() {
           </div>
         ) : pending.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-deep-teal/20 bg-surface-muted/50 px-6 py-16 text-center">
-            <p className="font-sans text-xl font-semibold text-deep-teal">All caught up</p>
+            <p className="font-sans text-xl font-light text-deep-teal">All caught up</p>
             <p className="mt-2 text-sm text-deep-teal/55">No pending clinic applications right now.</p>
           </div>
         ) : (

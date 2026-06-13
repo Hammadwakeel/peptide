@@ -34,7 +34,7 @@ type ProviderPortalState = {
   isStoreHydrated: boolean;
   isFullCatalogHydrated: boolean;
   storeRefreshInFlight: Promise<void> | null;
-  fullCatalogInFlight: Promise<void> | null;
+  fullCatalogInFlight: Promise<CatalogProduct[]> | null;
   branding: StorefrontBranding;
   catalogProducts: CatalogProduct[];
   fullCatalogProducts: CatalogProduct[];

@@ -19,6 +19,8 @@ export function useOrders() {
       fetchOrder: state.fetchOrder,
       approveOrder: state.approveOrder,
       rejectOrder: state.rejectOrder,
+      updateTracking: state.updateTracking,
+      applyRefund: state.applyRefund,
       applyTrackingImport: state.applyTrackingImport,
     })),
   );

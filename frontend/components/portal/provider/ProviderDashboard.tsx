@@ -15,8 +15,8 @@ import { getClinicProfile } from "@/lib/doctor/api";
 function DetailCell({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="min-w-0 rounded-lg border border-deep-teal/10 bg-surface-muted/40 px-2.5 py-2">
-      <dt className="text-[10px] font-medium uppercase tracking-wide text-deep-teal/45">{label}</dt>
-      <dd className="mt-0.5 truncate text-xs font-medium text-deep-teal">{value}</dd>
+      <dt className="text-[10px] font-light uppercase tracking-wide text-deep-teal/45">{label}</dt>
+      <dd className="mt-0.5 truncate text-xs font-light text-deep-teal">{value}</dd>
     </div>
   );
 }
@@ -24,8 +24,8 @@ function DetailCell({ label, value }: { label: string; value: React.ReactNode })
 function StatCell({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-lg border border-deep-teal/10 bg-pure-white px-3 py-2 text-center shadow-sm">
-      <p className="text-[10px] font-medium uppercase tracking-wide text-deep-teal/45">{label}</p>
-      <p className="mt-0.5 font-sans text-xl font-semibold leading-none text-deep-teal">{value}</p>
+      <p className="text-[10px] font-light uppercase tracking-wide text-deep-teal/45">{label}</p>
+      <p className="mt-0.5 font-sans text-xl font-light leading-none text-deep-teal">{value}</p>
     </div>
   );
 }

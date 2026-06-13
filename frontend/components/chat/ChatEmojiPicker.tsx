@@ -88,7 +88,7 @@ export function ChatReplyBar({ replyTo, onCancel }: ChatReplyBarProps) {
   return (
     <div className="flex items-start gap-3 border-b border-deep-teal/10 bg-surface-muted/40 px-4 py-2.5">
       <div className="min-w-0 flex-1 border-l-2 border-pacific-teal pl-3">
-        <p className="text-[10px] font-medium uppercase tracking-wide text-pacific-teal">
+        <p className="text-[10px] font-light uppercase tracking-wide text-pacific-teal">
           Replying to {replyTo.senderName}
         </p>
         <p className="mt-0.5 truncate text-sm text-deep-teal/70">{replyTo.preview}</p>

@@ -42,7 +42,7 @@ export function RefundModal({ open, orderId, orderTotal, onClose }: RefundModalP
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-deep-teal/40 p-4">
       <div role="dialog" aria-modal="true" className="w-full max-w-md rounded-2xl border border-deep-teal/10 bg-pure-white p-6 shadow-xl">
-        <h2 className="font-sans text-xl font-semibold text-deep-teal">Issue refund</h2>
+        <h2 className="font-sans text-xl font-light text-deep-teal">Issue refund</h2>
         <p className="mt-2 rounded-xl border border-coral-blush/50 bg-coral-blush/20 px-3 py-2 text-xs text-deep-teal/70">
           Refunds cannot be undone. Confirm the amount and reason before proceeding.
         </p>
@@ -100,7 +100,7 @@ export function RefundModal({ open, orderId, orderTotal, onClose }: RefundModalP
             <button type="button" onClick={onClose} className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm text-deep-teal">
               Cancel
             </button>
-            <button type="submit" className="rounded-full bg-coral-blush px-4 py-2 text-sm font-medium text-deep-teal hover:bg-coral-blush/80">
+            <button type="submit" className="rounded-full bg-coral-blush px-4 py-2 text-sm font-light text-deep-teal hover:bg-coral-blush/80">
               Confirm refund
             </button>
           </div>

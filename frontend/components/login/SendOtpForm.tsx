@@ -72,14 +72,14 @@ export function SendOtpForm() {
             variants={staggerContainer}
           >
             <motion.span
-              className="font-sans text-xs font-medium text-pacific-teal"
+              className="font-sans text-xs font-light text-pacific-teal"
               variants={fadeInUp}
               transition={transition}
             >
               Verify email
             </motion.span>
             <motion.h1
-              className="mt-3 font-sans text-2xl font-semibold tracking-[-0.02em] text-deep-teal sm:text-3xl"
+              className="mt-3 font-sans text-2xl font-light tracking-[-0.02em] text-deep-teal sm:text-3xl"
               variants={fadeInUp}
               transition={transition}
             >
@@ -124,7 +124,7 @@ export function SendOtpForm() {
               disabled={isSubmitting}
               variants={fadeInUp}
               transition={transition}
-              className="w-full rounded-full bg-deep-teal px-6 py-3.5 text-sm font-medium text-pure-white transition-all duration-300 hover:bg-pacific-teal disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-full bg-deep-teal px-6 py-3.5 text-sm font-light text-pure-white transition-all duration-300 hover:bg-pacific-teal disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? "Sending code…" : "Send verification code"}
             </motion.button>

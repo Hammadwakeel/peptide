@@ -58,7 +58,7 @@ export function PlaceOrderModal({ product, open, onClose }: PlaceOrderModalProps
         className="relative z-10 w-full max-w-md overflow-hidden rounded-[1.5rem] border border-deep-teal/10 bg-pure-white shadow-xl"
       >
         <div className="border-b border-deep-teal/10 px-6 py-4">
-          <h2 className="font-sans text-xl font-semibold text-deep-teal">Place order</h2>
+          <h2 className="font-sans text-xl font-light text-deep-teal">Place order</h2>
           <p className="mt-1 text-sm text-deep-teal/60">{product.name}</p>
         </div>
         <div className="space-y-4 px-6 py-5">
@@ -96,7 +96,7 @@ export function PlaceOrderModal({ product, open, onClose }: PlaceOrderModalProps
               placeholder="Any instructions or questions…"
             />
           </div>
-          <p className="text-sm font-medium text-deep-teal">
+          <p className="text-sm font-light text-deep-teal">
             Estimated total: ${(product.price * qty).toFixed(2)}
           </p>
         </div>
@@ -111,7 +111,7 @@ export function PlaceOrderModal({ product, open, onClose }: PlaceOrderModalProps
           <button
             type="submit"
             disabled={isSubmitting || !defaultAddress || product.stockStatus === "out_of_stock"}
-            className="flex-1 rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-60"
+            className="flex-1 rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white hover:bg-pacific-teal disabled:opacity-60"
           >
             {isSubmitting ? "Submitting…" : "Submit order"}
           </button>

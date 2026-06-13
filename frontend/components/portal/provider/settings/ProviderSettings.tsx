@@ -69,10 +69,14 @@ export function ProviderSettings() {
     zip: "",
     country: "US",
   });
-  const [branding, setBranding] = useState({
+  const [branding, setBranding] = useState<{
+    tagline: string;
+    theme_color: string;
+    logo_url: string | null;
+  }>({
     tagline: "",
     theme_color: DEFAULT_THEME_COLOR,
-    logo_url: null as string | null,
+    logo_url: null,
   });
   const [banking, setBanking] = useState({
     bank_name: "",
@@ -268,7 +272,7 @@ export function ProviderSettings() {
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
-            className={`rounded-full px-4 py-2 text-xs font-medium transition-colors sm:text-sm ${
+            className={`rounded-full px-4 py-2 text-xs font-light transition-colors sm:text-sm ${
               activeTab === tab
                 ? "bg-deep-teal text-pure-white"
                 : "text-deep-teal/65 hover:bg-deep-teal/5"
@@ -418,7 +422,7 @@ export function ProviderSettings() {
                       <button
                         type="button"
                         onClick={() => logoInputRef.current?.click()}
-                        className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal"
+                        className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-light text-deep-teal"
                       >
                         Upload logo
                       </button>
@@ -449,7 +453,7 @@ export function ProviderSettings() {
               className="rounded-2xl border border-deep-teal/10 p-4"
               style={{ borderTopColor: branding.theme_color, borderTopWidth: 4 }}
             >
-              <p className="text-sm font-medium text-deep-teal">{practice.clinic_name}</p>
+              <p className="text-sm font-light text-deep-teal">{practice.clinic_name}</p>
               <p className="font-editorial text-xs text-deep-teal/55">{branding.tagline || "Your tagline"}</p>
             </aside>
           </div>

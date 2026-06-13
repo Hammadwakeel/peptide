@@ -35,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${fraunces.variable} ${jetbrains.variable} font-sans font-normal antialiased bg-deep-teal`}
+        className={`${fraunces.variable} ${jetbrains.variable} font-sans font-light antialiased bg-deep-teal`}
         suppressHydrationWarning
       >
         <AppProviders>{children}</AppProviders>

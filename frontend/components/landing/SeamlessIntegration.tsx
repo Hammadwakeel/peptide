@@ -157,7 +157,7 @@ function IntegrationCard({
       transition={transition}
     >
       <Icon className={`h-7 w-7 sm:h-8 sm:w-8 ${card.iconClass}`} />
-      <h3 className="mt-4 font-sans text-xl font-semibold sm:mt-6 sm:text-2xl">{card.title}</h3>
+      <h3 className="mt-4 font-sans text-xl font-light sm:mt-6 sm:text-2xl">{card.title}</h3>
       <p className={`mt-2 text-sm leading-7 sm:mt-3 ${card.bodyClass}`}>{card.description}</p>
     </motion.div>
   );

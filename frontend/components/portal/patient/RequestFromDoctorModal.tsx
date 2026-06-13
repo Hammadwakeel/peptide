@@ -45,7 +45,7 @@ export function RequestFromDoctorModal({
       >
         {submitted ? (
           <>
-            <h2 className="font-sans text-xl font-semibold text-deep-teal">Request sent</h2>
+            <h2 className="font-sans text-xl font-light text-deep-teal">Request sent</h2>
             <p className="mt-3 text-sm leading-relaxed text-deep-teal/65">
               Your request for {product.name} was sent to your physician and is pending review.
               You&apos;ll be notified when it&apos;s approved.
@@ -56,10 +56,10 @@ export function RequestFromDoctorModal({
           </>
         ) : (
           <form onSubmit={handleSubmit}>
-            <h2 className="font-sans text-xl font-semibold text-deep-teal">Request from Doctor</h2>
+            <h2 className="font-sans text-xl font-light text-deep-teal">Request from Doctor</h2>
             <p className="mt-1 text-sm text-deep-teal/55">{product.name}</p>
             <div className="mt-5">
-              <label htmlFor="request-reason" className="mb-2 block text-sm font-medium text-deep-teal">
+              <label htmlFor="request-reason" className="mb-2 block text-sm font-light text-deep-teal">
                 Reason of Request
               </label>
               <textarea
@@ -76,7 +76,7 @@ export function RequestFromDoctorModal({
               <button type="button" onClick={handleClose} className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm text-deep-teal">
                 Cancel
               </button>
-              <button type="submit" className="rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal">
+              <button type="submit" className="rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white hover:bg-pacific-teal">
                 Send Request
               </button>
             </div>

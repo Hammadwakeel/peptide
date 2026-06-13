@@ -44,7 +44,7 @@ export function WmsBulkTrackingImport() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-sans text-2xl font-semibold text-deep-teal">Bulk Tracking Import</h1>
+        <h1 className="font-sans text-2xl font-light text-deep-teal">Bulk Tracking Import</h1>
         <p className="mt-1 text-sm text-deep-teal/55">Upload carrier tracking updates via CSV</p>
       </div>
 
@@ -63,7 +63,7 @@ export function WmsBulkTrackingImport() {
           isDragging ? "border-pacific-teal bg-pacific-teal/5" : "border-deep-teal/15"
         }`}
       >
-        <p className="text-sm font-medium text-deep-teal">Drag and drop CSV here</p>
+        <p className="text-sm font-light text-deep-teal">Drag and drop CSV here</p>
         <p className="mt-1 text-xs text-deep-teal/45">Columns: Order ID, Carrier, Tracking Number, Shipped Date</p>
         <input
           type="file"
@@ -78,7 +78,7 @@ export function WmsBulkTrackingImport() {
       </div>
 
       <details className="rounded-xl border border-deep-teal/10 bg-deep-teal/[0.02] p-4 text-sm">
-        <summary className="cursor-pointer font-medium text-deep-teal">Sample CSV format</summary>
+        <summary className="cursor-pointer font-light text-deep-teal">Sample CSV format</summary>
         <pre className="mt-3 overflow-x-auto rounded-lg bg-pure-white p-3 font-mono text-xs text-deep-teal/70">{TRACKING_CSV_HEADER}</pre>
       </details>
 
@@ -117,7 +117,7 @@ export function WmsBulkTrackingImport() {
 
           {result ? (
             <div className="rounded-2xl border border-pacific-teal/20 bg-pacific-teal/5 p-5">
-              <p className="font-medium text-deep-teal">Import complete</p>
+              <p className="font-light text-deep-teal">Import complete</p>
               <p className="mt-1 text-sm text-deep-teal/70">
                 {result.updated} orders updated · {result.failed} rows failed
               </p>
@@ -127,7 +127,7 @@ export function WmsBulkTrackingImport() {
               type="button"
               disabled={validRows.length === 0}
               onClick={handleImport}
-              className="rounded-full bg-deep-teal px-5 py-2.5 text-sm font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-40"
+              className="rounded-full bg-deep-teal px-5 py-2.5 text-sm font-light text-pure-white hover:bg-pacific-teal disabled:opacity-40"
             >
               Import {validRows.length} row{validRows.length === 1 ? "" : "s"}
             </button>

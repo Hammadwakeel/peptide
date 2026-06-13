@@ -97,10 +97,10 @@ export const authInputClassName =
 export const authInputCompactClassName =
   "w-full rounded-lg border border-deep-teal/15 bg-pure-white px-3 py-2 text-sm text-deep-teal outline-none transition-colors placeholder:text-deep-teal/35 focus:border-pacific-teal focus:ring-2 focus:ring-pacific-teal/20";
 
-export const authLabelClassName = "mb-2 block text-sm font-medium text-deep-teal";
+export const authLabelClassName = "mb-2 block text-sm font-light text-deep-teal";
 
 export const authLabelCompactClassName =
-  "mb-1 block text-xs font-medium text-deep-teal";
+  "mb-1 block text-xs font-light text-deep-teal";
 
 export const authLinkClassName =
-  "font-medium text-pacific-teal transition-colors hover:text-deep-teal hover:underline";
+  "font-light text-pacific-teal transition-colors hover:text-deep-teal hover:underline";

@@ -73,7 +73,7 @@ export function FileUploadZone({
   return (
     <div className="flex h-full flex-col">
       <div className="mb-3">
-        <p className="text-sm font-medium text-deep-teal">
+        <p className="text-sm font-light text-deep-teal">
           {label}
           {required ? <span className="text-pacific-teal"> *</span> : null}
         </p>
@@ -121,22 +121,22 @@ export function FileUploadZone({
                 />
               </svg>
             </div>
-            <p className="mt-4 max-w-[16rem] truncate text-sm font-medium text-deep-teal">
+            <p className="mt-4 max-w-[16rem] truncate text-sm font-light text-deep-teal">
               {value.name}
             </p>
             <p className="mt-1 text-xs text-deep-teal/50">{formatFileSize(value.size)}</p>
-            <p className="mt-3 text-xs font-medium text-pacific-teal">Ready to upload on submit</p>
+            <p className="mt-3 text-xs font-light text-pacific-teal">Ready to upload on submit</p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
               <label
                 htmlFor={id}
-                className="cursor-pointer text-xs font-medium text-pacific-teal hover:underline"
+                className="cursor-pointer text-xs font-light text-pacific-teal hover:underline"
               >
                 Replace file
               </label>
               <button
                 type="button"
                 onClick={() => onChange(null)}
-                className="text-xs font-medium text-deep-teal/45 hover:text-deep-teal"
+                className="text-xs font-light text-deep-teal/45 hover:text-deep-teal"
               >
                 Remove
               </button>
@@ -158,7 +158,7 @@ export function FileUploadZone({
                 />
               </svg>
             </div>
-            <span className="mt-4 text-sm font-medium text-deep-teal">
+            <span className="mt-4 text-sm font-light text-deep-teal">
               Drag and drop or <span className="text-pacific-teal">browse files</span>
             </span>
             <span className="mt-2 text-xs text-deep-teal/45">

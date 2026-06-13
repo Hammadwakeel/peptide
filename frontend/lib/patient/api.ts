@@ -7,6 +7,8 @@ import type {
   PatientPaymentMethodInput,
   PatientSettingsResponse,
 } from "@/lib/patient/types";
+
+export type { AcceptInvitationPayload, AcceptInvitationResponse } from "@/lib/patient/types";
 import type { PatientPaymentMethod, PatientProfile, PatientShippingAddress } from "@/lib/patient-portal/types";
 
 function parseApiError(payload: unknown, fallback: string): string {

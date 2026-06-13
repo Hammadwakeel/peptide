@@ -35,15 +35,15 @@ export function ForgotPasswordConfirmation() {
           </svg>
         </div>
 
-        <span className="font-sans text-xs font-medium text-pacific-teal">
+        <span className="font-sans text-xs font-light text-pacific-teal">
           Check your inbox
         </span>
-        <h1 className="mt-3 font-sans text-2xl font-semibold tracking-[-0.02em] text-deep-teal sm:text-3xl">
+        <h1 className="mt-3 font-sans text-2xl font-light tracking-[-0.02em] text-deep-teal sm:text-3xl">
           Reset link sent
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-deep-teal/60">
           If an account exists for{" "}
-          <span className="font-medium text-deep-teal">{email}</span>, you will
+          <span className="font-light text-deep-teal">{email}</span>, you will
           receive password reset instructions shortly.
         </p>
 

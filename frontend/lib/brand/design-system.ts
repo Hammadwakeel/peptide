@@ -14,26 +14,26 @@ export { typeSectionLabel } from "@/lib/brand/typography";
 
 /** 48px display — section heroes (not 7xl/8xl) */
 export const typeDisplayTitle =
-  "font-sans text-3xl font-semibold leading-[1.1] text-deep-teal sm:text-4xl lg:text-5xl";
+  "font-sans text-3xl font-light leading-[1.1] text-deep-teal sm:text-4xl lg:text-5xl";
 
 /** Onboarding / guide title — 48px at lg */
 export const typeGuideTitle =
-  "font-sans text-3xl font-semibold leading-tight text-deep-teal sm:text-4xl lg:text-[3rem]";
+  "font-sans text-3xl font-light leading-tight text-deep-teal sm:text-4xl lg:text-[3rem]";
 
 /** 12px guide subtitle */
-export const typeGuideSubtitle = "font-sans text-sm font-normal leading-relaxed text-deep-teal/60";
+export const typeGuideSubtitle = "font-sans text-sm font-light leading-relaxed text-deep-teal/60";
 
 /** Primary CTA — smooth teal fade, no border stroke on hover */
 export const btnPrimaryClass =
-  "inline-flex items-center justify-center gap-2 rounded-full bg-deep-teal px-5 py-2.5 text-sm font-medium text-pure-white transition-[background-color,opacity] duration-300 ease-out hover:bg-pacific-teal disabled:opacity-50";
+  "inline-flex items-center justify-center gap-2 rounded-full bg-deep-teal px-5 py-2.5 text-sm font-light text-pure-white transition-[background-color,opacity] duration-300 ease-out hover:bg-pacific-teal disabled:opacity-50";
 
 /** Ghost / secondary — background fade only, no dark hover border */
 export const btnGhostClass =
-  "inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-deep-teal transition-[background-color,color] duration-300 ease-out hover:bg-pacific-teal/12 hover:text-pacific-teal disabled:opacity-50";
+  "inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-light text-deep-teal transition-[background-color,color] duration-300 ease-out hover:bg-pacific-teal/12 hover:text-pacific-teal disabled:opacity-50";
 
 /** Outline shell — static subtle border, hover fills softly */
 export const btnOutlineClass =
-  "inline-flex items-center justify-center gap-2 rounded-full border border-deep-teal/15 bg-pure-white px-4 py-2 text-sm font-medium text-deep-teal transition-[background-color,color,border-color] duration-300 ease-out hover:border-transparent hover:bg-pacific-teal/12 hover:text-pacific-teal disabled:opacity-50";
+  "inline-flex items-center justify-center gap-2 rounded-full border border-deep-teal/15 bg-pure-white px-4 py-2 text-sm font-light text-deep-teal transition-[background-color,color,border-color] duration-300 ease-out hover:border-transparent hover:bg-pacific-teal/12 hover:text-pacific-teal disabled:opacity-50";
 
 /** Editorial container shapes — asymmetric radii inspired by pharma editorial layouts */
 export const shapePortraitShowcase =

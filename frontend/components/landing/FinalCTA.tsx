@@ -34,7 +34,7 @@ export function FinalCTA() {
           <div className="mt-8 flex justify-center sm:mt-10">
             <Link
               href="/login"
-              className="group inline-flex items-center justify-center gap-2.5 rounded-full bg-coral-blush px-7 py-3.5 text-sm font-medium text-deep-teal transition-[background-color,transform] duration-300 ease-out hover:bg-coral-blush/90 hover:scale-[1.02] sm:gap-3 sm:px-8 sm:py-4 sm:text-base"
+              className="group inline-flex items-center justify-center gap-2.5 rounded-full bg-coral-blush px-7 py-3.5 text-sm font-light text-deep-teal transition-[background-color,transform] duration-300 ease-out hover:bg-coral-blush/90 hover:scale-[1.02] sm:gap-3 sm:px-8 sm:py-4 sm:text-base"
             >
               Partner Portal
               <ArrowRight

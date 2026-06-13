@@ -183,7 +183,7 @@ export function ProviderInventoryBrowser() {
                 key={mode}
                 type="button"
                 onClick={() => setView(mode)}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium capitalize ${
+                className={`rounded-full px-3 py-1.5 text-xs font-light capitalize ${
                   view === mode ? "bg-deep-teal text-pure-white" : "text-deep-teal/60"
                 }`}
               >

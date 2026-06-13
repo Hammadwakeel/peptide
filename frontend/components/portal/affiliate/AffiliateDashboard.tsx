@@ -17,8 +17,8 @@ import { toast } from "@/lib/toast";
 function DetailCell({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="min-w-0 rounded-xl border border-deep-teal/10 bg-surface-muted/40 px-3 py-2.5">
-      <dt className="text-[10px] font-medium uppercase tracking-wide text-deep-teal/45">{label}</dt>
-      <dd className="mt-1 truncate text-sm font-medium text-deep-teal">{value}</dd>
+      <dt className="text-[10px] font-light uppercase tracking-wide text-deep-teal/45">{label}</dt>
+      <dd className="mt-1 truncate text-sm font-light text-deep-teal">{value}</dd>
     </div>
   );
 }
@@ -26,8 +26,8 @@ function DetailCell({ label, value }: { label: string; value: React.ReactNode })
 function StatCell({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-xl border border-deep-teal/10 bg-pure-white px-4 py-3 text-center shadow-sm">
-      <p className="text-[10px] font-medium uppercase tracking-wide text-deep-teal/45">{label}</p>
-      <p className="mt-1 font-sans text-2xl font-semibold text-deep-teal">{value}</p>
+      <p className="text-[10px] font-light uppercase tracking-wide text-deep-teal/45">{label}</p>
+      <p className="mt-1 font-sans text-2xl font-light text-deep-teal">{value}</p>
     </div>
   );
 }
@@ -86,14 +86,14 @@ export function AffiliateDashboard() {
       />
 
       <div className="flex items-center gap-4 rounded-2xl border border-deep-teal/20 bg-pure-white px-4 py-2.5 shadow-[0_2px_12px_rgba(1,26,36,0.08)] sm:px-5">
-        <h1 className="shrink-0 font-sans text-xl font-semibold text-deep-teal sm:text-2xl">Dashboard</h1>
+        <h1 className="shrink-0 font-sans text-xl font-light text-deep-teal sm:text-2xl">Dashboard</h1>
         <div className="min-w-4 flex-1" aria-hidden="true" />
         <div className="flex flex-wrap items-center justify-end gap-2">
           {toolbarActions.map(({ href, label, icon: Icon, primary }) => (
             <Link
               key={href}
               href={href}
-              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-light transition-colors ${
                 primary
                   ? "bg-deep-teal text-pure-white hover:opacity-90"
                   : "border border-deep-teal/25 text-deep-teal hover:bg-deep-teal/5"
@@ -106,7 +106,7 @@ export function AffiliateDashboard() {
           <button
             type="button"
             onClick={() => void copyReferralLink()}
-            className="inline-flex items-center gap-2 rounded-full border border-deep-teal/25 px-4 py-2 text-sm font-medium text-deep-teal transition-colors hover:bg-deep-teal/5"
+            className="inline-flex items-center gap-2 rounded-full border border-deep-teal/25 px-4 py-2 text-sm font-light text-deep-teal transition-colors hover:bg-deep-teal/5"
           >
             <Copy className="size-4" aria-hidden="true" />
             <span className="hidden sm:inline">Copy link</span>
@@ -115,7 +115,7 @@ export function AffiliateDashboard() {
             type="button"
             onClick={() => void refreshProfile({ force: true })}
             disabled={isLoading}
-            className="inline-flex items-center gap-2 rounded-full border border-deep-teal/25 px-4 py-2 text-sm font-medium text-deep-teal transition-colors hover:bg-deep-teal/5 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-full border border-deep-teal/25 px-4 py-2 text-sm font-light text-deep-teal transition-colors hover:bg-deep-teal/5 disabled:opacity-50"
             aria-label="Refresh dashboard"
           >
             <RefreshCw className="size-4" aria-hidden="true" />
@@ -133,7 +133,7 @@ export function AffiliateDashboard() {
               <LayoutGrid className="size-4" />
             </div>
             <div>
-              <h2 className="font-sans text-lg font-semibold">Account</h2>
+              <h2 className="font-sans text-lg font-light">Account</h2>
               <p className="text-xs text-pure-white/75">{profile.email}</p>
             </div>
           </div>
@@ -167,11 +167,11 @@ export function AffiliateDashboard() {
 
           <div className="rounded-xl border border-deep-teal/10 bg-surface-muted/30 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-[10px] font-medium uppercase tracking-wide text-deep-teal/45">Referral link</p>
+              <p className="text-[10px] font-light uppercase tracking-wide text-deep-teal/45">Referral link</p>
               <button
                 type="button"
                 onClick={() => void copyReferralLink()}
-                className="inline-flex items-center gap-1.5 rounded-full border border-deep-teal/15 px-3 py-1 text-xs font-medium text-deep-teal hover:bg-pacific-teal/12"
+                className="inline-flex items-center gap-1.5 rounded-full border border-deep-teal/15 px-3 py-1 text-xs font-light text-deep-teal hover:bg-pacific-teal/12"
               >
                 <Copy className="size-3" aria-hidden="true" />
                 Copy
@@ -192,7 +192,7 @@ export function AffiliateDashboard() {
               <Users className="size-4" />
             </div>
             <div>
-              <h2 className="font-sans text-lg font-semibold">Referral stats</h2>
+              <h2 className="font-sans text-lg font-light">Referral stats</h2>
               <p className="text-xs text-pure-white/75">Your network at a glance</p>
             </div>
           </div>

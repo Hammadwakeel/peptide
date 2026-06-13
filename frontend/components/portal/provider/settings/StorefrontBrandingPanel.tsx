@@ -62,7 +62,7 @@ export function StorefrontBrandingPanel() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal hover:bg-pacific-teal/12"
+                className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-light text-deep-teal hover:bg-pacific-teal/12"
               >
                 Upload logo
               </button>
@@ -131,7 +131,7 @@ export function StorefrontBrandingPanel() {
       </div>
 
       <aside className="rounded-2xl border border-deep-teal/10 bg-deep-teal/[0.02] p-4">
-        <p className="text-[10px] font-medium uppercase tracking-wide text-deep-teal/45">
+        <p className="text-[10px] font-light uppercase tracking-wide text-deep-teal/45">
           Live preview
         </p>
         <div
@@ -151,14 +151,14 @@ export function StorefrontBrandingPanel() {
                 />
               ) : (
                 <div
-                  className="flex size-10 items-center justify-center rounded-lg text-xs font-medium text-pure-white"
+                  className="flex size-10 items-center justify-center rounded-lg text-xs font-light text-pure-white"
                   style={{ backgroundColor: branding.themeColor }}
                 >
                   {branding.clinicName.slice(0, 1).toUpperCase()}
                 </div>
               )}
               <div>
-                <p className="font-medium text-deep-teal">{branding.clinicName || "Clinic name"}</p>
+                <p className="font-light text-deep-teal">{branding.clinicName || "Clinic name"}</p>
                 <p className="font-editorial text-xs text-deep-teal/55">{branding.tagline || "Your tagline"}</p>
               </div>
             </div>

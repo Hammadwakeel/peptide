@@ -26,7 +26,7 @@ export function StepBanking({ value, onChange }: StepBankingProps) {
             </svg>
           </div>
           <div>
-            <p className="text-sm font-medium text-deep-teal">Secure payout account</p>
+            <p className="text-sm font-light text-deep-teal">Secure payout account</p>
             <p className="mt-1 text-sm leading-relaxed text-deep-teal/60">
               Banking details are encrypted before storage. You&apos;ll set login credentials
               after admin approval.

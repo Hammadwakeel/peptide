@@ -108,7 +108,7 @@ export function CreateOrderPanel({ open, onClose }: CreateOrderPanelProps) {
         className="fixed inset-y-0 right-0 z-50 flex w-full max-w-4xl flex-col border-l border-deep-teal/10 bg-pure-white shadow-2xl"
       >
         <div className="flex items-center justify-between border-b border-deep-teal/10 px-5 py-4">
-          <h2 id="create-order-title" className="font-sans text-xl font-semibold text-deep-teal">
+          <h2 id="create-order-title" className="font-sans text-xl font-light text-deep-teal">
             Create new order
           </h2>
           <Tooltip content="Close">
@@ -155,7 +155,7 @@ export function CreateOrderPanel({ open, onClose }: CreateOrderPanelProps) {
                   <button
                     type="button"
                     onClick={() => setAddPatientOpen(true)}
-                    className="shrink-0 rounded-full border border-deep-teal/15 px-3 py-2 text-xs font-medium text-pacific-teal hover:bg-pacific-teal/12"
+                    className="shrink-0 rounded-full border border-deep-teal/15 px-3 py-2 text-xs font-light text-pacific-teal hover:bg-pacific-teal/12"
                   >
                     Add New
                   </button>
@@ -183,7 +183,7 @@ export function CreateOrderPanel({ open, onClose }: CreateOrderPanelProps) {
                         type="button"
                         onClick={() => handleProductSelect(product.product_id)}
                         className={`w-full px-3 py-2 text-left text-sm hover:bg-deep-teal/[0.03] ${
-                          selectedProductId === product.product_id ? "bg-deep-teal/5 font-medium" : ""
+                          selectedProductId === product.product_id ? "bg-deep-teal/5 font-light" : ""
                         }`}
                       >
                         {product.name}
@@ -209,21 +209,21 @@ export function CreateOrderPanel({ open, onClose }: CreateOrderPanelProps) {
             <button
               type="button"
               onClick={handleAddToCart}
-              className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal hover:bg-pacific-teal/12"
+              className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-light text-deep-teal hover:bg-pacific-teal/12"
             >
               Add to Cart
             </button>
           </div>
 
           <div className="w-full border-t border-deep-teal/10 bg-deep-teal/[0.02] p-5 lg:w-80 lg:border-l lg:border-t-0">
-            <h3 className="text-sm font-medium text-deep-teal">Order items</h3>
+            <h3 className="text-sm font-light text-deep-teal">Order items</h3>
             {cart.length === 0 ? (
               <p className="mt-4 text-sm text-deep-teal/50">Cart is empty.</p>
             ) : (
               <ul className="mt-4 space-y-3">
                 {cart.map((item) => (
                   <li key={item.id} className="rounded-xl border border-deep-teal/10 bg-pure-white p-3 text-sm">
-                    <p className="font-medium text-deep-teal">{item.productName}</p>
+                    <p className="font-light text-deep-teal">{item.productName}</p>
                     <p className="mt-1 text-xs text-deep-teal/50">
                       Qty {item.qty} × ${item.unitPrice.toFixed(2)} = ${(item.qty * item.unitPrice).toFixed(2)}
                     </p>
@@ -239,7 +239,7 @@ export function CreateOrderPanel({ open, onClose }: CreateOrderPanelProps) {
               </ul>
             )}
             <div className="mt-6 border-t border-deep-teal/10 pt-4">
-              <p className="flex justify-between text-sm font-medium text-deep-teal">
+              <p className="flex justify-between text-sm font-light text-deep-teal">
                 <span>Total amount</span>
                 <span>${cartTotal.toFixed(2)}</span>
               </p>
@@ -247,7 +247,7 @@ export function CreateOrderPanel({ open, onClose }: CreateOrderPanelProps) {
                 type="button"
                 disabled={cart.length === 0}
                 onClick={handleCreateOrder}
-                className="mt-4 w-full rounded-full bg-deep-teal py-2.5 text-sm font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-40"
+                className="mt-4 w-full rounded-full bg-deep-teal py-2.5 text-sm font-light text-pure-white hover:bg-pacific-teal disabled:opacity-40"
               >
                 Create Order
               </button>

@@ -64,7 +64,7 @@ export function MyStoreProductCard({
       </Tooltip>
       {!product.is_visible ? (
         <Tooltip content="Hidden from your patient storefront">
-          <span className="absolute left-3 top-3 z-10 cursor-help rounded-full bg-deep-teal/80 px-2 py-0.5 text-[10px] font-medium text-pure-white">
+          <span className="absolute left-3 top-3 z-10 cursor-help rounded-full bg-deep-teal/80 px-2 py-0.5 text-[10px] font-light text-pure-white">
             Hidden
           </span>
         </Tooltip>
@@ -103,12 +103,12 @@ export function MyStoreProductCard({
         />
 
         <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2.5">
-          <span className="text-xs font-medium uppercase tracking-wide text-deep-teal/65">
+          <span className="text-xs font-light uppercase tracking-wide text-deep-teal/65">
             Retail price
           </span>
           <div className="flex items-center justify-end gap-2">
             <div className="flex w-full max-w-[7.5rem] items-center rounded-xl border border-deep-teal/20 bg-surface-muted/30 px-3 py-2 focus-within:border-pacific-teal">
-              <span className="text-sm font-medium text-deep-teal/70">$</span>
+              <span className="text-sm font-light text-deep-teal/70">$</span>
               <input
                 type="number"
                 min="0"
@@ -122,7 +122,7 @@ export function MyStoreProductCard({
                 onKeyDown={(e) => {
                   if (e.key === "Enter") commitPrice();
                 }}
-                className="w-full bg-transparent pl-1 text-sm font-medium text-deep-teal outline-none disabled:opacity-60"
+                className="w-full bg-transparent pl-1 text-sm font-light text-deep-teal outline-none disabled:opacity-60"
               />
             </div>
             {priceDirty ? (
@@ -130,7 +130,7 @@ export function MyStoreProductCard({
                 type="button"
                 disabled={isUpdating}
                 onClick={commitPrice}
-                className="shrink-0 rounded-full bg-deep-teal px-3 py-1.5 text-xs font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-60"
+                className="shrink-0 rounded-full bg-deep-teal px-3 py-1.5 text-xs font-light text-pure-white hover:bg-pacific-teal disabled:opacity-60"
               >
                 Save
               </button>

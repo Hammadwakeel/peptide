@@ -46,7 +46,7 @@ export function PayNowFlow({ order, open, onClose, onSuccess }: PayNowFlowProps)
       >
         {step === "summary" ? (
           <div className="p-6">
-            <h2 className="font-sans text-xl font-semibold text-deep-teal">Order summary</h2>
+            <h2 className="font-sans text-xl font-light text-deep-teal">Order summary</h2>
             <p className="mt-1 font-mono text-xs text-deep-teal/45">{order.orderId}</p>
             <ul className="mt-4 space-y-2 border-b border-deep-teal/10 pb-4 text-sm">
               {order.lineItems.map((item) => (
@@ -56,14 +56,14 @@ export function PayNowFlow({ order, open, onClose, onSuccess }: PayNowFlowProps)
                 </li>
               ))}
             </ul>
-            <p className="mt-4 flex justify-between font-medium text-deep-teal">
+            <p className="mt-4 flex justify-between font-light text-deep-teal">
               <span>Total</span>
               <span>${order.total}</span>
             </p>
             <button
               type="button"
               onClick={() => setStep("payment")}
-              className="mt-6 w-full rounded-full bg-deep-teal py-3 text-sm font-medium text-pure-white hover:bg-pacific-teal"
+              className="mt-6 w-full rounded-full bg-deep-teal py-3 text-sm font-light text-pure-white hover:bg-pacific-teal"
             >
               Continue to payment
             </button>
@@ -72,7 +72,7 @@ export function PayNowFlow({ order, open, onClose, onSuccess }: PayNowFlowProps)
 
         {step === "payment" ? (
           <form onSubmit={handlePay} className="p-6">
-            <h2 className="font-sans text-xl font-semibold text-deep-teal">Payment</h2>
+            <h2 className="font-sans text-xl font-light text-deep-teal">Payment</h2>
             <p className="mt-1 text-xs text-deep-teal/50">Secure card payment</p>
             <div className="mt-4 space-y-3">
               <div>
@@ -99,7 +99,7 @@ export function PayNowFlow({ order, open, onClose, onSuccess }: PayNowFlowProps)
             <p className="mt-4 text-xs text-deep-teal/45">
               Payments are encrypted and processed securely via Stripe.
             </p>
-            <button type="submit" className="mt-4 w-full rounded-full bg-deep-teal py-3 text-sm font-medium text-pure-white">
+            <button type="submit" className="mt-4 w-full rounded-full bg-deep-teal py-3 text-sm font-light text-pure-white">
               Pay ${order.total}
             </button>
           </form>
@@ -115,7 +115,7 @@ export function PayNowFlow({ order, open, onClose, onSuccess }: PayNowFlowProps)
         {step === "success" ? (
           <div className="p-8 text-center">
             <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-pacific-teal/10 text-2xl text-pacific-teal">✓</div>
-            <h2 className="mt-4 font-sans text-xl font-semibold text-deep-teal">Payment successful</h2>
+            <h2 className="mt-4 font-sans text-xl font-light text-deep-teal">Payment successful</h2>
             <p className="mt-2 text-sm text-deep-teal/60">Order {order.orderId} is confirmed.</p>
             <button type="button" onClick={resetAndClose} className="mt-6 rounded-full bg-deep-teal px-5 py-2.5 text-sm text-pure-white">
               Done
@@ -126,7 +126,7 @@ export function PayNowFlow({ order, open, onClose, onSuccess }: PayNowFlowProps)
         {step === "failure" ? (
           <div className="p-8 text-center">
             <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-coral-blush text-2xl text-deep-teal">×</div>
-            <h2 className="mt-4 font-sans text-xl font-semibold text-deep-teal">Payment failed</h2>
+            <h2 className="mt-4 font-sans text-xl font-light text-deep-teal">Payment failed</h2>
             <p className="mt-2 text-sm text-deep-teal/60">Please try a different card or contact your clinic.</p>
             <button type="button" onClick={() => setStep("payment")} className="mt-6 rounded-full border border-deep-teal/15 px-5 py-2.5 text-sm text-deep-teal">
               Try again

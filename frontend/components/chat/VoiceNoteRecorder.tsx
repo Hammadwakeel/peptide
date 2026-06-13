@@ -77,7 +77,7 @@ export function VoiceNoteRecorder({ recording, onCancel, onSend, disabled = fals
           barClassName="bg-pacific-teal"
         />
 
-        <span className="min-w-[3rem] text-xs font-medium tabular-nums text-deep-teal/70">
+        <span className="min-w-[3rem] text-xs font-light tabular-nums text-deep-teal/70">
           {recording.isReady ? formatDuration(recording.elapsedMs) : "0:00"}
         </span>
 

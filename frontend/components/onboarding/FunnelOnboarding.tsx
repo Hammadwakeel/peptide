@@ -161,11 +161,11 @@ export function FunnelOnboarding({ role, filterStepIds }: FunnelOnboardingProps)
                       aria-expanded={isExpanded}
                     >
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-full bg-deep-teal/8 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-deep-teal/70">
+                        <span className="rounded-full bg-deep-teal/8 px-2 py-0.5 text-[10px] font-light uppercase tracking-wide text-deep-teal/70">
                           Stage {step.stage} · {step.stageLabel}
                         </span>
                         {isActive && !completed ? (
-                          <span className="rounded-full bg-coral-blush/80 px-2 py-0.5 text-[10px] font-medium text-deep-teal">
+                          <span className="rounded-full bg-coral-blush/80 px-2 py-0.5 text-[10px] font-light text-deep-teal">
                             Up next
                           </span>
                         ) : null}
@@ -173,7 +173,7 @@ export function FunnelOnboarding({ role, filterStepIds }: FunnelOnboardingProps)
                           <Clock3 className="size-3" aria-hidden="true" />~{step.estimatedMinutes} min
                         </span>
                       </div>
-                      <h3 className="mt-2 font-semibold text-deep-teal">{step.title}</h3>
+                      <h3 className="mt-2 font-light text-deep-teal">{step.title}</h3>
                       <p className="mt-1 text-sm text-deep-teal/60">{step.description}</p>
                     </button>
 
@@ -197,7 +197,7 @@ export function FunnelOnboarding({ role, filterStepIds }: FunnelOnboardingProps)
                       <p className="text-sm leading-relaxed text-deep-teal/75">{step.details}</p>
 
                       <div className="mt-4">
-                        <p className="text-xs font-medium uppercase tracking-wide text-deep-teal/50">
+                        <p className="text-xs font-light uppercase tracking-wide text-deep-teal/50">
                           In this stage
                         </p>
                         <ul className="mt-2 space-y-2">

@@ -51,25 +51,25 @@ export function ApplyShell({
           <div className="mx-auto flex max-w-3xl flex-col gap-4">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 lg:hidden">
-                <p className="font-sans text-[10px] font-medium text-pacific-teal">
+                <p className="font-sans text-[10px] font-light text-pacific-teal">
                   Clinic application
                 </p>
-                <h1 className="mt-1 truncate font-sans text-xl font-semibold text-deep-teal">
+                <h1 className="mt-1 truncate font-sans text-xl font-light text-deep-teal">
                   {stepMeta?.label}
                 </h1>
               </div>
               <div className="hidden min-w-0 lg:block">
-                <p className="font-sans text-[10px] font-medium text-pacific-teal">
+                <p className="font-sans text-[10px] font-light text-pacific-teal">
                   Clinic application
                 </p>
-                <h1 className="mt-2 font-sans text-2xl font-semibold tracking-[-0.02em] text-deep-teal">
+                <h1 className="mt-2 font-sans text-2xl font-light tracking-[-0.02em] text-deep-teal">
                   {stepMeta?.label}
                 </h1>
                 <p className="mt-1 text-sm text-deep-teal/55">{STEP_DESCRIPTIONS[currentStep]}</p>
               </div>
               <Link
                 href="/login"
-                className="shrink-0 text-sm font-medium text-pacific-teal hover:underline"
+                className="shrink-0 text-sm font-light text-pacific-teal hover:underline"
               >
                 Sign in
               </Link>

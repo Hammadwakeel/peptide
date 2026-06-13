@@ -29,7 +29,7 @@ export function FrontierLogo({
       />
       {compact ? null : (
         <span className={`flex flex-col ${isDark ? "text-pure-white" : "text-deep-teal"}`}>
-          <span className="font-sans text-lg font-normal leading-none tracking-[-0.05em]">
+          <span className="font-sans text-lg font-light leading-none tracking-[-0.05em]">
             Frontier
           </span>
           <span className="mt-0.5 font-sans text-[10px] font-light uppercase leading-none tracking-[-0.05em]">

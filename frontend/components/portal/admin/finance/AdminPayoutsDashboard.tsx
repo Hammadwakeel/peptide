@@ -17,7 +17,7 @@ function StatusPill({ status }: { status: PayoutStatus }) {
     failed: "bg-coral-blush/60 text-deep-teal",
   };
   return (
-    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${styles[status]}`}>
+    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-light ${styles[status]}`}>
       {PAYOUT_STATUS_LABELS[status]}
     </span>
   );
@@ -64,7 +64,7 @@ export function AdminPayoutsDashboard() {
   return (
     <div className="space-y-5">
       <div className="rounded-2xl border border-deep-teal/10 bg-deep-teal/[0.02] px-4 py-4 sm:px-5">
-        <h2 className="font-sans text-xl font-semibold text-deep-teal">Payouts Dashboard</h2>
+        <h2 className="font-sans text-xl font-light text-deep-teal">Payouts Dashboard</h2>
         <p className="mt-1 text-sm text-deep-teal/60">
           All clinic payout batches with manual triggers and error monitoring.
         </p>
@@ -105,7 +105,7 @@ export function AdminPayoutsDashboard() {
 
       {errors.length > 0 ? (
         <section className="rounded-2xl border border-coral-blush bg-coral-blush/40 p-4">
-          <h3 className="text-sm font-medium text-deep-teal">Payout errors</h3>
+          <h3 className="text-sm font-light text-deep-teal">Payout errors</h3>
           <ul className="mt-2 space-y-2">
             {errors.map((payout) => (
               <li key={payout.id} className="text-sm text-deep-teal/80">
@@ -120,13 +120,13 @@ export function AdminPayoutsDashboard() {
         <table className="min-w-full text-left text-sm">
           <thead className="border-b border-deep-teal/10 bg-deep-teal/[0.02] text-xs uppercase tracking-wide text-deep-teal/45">
             <tr>
-              <th className="px-4 py-3 font-medium">Batch ID</th>
-              <th className="px-4 py-3 font-medium">Clinic</th>
-              <th className="px-4 py-3 font-medium">Date</th>
-              <th className="px-4 py-3 font-medium">Amount</th>
-              <th className="px-4 py-3 font-medium">Orders</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 font-medium">Actions</th>
+              <th className="px-4 py-3 font-light">Batch ID</th>
+              <th className="px-4 py-3 font-light">Clinic</th>
+              <th className="px-4 py-3 font-light">Date</th>
+              <th className="px-4 py-3 font-light">Amount</th>
+              <th className="px-4 py-3 font-light">Orders</th>
+              <th className="px-4 py-3 font-light">Status</th>
+              <th className="px-4 py-3 font-light">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -135,7 +135,7 @@ export function AdminPayoutsDashboard() {
                 <td className="px-4 py-3 font-mono text-xs text-deep-teal">{payout.batchId}</td>
                 <td className="px-4 py-3 text-deep-teal/70">{payout.clinicName}</td>
                 <td className="px-4 py-3 text-deep-teal/70">{formatDate(payout.date)}</td>
-                <td className="px-4 py-3 font-medium text-deep-teal">${payout.amount.toLocaleString()}</td>
+                <td className="px-4 py-3 font-light text-deep-teal">${payout.amount.toLocaleString()}</td>
                 <td className="px-4 py-3 text-deep-teal">{payout.orderCount}</td>
                 <td className="px-4 py-3"><StatusPill status={payout.status} /></td>
                 <td className="px-4 py-3">
@@ -143,7 +143,7 @@ export function AdminPayoutsDashboard() {
                     <button
                       type="button"
                       onClick={() => handleManualTrigger(payout)}
-                      className="rounded-full border border-deep-teal/15 px-3 py-1 text-xs font-medium text-deep-teal hover:bg-pacific-teal/12"
+                      className="rounded-full border border-deep-teal/15 px-3 py-1 text-xs font-light text-deep-teal hover:bg-pacific-teal/12"
                     >
                       Manual Trigger
                     </button>

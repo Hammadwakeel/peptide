@@ -8,6 +8,24 @@ const ALLOWED_DOCUMENT_TYPES = [
 ];
 const AFFILIATE_CODE_PATTERN = /^[A-Za-z0-9\-_!@#$*]{8}$/;
 
+const PASSWORD_STRENGTH_LABELS = ["Very weak", "Weak", "Fair", "Good", "Strong"] as const;
+
+export function getPasswordStrength(password: string) {
+  const checks = {
+    length: password.length >= 8,
+    uppercase: /[A-Z]/.test(password),
+    lowercase: /[a-z]/.test(password),
+    number: /\d/.test(password),
+  };
+  const score = Object.values(checks).filter(Boolean).length - 1;
+
+  return {
+    score: Math.max(0, Math.min(4, score)),
+    label: PASSWORD_STRENGTH_LABELS[Math.max(0, Math.min(4, score))],
+    checks,
+  };
+}
+
 export function validateApplicationFile(file: File, imagesOnly = false): string | null {
   const allowedTypes = imagesOnly
     ? ["image/png", "image/jpeg", "image/jpg", "image/webp"]

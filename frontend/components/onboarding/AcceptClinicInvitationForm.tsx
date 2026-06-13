@@ -67,14 +67,14 @@ export function AcceptClinicInvitationForm() {
             variants={staggerContainer}
           >
             <motion.span
-              className="font-sans text-xs font-medium text-pacific-teal"
+              className="font-sans text-xs font-light text-pacific-teal"
               variants={fadeInUp}
               transition={transition}
             >
               Clinic team invitation
             </motion.span>
             <motion.h1
-              className="mt-3 font-sans text-2xl font-semibold tracking-[-0.02em] text-deep-teal sm:text-3xl"
+              className="mt-3 font-sans text-2xl font-light tracking-[-0.02em] text-deep-teal sm:text-3xl"
               variants={fadeInUp}
               transition={transition}
             >
@@ -101,8 +101,8 @@ export function AcceptClinicInvitationForm() {
               <div className="rounded-xl border border-pacific-teal/20 bg-pacific-teal/5 px-4 py-4 text-sm text-deep-teal/80">
                 <p>
                   You&apos;ve joined{" "}
-                  <span className="font-medium text-deep-teal">{result.clinic_name}</span> as{" "}
-                  <span className="font-medium text-deep-teal">
+                  <span className="font-light text-deep-teal">{result.clinic_name}</span> as{" "}
+                  <span className="font-light text-deep-teal">
                     {result.access_level.replace(/_/g, " ")}
                   </span>
                   .
@@ -111,7 +111,7 @@ export function AcceptClinicInvitationForm() {
               </div>
               <Link
                 href="/login"
-                className="block w-full rounded-full bg-deep-teal px-6 py-3.5 text-center text-sm font-medium text-pure-white transition-all duration-300 hover:bg-pacific-teal"
+                className="block w-full rounded-full bg-deep-teal px-6 py-3.5 text-center text-sm font-light text-pure-white transition-all duration-300 hover:bg-pacific-teal"
               >
                 Go to provider sign in
               </Link>
@@ -194,7 +194,7 @@ export function AcceptClinicInvitationForm() {
                 disabled={isSubmitting}
                 variants={fadeInUp}
                 transition={transition}
-                className="w-full rounded-full bg-deep-teal px-6 py-3.5 text-sm font-medium text-pure-white transition-all duration-300 hover:bg-pacific-teal disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-full bg-deep-teal px-6 py-3.5 text-sm font-light text-pure-white transition-all duration-300 hover:bg-pacific-teal disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isSubmitting ? "Creating account…" : "Accept invitation"}
               </motion.button>

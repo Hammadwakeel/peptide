@@ -50,7 +50,7 @@ export function ProviderChatPage() {
         <button
           type="button"
           onClick={() => void refreshThreads({ force: true })}
-          className="mt-4 rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white hover:bg-pacific-teal"
+          className="mt-4 rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white hover:bg-pacific-teal"
         >
           Retry
         </button>
@@ -66,7 +66,7 @@ export function ProviderChatPage() {
         }`}
       >
         <div className="border-b border-deep-teal/10 bg-surface-muted/40 px-4 py-3.5">
-          <h1 className="font-sans text-lg font-semibold text-deep-teal">Chats</h1>
+          <h1 className="font-sans text-lg font-light text-deep-teal">Chats</h1>
         </div>
         {threads.length === 0 ? (
           <p className="px-4 py-8 text-center text-sm text-deep-teal/50">

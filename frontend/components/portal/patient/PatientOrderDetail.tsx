@@ -11,7 +11,7 @@ import {
 } from "@/components/portal/shared/PortalPageToolbar";
 import { usePatientPortal } from "@/context/PatientPortalProvider";
 import { getPatientOrderTracking } from "@/lib/patient-portal/api";
-import type { PatientHistoryOrder } from "@/lib/patient-portal/types";
+import type { PatientHistoryOrder, PatientPendingOrder } from "@/lib/patient-portal/types";
 import { showError } from "@/lib/toast";
 
 type PatientOrderDetailProps = {
@@ -27,9 +27,18 @@ function formatDate(value: string) {
   });
 }
 
+function toHistoryOrder(
+  order: PatientHistoryOrder | PatientPendingOrder | undefined,
+): PatientHistoryOrder | undefined {
+  if (!order || !("status" in order)) return undefined;
+  return order;
+}
+
 export function PatientOrderDetail({ orderId }: PatientOrderDetailProps) {
   const { getHistoryOrder, fetchOrderDetail } = usePatientPortal();
-  const [order, setOrder] = useState<PatientHistoryOrder | undefined>(getHistoryOrder(orderId));
+  const [order, setOrder] = useState<PatientHistoryOrder | undefined>(() =>
+    toHistoryOrder(getHistoryOrder(orderId)),
+  );
   const [isLoading, setIsLoading] = useState(!order);
   const [trackingMessage, setTrackingMessage] = useState<string | null>(null);
 
@@ -37,7 +46,7 @@ export function PatientOrderDetail({ orderId }: PatientOrderDetailProps) {
     let cancelled = false;
 
     async function load() {
-      const cached = getHistoryOrder(orderId);
+      const cached = toHistoryOrder(getHistoryOrder(orderId));
       if (cached) {
         setOrder(cached);
         setIsLoading(false);
@@ -134,7 +143,7 @@ export function PatientOrderDetail({ orderId }: PatientOrderDetailProps) {
             </li>
           ))}
         </ul>
-        <p className="mt-4 flex justify-between font-medium text-deep-teal">
+        <p className="mt-4 flex justify-between font-light text-deep-teal">
           <span>Total</span>
           <span>${order.total.toFixed(2)}</span>
         </p>

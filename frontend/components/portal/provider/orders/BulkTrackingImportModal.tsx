@@ -64,7 +64,7 @@ export function BulkTrackingImportModal({
         aria-labelledby="tracking-import-title"
         className="relative z-10 max-h-[90dvh] w-full max-w-2xl overflow-y-auto rounded-[1.5rem] border border-deep-teal/10 bg-pure-white p-6 shadow-xl"
       >
-        <h2 id="tracking-import-title" className="font-sans text-xl font-semibold text-deep-teal">
+        <h2 id="tracking-import-title" className="font-sans text-xl font-light text-deep-teal">
           Import tracking CSV
         </h2>
         <p className="mt-1 text-sm text-deep-teal/55">
@@ -84,7 +84,7 @@ export function BulkTrackingImportModal({
             isDragging ? "border-pacific-teal bg-pacific-teal/5" : "border-deep-teal/15"
           }`}
         >
-          <p className="text-sm font-medium text-deep-teal">Drag and drop CSV here</p>
+          <p className="text-sm font-light text-deep-teal">Drag and drop CSV here</p>
           <input
             type="file"
             accept=".csv"
@@ -134,7 +134,7 @@ export function BulkTrackingImportModal({
 
             {result ? (
               <div className="mt-4 rounded-xl border border-pacific-teal/20 bg-pacific-teal/5 p-4 text-sm text-deep-teal">
-                <p className="font-medium">Import complete</p>
+                <p className="font-light">Import complete</p>
                 <p className="mt-1 text-deep-teal/70">
                   {result.updated} rows updated · {result.failed} rows failed
                 </p>
@@ -144,7 +144,7 @@ export function BulkTrackingImportModal({
                 type="button"
                 disabled={validRows.length === 0}
                 onClick={handleConfirm}
-                className="mt-4 rounded-full bg-deep-teal px-5 py-2.5 text-sm font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-40"
+                className="mt-4 rounded-full bg-deep-teal px-5 py-2.5 text-sm font-light text-pure-white hover:bg-pacific-teal disabled:opacity-40"
               >
                 Confirm import
               </button>

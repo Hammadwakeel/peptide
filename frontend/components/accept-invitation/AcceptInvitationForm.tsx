@@ -49,14 +49,14 @@ export function AcceptInvitationForm() {
             variants={staggerContainer}
           >
             <motion.span
-              className="font-sans text-xs font-medium text-pacific-teal"
+              className="font-sans text-xs font-light text-pacific-teal"
               variants={fadeInUp}
               transition={transition}
             >
               Patient invitation
             </motion.span>
             <motion.h1
-              className="mt-3 font-sans text-2xl font-semibold tracking-[-0.02em] text-deep-teal sm:text-3xl"
+              className="mt-3 font-sans text-2xl font-light tracking-[-0.02em] text-deep-teal sm:text-3xl"
               variants={fadeInUp}
               transition={transition}
             >
@@ -83,11 +83,11 @@ export function AcceptInvitationForm() {
               <div className="rounded-xl border border-pacific-teal/20 bg-pacific-teal/5 px-4 py-4 text-sm text-deep-teal/80">
                 <p>
                   Welcome,{" "}
-                  <span className="font-medium text-deep-teal">
+                  <span className="font-light text-deep-teal">
                     {result.patient.first_name} {result.patient.last_name}
                   </span>
                   . Your account at{" "}
-                  <span className="font-medium text-deep-teal">
+                  <span className="font-light text-deep-teal">
                     {result.patient.clinic_name}
                   </span>{" "}
                   is ready.
@@ -96,7 +96,7 @@ export function AcceptInvitationForm() {
               </div>
               <Link
                 href="/login?role=patient"
-                className="block w-full rounded-full bg-deep-teal px-6 py-3.5 text-center text-sm font-medium text-pure-white transition-all duration-300 hover:bg-pacific-teal"
+                className="block w-full rounded-full bg-deep-teal px-6 py-3.5 text-center text-sm font-light text-pure-white transition-all duration-300 hover:bg-pacific-teal"
               >
                 Go to patient sign in
               </Link>
@@ -133,7 +133,7 @@ export function AcceptInvitationForm() {
                 transition={transition}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
-                className="mt-2 w-full rounded-full bg-deep-teal px-6 py-3.5 text-sm font-medium text-pure-white transition-all duration-300 hover:bg-pacific-teal disabled:cursor-not-allowed disabled:opacity-60"
+                className="mt-2 w-full rounded-full bg-deep-teal px-6 py-3.5 text-sm font-light text-pure-white transition-all duration-300 hover:bg-pacific-teal disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isSubmitting ? "Accepting…" : "Accept invitation"}
               </motion.button>

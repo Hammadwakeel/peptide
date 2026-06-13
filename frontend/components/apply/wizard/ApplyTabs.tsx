@@ -40,12 +40,12 @@ export function ApplyTabs({
             onClick={() => onChange(tab.id)}
             className={
               isPrimary
-                ? `flex-1 rounded-xl px-3 py-2.5 text-center text-sm font-medium transition-all sm:px-4 ${
+                ? `flex-1 rounded-xl px-3 py-2.5 text-center text-sm font-light transition-all sm:px-4 ${
                     isActive
                       ? "bg-pure-white text-deep-teal shadow-sm shadow-deep-teal/10"
                       : "text-deep-teal/50 hover:text-deep-teal/75"
                   }`
-                : `relative -mb-px border-b-2 px-3 py-2.5 text-sm font-medium transition-colors sm:px-4 ${
+                : `relative -mb-px border-b-2 px-3 py-2.5 text-sm font-light transition-colors sm:px-4 ${
                     isActive
                       ? "border-pacific-teal text-deep-teal"
                       : "border-transparent text-deep-teal/45 hover:text-deep-teal/70"

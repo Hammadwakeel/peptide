@@ -116,7 +116,7 @@ export function ClinicApplicationWizard() {
     <>
       <Link
         href="/login"
-        className="text-sm font-medium text-deep-teal/55 transition-colors hover:text-deep-teal"
+        className="text-sm font-light text-deep-teal/55 transition-colors hover:text-deep-teal"
       >
         Already have an account? Sign in
       </Link>
@@ -125,7 +125,7 @@ export function ClinicApplicationWizard() {
         <button
           type="button"
           onClick={() => selectTab(step + 1)}
-          className="ml-auto rounded-full bg-deep-teal px-7 py-3 text-sm font-medium text-pure-white shadow-lg shadow-deep-teal/15 transition-all hover:bg-pacific-teal"
+          className="ml-auto rounded-full bg-deep-teal px-7 py-3 text-sm font-light text-pure-white shadow-lg shadow-deep-teal/15 transition-all hover:bg-pacific-teal"
         >
           Next: {step === 1 ? "Documents" : "Banking"}
         </button>
@@ -134,7 +134,7 @@ export function ClinicApplicationWizard() {
           type="button"
           onClick={() => void handleSubmit()}
           disabled={isSubmitting}
-          className="ml-auto rounded-full bg-deep-teal px-7 py-3 text-sm font-medium text-pure-white shadow-lg shadow-deep-teal/15 transition-all hover:bg-pacific-teal disabled:cursor-not-allowed disabled:opacity-60"
+          className="ml-auto rounded-full bg-deep-teal px-7 py-3 text-sm font-light text-pure-white shadow-lg shadow-deep-teal/15 transition-all hover:bg-pacific-teal disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? "Submitting…" : "Submit application"}
         </button>
