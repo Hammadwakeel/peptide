@@ -62,7 +62,7 @@ export function StorefrontBrandingPanel() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal hover:border-pacific-teal"
+                className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal hover:bg-pacific-teal/12"
               >
                 Upload logo
               </button>
@@ -124,7 +124,7 @@ export function StorefrontBrandingPanel() {
               value={branding.themeColor}
               onChange={(e) => handleColorChange(e.target.value)}
               placeholder={DEFAULT_THEME_COLOR}
-              className={`${authInputClassName} font-mono`}
+              className={`${authInputClassName} font-sans`}
             />
           </div>
         </div>
@@ -159,7 +159,7 @@ export function StorefrontBrandingPanel() {
               )}
               <div>
                 <p className="font-medium text-deep-teal">{branding.clinicName || "Clinic name"}</p>
-                <p className="text-xs text-deep-teal/55">{branding.tagline || "Your tagline"}</p>
+                <p className="font-editorial text-xs text-deep-teal/55">{branding.tagline || "Your tagline"}</p>
               </div>
             </div>
           </div>

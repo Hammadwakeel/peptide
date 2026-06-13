@@ -22,17 +22,22 @@ type JoyrideTourProps = {
 };
 
 export function JoyrideTour({ steps, runToken = 0, autoStart = false, onComplete }: JoyrideTourProps) {
+  const [mounted, setMounted] = useState(false);
   const [run, setRun] = useState(false);
   const [autoStarted, setAutoStarted] = useState(false);
 
   useEffect(() => {
-    if (!autoStart || autoStarted || steps.length === 0) return;
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || !autoStart || autoStarted || steps.length === 0) return;
     const timer = window.setTimeout(() => {
       setRun(true);
       setAutoStarted(true);
     }, 900);
     return () => window.clearTimeout(timer);
-  }, [autoStart, autoStarted, steps.length]);
+  }, [mounted, autoStart, autoStarted, steps.length]);
 
   useEffect(() => {
     if (runToken > 0) {
@@ -78,13 +83,16 @@ type ApplyJoyrideProps = {
 };
 
 export function ApplyJoyride({ runToken = 0 }: ApplyJoyrideProps) {
-  const [done, setDone] = useState(true);
+  const [ready, setReady] = useState(false);
+  const [done, setDone] = useState(false);
 
   useEffect(() => {
     try {
       setDone(window.sessionStorage.getItem(APPLY_JOYRIDE_KEY) === "1");
     } catch {
       setDone(false);
+    } finally {
+      setReady(true);
     }
   }, []);
 
@@ -96,6 +104,8 @@ export function ApplyJoyride({ runToken = 0 }: ApplyJoyrideProps) {
     }
     setDone(true);
   }
+
+  if (!ready) return null;
 
   return (
     <JoyrideTour

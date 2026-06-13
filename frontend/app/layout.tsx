@@ -1,24 +1,18 @@
 import "./globals.css";
-import { Inter, Fraunces, JetBrains_Mono } from "next/font/google";
+import { Fraunces, JetBrains_Mono } from "next/font/google";
 import { AppProviders } from "@/components/providers/AppProviders";
 
-// The Primary Body Font Fallback
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-});
-
-// The Secondary Display Font (Editorial headers)
+/** Editorial — testimonials, quotes, taglines only */
 const fraunces = Fraunces({
   subsets: ["latin"],
-  variable: "--font-serif",
+  variable: "--font-fraunces",
   weight: ["300", "400"],
 });
 
-// The Tertiary Technical Font (Lot numbers, data)
+/** Technical — IDs, SKUs, tracking numbers (≤12px in UI) */
 const jetbrains = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-mono",
+  variable: "--font-jetbrains",
 });
 
 export const metadata = {
@@ -41,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${fraunces.variable} ${jetbrains.variable} font-sans antialiased bg-deep-teal`}
+        className={`${fraunces.variable} ${jetbrains.variable} font-sans font-normal antialiased bg-deep-teal`}
         suppressHydrationWarning
       >
         <AppProviders>{children}</AppProviders>

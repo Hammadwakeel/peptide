@@ -36,7 +36,13 @@ async def _resolve_sender_name(sender_role: str, sender_user_id: str, conversati
         conn.close()
 
 
-async def send_text_message(user: dict, conversation_id: str, content: str) -> dict:
+async def send_text_message(
+    user: dict,
+    conversation_id: str,
+    content: str,
+    *,
+    reply_to_message_id: str | None = None,
+) -> dict:
     content = content.strip()
     if not content:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
@@ -48,6 +54,11 @@ async def send_text_message(user: dict, conversation_id: str, content: str) -> d
     sender_name = await _resolve_sender_name(sender_role, user["sub"], conversation)
 
     db = await mongo_service.connect_mongo()
+    if reply_to_message_id:
+        parent = await mongo_service.get_message_by_id(db, reply_to_message_id)
+        if not parent or parent.get("conversation_id") != conversation_id:
+            raise HTTPException(status_code=400, detail="Invalid reply target")
+
     message = await mongo_service.insert_message(
         db,
         {
@@ -57,6 +68,8 @@ async def send_text_message(user: dict, conversation_id: str, content: str) -> d
             "message_type": "text",
             "content": content,
             "sender_name": sender_name,
+            "reply_to_message_id": reply_to_message_id,
+            "reactions": [],
         },
     )
 
@@ -113,6 +126,7 @@ async def send_media_message(
     message_type: str,
     content: str | None = None,
     media_duration_ms: int | None = None,
+    reply_to_message_id: str | None = None,
 ) -> dict:
     conversation, access_role = await conversation_service.get_conversation_if_allowed(user, conversation_id)
     sender_role = "provider" if access_role == "provider" else "patient"
@@ -137,6 +151,12 @@ async def send_media_message(
     else:
         raise HTTPException(status_code=400, detail="Invalid message_type")
 
+    db = await mongo_service.connect_mongo()
+    if reply_to_message_id:
+        parent = await mongo_service.get_message_by_id(db, reply_to_message_id)
+        if not parent or parent.get("conversation_id") != conversation_id:
+            raise HTTPException(status_code=400, detail="Invalid reply target")
+
     message_id = new_message_id()
     uploaded = media_storage.upload_chat_media(
         conversation_id=conversation_id,
@@ -146,7 +166,6 @@ async def send_media_message(
         content_type=content_type,
     )
 
-    db = await mongo_service.connect_mongo()
     message = await mongo_service.insert_message(
         db,
         {
@@ -161,6 +180,8 @@ async def send_media_message(
             "media_mime": content_type,
             "media_duration_ms": media_duration_ms,
             "sender_name": sender_name,
+            "reply_to_message_id": reply_to_message_id,
+            "reactions": [],
         },
     )
 
@@ -179,3 +200,30 @@ async def send_media_message(
     event = {"type": "message.new", "conversation_id": conversation_id, "message": message}
     await push_conversation_event(conversation_id, event)
     return message
+
+
+async def toggle_message_reaction(
+    user: dict,
+    conversation_id: str,
+    message_id: str,
+    emoji: str,
+) -> dict:
+    conversation, access_role = await conversation_service.get_conversation_if_allowed(user, conversation_id)
+    sender_role = "provider" if access_role == "provider" else "patient"
+    sender_name = await _resolve_sender_name(sender_role, user["sub"], conversation)
+
+    db = await mongo_service.connect_mongo()
+    updated = await mongo_service.toggle_message_reaction(
+        db,
+        message_id=message_id,
+        conversation_id=conversation_id,
+        emoji=emoji,
+        user_id=user["sub"],
+        user_name=sender_name,
+    )
+    if not updated:
+        raise HTTPException(status_code=404, detail="Message not found")
+
+    event = {"type": "message.updated", "conversation_id": conversation_id, "message": updated}
+    await push_conversation_event(conversation_id, event)
+    return updated

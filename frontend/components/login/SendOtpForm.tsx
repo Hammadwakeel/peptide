@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { startTransition, useEffect, useRef, useState } from "react";
 import {
   AuthCard,
   AuthShell,
@@ -22,7 +22,12 @@ export function SendOtpForm() {
   const initialEmail = searchParams.get("email") ?? pendingLogin?.email ?? "";
   const [email, setEmail] = useState(initialEmail);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const autoSendStarted = useRef(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   async function handleSendOtp(targetEmail = email) {
     const normalizedEmail = targetEmail.trim();
@@ -38,7 +43,9 @@ export function SendOtpForm() {
       const result = await sendOtp(normalizedEmail);
       toast.dismiss(toastId);
       toast.success(result.message);
-      router.push(`/login/verify-otp?email=${encodeURIComponent(result.email)}`);
+      startTransition(() => {
+        router.push(`/login/verify-otp?email=${encodeURIComponent(result.email)}`);
+      });
     } catch (error) {
       toast.dismiss(toastId);
       showError(error, "Unable to send verification code.");
@@ -48,11 +55,11 @@ export function SendOtpForm() {
   }
 
   useEffect(() => {
-    if (!initialEmail || autoSendStarted.current) return;
+    if (!mounted || !initialEmail || autoSendStarted.current) return;
     autoSendStarted.current = true;
     void handleSendOtp(initialEmail);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialEmail]);
+  }, [mounted, initialEmail]);
 
   return (
     <AuthShell background="hands">
@@ -65,14 +72,14 @@ export function SendOtpForm() {
             variants={staggerContainer}
           >
             <motion.span
-              className="font-mono text-xs uppercase tracking-[0.35em] text-pacific-teal"
+              className="font-sans text-xs font-medium text-pacific-teal"
               variants={fadeInUp}
               transition={transition}
             >
               Verify email
             </motion.span>
             <motion.h1
-              className="mt-3 font-serif text-2xl font-light tracking-[-0.02em] text-deep-teal sm:text-3xl"
+              className="mt-3 font-sans text-2xl font-semibold tracking-[-0.02em] text-deep-teal sm:text-3xl"
               variants={fadeInUp}
               transition={transition}
             >

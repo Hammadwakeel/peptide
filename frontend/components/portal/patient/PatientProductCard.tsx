@@ -2,6 +2,12 @@
 
 import Image from "next/image";
 import { Tooltip } from "@/components/ui/Tippy";
+import {
+  ProductCardNameRow,
+  ProductCardStatsRow,
+  productCardBodyClass,
+  productStatValue,
+} from "@/components/portal/shared/ProductCardLayout";
 import type { BrowseProduct } from "@/lib/patient-portal/types";
 import { STOCK_STATUS_LABELS, type StockStatus } from "@/lib/products/types";
 
@@ -40,6 +46,34 @@ function isRemoteImage(src: string) {
 }
 
 export function PatientProductCard({ product, view, onRequest, onOrder, onInfo }: PatientProductCardProps) {
+  const statsLeft = <>Price: {productStatValue(`$${product.price}`)}</>;
+  const statsRight = (
+    <span className="inline-flex items-center justify-end gap-1.5">
+      Stock: <StockBadge product={product} />
+    </span>
+  );
+
+  const actionButtons = (
+    <>
+      <Tooltip content="View product details">
+        <button type="button" onClick={onInfo} aria-label="Product details" className="rounded-full border border-deep-teal/15 px-2 py-1 text-sm text-deep-teal/60">
+          ℹ
+        </button>
+      </Tooltip>
+      <button
+        type="button"
+        disabled={product.stockStatus === "out_of_stock"}
+        onClick={onOrder}
+        className="rounded-full bg-deep-teal px-3 py-1.5 text-xs font-medium text-pure-white disabled:opacity-50"
+      >
+        Order
+      </button>
+      <button type="button" onClick={onRequest} className="rounded-full border border-deep-teal/15 px-3 py-1.5 text-xs text-deep-teal">
+        Request
+      </button>
+    </>
+  );
+
   if (view === "list") {
     return (
       <article className="flex gap-4 rounded-2xl border border-deep-teal/10 bg-pure-white p-4 shadow-sm">
@@ -53,38 +87,11 @@ export function PatientProductCard({ product, view, onRequest, onOrder, onInfo }
             unoptimized={isRemoteImage(product.image)}
           />
         </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <div>
-              <h3 className="font-medium text-deep-teal">{product.name}</h3>
-              <span className="mt-1 inline-block rounded-full bg-deep-teal/5 px-2 py-0.5 text-[10px] text-deep-teal/60">
-                {product.category}
-              </span>
-            </div>
-            <StockBadge product={product} />
-          </div>
-          <p className="mt-2 line-clamp-2 text-xs text-deep-teal/60">{product.shortDescription}</p>
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm font-medium text-deep-teal">${product.price}</p>
-            <div className="flex gap-2">
-              <Tooltip content="View product details">
-                <button type="button" onClick={onInfo} aria-label="Product details" className="rounded-full border border-deep-teal/15 px-2 py-1 text-sm text-deep-teal/60">
-                  ℹ
-                </button>
-              </Tooltip>
-              <button
-                type="button"
-                disabled={product.stockStatus === "out_of_stock"}
-                onClick={onOrder}
-                className="rounded-full bg-deep-teal px-3 py-1.5 text-xs font-medium text-pure-white disabled:opacity-50"
-              >
-                Order
-              </button>
-              <button type="button" onClick={onRequest} className="rounded-full border border-deep-teal/15 px-3 py-1.5 text-xs text-deep-teal">
-                Request
-              </button>
-            </div>
-          </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <ProductCardNameRow name={product.name} category={product.category} />
+          <ProductCardStatsRow left={statsLeft} right={statsRight} />
+          <p className="line-clamp-2 text-xs leading-relaxed text-deep-teal/60">{product.shortDescription}</p>
+          <div className="flex flex-wrap items-center justify-end gap-2">{actionButtons}</div>
         </div>
       </article>
     );
@@ -112,28 +119,23 @@ export function PatientProductCard({ product, view, onRequest, onOrder, onInfo }
           </button>
         </Tooltip>
       </div>
-      <div className="flex flex-1 flex-col p-4">
-        <div className="flex items-start justify-between gap-2">
-          <span className="rounded-full bg-deep-teal/5 px-2 py-0.5 text-[10px] font-medium text-deep-teal/60">
-            {product.category}
-          </span>
-          <StockBadge product={product} />
-        </div>
-        <h3 className="mt-2 font-medium text-deep-teal">{product.name}</h3>
-        <p className="mt-2 line-clamp-2 flex-1 text-xs text-deep-teal/60">{product.shortDescription}</p>
-        <p className="mt-3 text-sm font-medium text-deep-teal">${product.price}</p>
+
+      <div className={productCardBodyClass()}>
+        <ProductCardNameRow name={product.name} category={product.category} />
+        <ProductCardStatsRow left={statsLeft} right={statsRight} />
+        <p className="line-clamp-2 flex-1 text-xs leading-relaxed text-deep-teal/60">{product.shortDescription}</p>
         <button
           type="button"
           disabled={product.stockStatus === "out_of_stock"}
           onClick={onOrder}
-          className="mt-3 w-full rounded-full bg-deep-teal py-2 text-xs font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-50"
+          className="w-full rounded-full bg-deep-teal py-2 text-xs font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-50"
         >
           Order
         </button>
         <button
           type="button"
           onClick={onRequest}
-          className="mt-2 w-full rounded-full border border-deep-teal/15 py-2 text-xs text-deep-teal hover:border-pacific-teal"
+          className="w-full rounded-full border border-deep-teal/15 py-2 text-xs text-deep-teal hover:bg-pacific-teal/12"
         >
           Request from Doctor
         </button>

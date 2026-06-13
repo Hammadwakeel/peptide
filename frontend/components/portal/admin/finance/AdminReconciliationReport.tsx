@@ -46,7 +46,7 @@ export function AdminReconciliationReport() {
   return (
     <div className="space-y-5">
       <div className="rounded-2xl border border-deep-teal/10 bg-deep-teal/[0.02] px-4 py-4 sm:px-5">
-        <h2 className="font-serif text-xl font-light text-deep-teal">Payment Reconciliation</h2>
+        <h2 className="font-sans text-xl font-semibold text-deep-teal">Payment Reconciliation</h2>
         <p className="mt-1 text-sm text-deep-teal/60">
           Platform-wide collection, disbursement, and revenue reporting.
         </p>
@@ -85,7 +85,7 @@ export function AdminReconciliationReport() {
             className="rounded-2xl border border-deep-teal/10 bg-pure-white px-4 py-5 shadow-sm"
           >
             <p className="text-xs uppercase tracking-wide text-deep-teal/45">{card.label}</p>
-            <p className="mt-2 font-serif text-3xl font-light text-deep-teal">
+            <p className="mt-2 font-sans text-3xl font-semibold text-deep-teal">
               {formatCurrency(card.value)}
             </p>
           </div>

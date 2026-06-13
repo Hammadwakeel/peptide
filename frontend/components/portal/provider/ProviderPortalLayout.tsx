@@ -1,6 +1,18 @@
 "use client";
 
 import { useMemo } from "react";
+import {
+  Calculator,
+  HelpCircle,
+  LayoutDashboard,
+  LayoutGrid,
+  MessageSquare,
+  Package,
+  Settings,
+  Store,
+  Users,
+  UsersRound,
+} from "lucide-react";
 import { RoleOnboardingJoyride } from "@/components/onboarding/RoleOnboardingJoyride";
 import { PortalSidebarLayout, type SidebarLink } from "@/components/portal/shared/PortalSidebarLayout";
 import { OrdersProvider } from "@/context/OrdersProvider";
@@ -10,16 +22,16 @@ import { PortalBootstrap } from "@/components/bootstrap/PortalBootstrap";
 import { ProviderPortalProvider } from "@/context/ProviderPortalProvider";
 
 const BASE_PROVIDER_LINKS: Omit<SidebarLink, "badge">[] = [
-  { href: "/portal/doctor", label: "Dashboard", exact: true },
-  { href: "/portal/doctor/inventory", label: "Inventory", exact: false },
-  { href: "/portal/doctor/my-store", label: "My Store", exact: false },
-  { href: "/portal/doctor/customers", label: "Customers", exact: false },
-  { href: "/portal/doctor/orders", label: "Orders", exact: false },
-  { href: "/portal/doctor/accounting", label: "Accounting", exact: false },
-  { href: "/portal/doctor/messages", label: "Messages", exact: false },
-  { href: "/portal/doctor/users", label: "Organization Users", exact: false },
-  { href: "/portal/doctor/settings", label: "Settings", exact: false },
-  { href: "/portal/doctor/help", label: "Help / Support", exact: false },
+  { href: "/portal/doctor", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/portal/doctor/inventory", label: "Inventory", icon: LayoutGrid, exact: false },
+  { href: "/portal/doctor/my-store", label: "My Store", icon: Store, exact: false },
+  { href: "/portal/doctor/customers", label: "Customers", icon: Users, exact: false },
+  { href: "/portal/doctor/orders", label: "Orders", icon: Package, exact: false },
+  { href: "/portal/doctor/accounting", label: "Accounting", icon: Calculator, exact: false },
+  { href: "/portal/doctor/messages", label: "Messages", icon: MessageSquare, exact: false },
+  { href: "/portal/doctor/users", label: "Organization Users", icon: UsersRound, exact: false },
+  { href: "/portal/doctor/settings", label: "Settings", icon: Settings, exact: false },
+  { href: "/portal/doctor/help", label: "Help / Support", icon: HelpCircle, exact: false },
 ];
 
 function ProviderPortalShell({ children }: { children: React.ReactNode }) {
@@ -36,7 +48,7 @@ function ProviderPortalShell({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <PortalSidebarLayout portalLabel="Provider portal" links={links}>
+    <PortalSidebarLayout links={links} onboardingRole="doctor">
       <RoleOnboardingJoyride role="doctor" />
       {children}
     </PortalSidebarLayout>
@@ -47,13 +59,13 @@ export function ProviderPortalLayout({ children }: { children: React.ReactNode }
   return (
     <ProviderPortalProvider>
       <PortalBootstrap role="doctor" />
-      <PatientsProvider>
-        <OrdersProvider>
+      <OrdersProvider>
+        <PatientsProvider>
           <ChatProvider>
             <ProviderPortalShell>{children}</ProviderPortalShell>
           </ChatProvider>
-        </OrdersProvider>
-      </PatientsProvider>
+        </PatientsProvider>
+      </OrdersProvider>
     </ProviderPortalProvider>
   );
 }

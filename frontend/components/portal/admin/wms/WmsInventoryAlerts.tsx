@@ -39,7 +39,7 @@ export function WmsInventoryAlerts() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-serif text-2xl font-light text-deep-teal">Inventory Alerts</h1>
+          <h1 className="font-sans text-2xl font-semibold text-deep-teal">Inventory Alerts</h1>
           <p className="mt-1 text-sm text-deep-teal/55">
             {isLoading ? "Loading inventory…" : `${inventoryAlerts.length} products need attention`}
           </p>
@@ -47,7 +47,7 @@ export function WmsInventoryAlerts() {
         <button
           type="button"
           onClick={() => void refreshInventoryAlerts()}
-          className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm text-deep-teal hover:border-pacific-teal"
+          className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm text-deep-teal hover:bg-pacific-teal/12"
         >
           Refresh
         </button>
@@ -102,7 +102,7 @@ export function WmsInventoryAlerts() {
                 <AlertBadge level={alert.level} />
                 <Link
                   href={`/portal/admin/products/${alert.productId}/stock`}
-                  className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal hover:border-pacific-teal"
+                  className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal hover:bg-pacific-teal/12"
                 >
                   Restock
                 </Link>

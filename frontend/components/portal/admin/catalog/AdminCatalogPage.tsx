@@ -29,8 +29,8 @@ const CATALOG_ACTIONS = [
 export function AdminCatalogPage() {
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-4 rounded-2xl border border-deep-teal/20 bg-pure-white px-4 py-3 shadow-[0_2px_12px_rgba(1,26,36,0.08)] sm:px-5">
-        <h1 className="shrink-0 font-serif text-xl font-light text-deep-teal sm:text-2xl">Catalog</h1>
+      <div className="flex items-center gap-4 rounded-2xl border border-deep-teal/20 bg-pure-white px-4 py-2.5 shadow-[0_2px_12px_rgba(1,26,36,0.08)] sm:px-5">
+        <h1 className="shrink-0 font-sans text-xl font-semibold text-deep-teal sm:text-2xl">Catalog</h1>
         <div className="min-w-4 flex-1" aria-hidden="true" />
         <div className="flex flex-wrap items-center justify-end gap-2">
           {CATALOG_ACTIONS.map(({ href, label, icon: Icon, primary }) => (

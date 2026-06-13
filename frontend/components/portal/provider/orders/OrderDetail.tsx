@@ -253,7 +253,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
             </div>
             <div>
               <dt className="text-xs text-deep-teal/45">Tracking number</dt>
-              <dd className="font-mono text-sm text-deep-teal">{order.tracking.trackingNumber}</dd>
+              <dd className="font-sans text-sm text-deep-teal">{order.tracking.trackingNumber}</dd>
             </div>
             <div>
               <dt className="text-xs text-deep-teal/45">Shipped</dt>

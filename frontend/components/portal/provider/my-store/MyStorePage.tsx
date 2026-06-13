@@ -148,7 +148,7 @@ export function MyStorePage() {
           <p className="py-12 text-center text-sm text-deep-teal/50">Loading My Store…</p>
         ) : filteredProducts.length === 0 ? (
           <div className="rounded-xl border border-dashed border-deep-teal/15 px-6 py-16 text-center">
-            <p className="font-serif text-xl font-light text-deep-teal">
+            <p className="font-sans text-xl font-semibold text-deep-teal">
               {myStore.length === 0 ? "Your store is empty" : "No items match your search"}
             </p>
             {myStore.length === 0 ? (

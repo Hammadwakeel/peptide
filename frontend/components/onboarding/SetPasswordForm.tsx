@@ -90,7 +90,7 @@ export function SetPasswordForm() {
     return (
       <AuthShell background="hands">
         <AuthCard>
-          <h1 className="font-serif text-2xl font-light text-deep-teal">Invalid link</h1>
+          <h1 className="font-sans text-2xl font-semibold text-deep-teal">Invalid link</h1>
           <p className="mt-3 text-sm text-deep-teal/60">
             This password setup link is missing or incomplete. Use the link from your
             invitation email.
@@ -119,7 +119,7 @@ export function SetPasswordForm() {
     return (
       <AuthShell background="hands">
         <AuthCard>
-          <h1 className="font-serif text-2xl font-light text-deep-teal">
+          <h1 className="font-sans text-2xl font-semibold text-deep-teal">
             {tokenInfo?.token_status === "already_used"
               ? "Password already set"
               : "Link unavailable"}
@@ -145,7 +145,7 @@ export function SetPasswordForm() {
     return (
       <AuthShell background="hands">
         <AuthCard>
-          <h1 className="font-serif text-2xl font-light text-deep-teal">You&apos;re all set</h1>
+          <h1 className="font-sans text-2xl font-semibold text-deep-teal">You&apos;re all set</h1>
           <p className="mt-3 text-sm text-deep-teal/60">
             Your password has been created. Sign in to continue.
           </p>
@@ -171,14 +171,14 @@ export function SetPasswordForm() {
             variants={staggerContainer}
           >
             <motion.span
-              className="font-mono text-xs uppercase tracking-[0.35em] text-pacific-teal"
+              className="font-sans text-xs font-medium text-pacific-teal"
               variants={fadeInUp}
               transition={transition}
             >
               Account setup
             </motion.span>
             <motion.h1
-              className="mt-3 font-serif text-2xl font-light tracking-[-0.02em] text-deep-teal sm:text-3xl"
+              className="mt-3 font-sans text-2xl font-semibold tracking-[-0.02em] text-deep-teal sm:text-3xl"
               variants={fadeInUp}
               transition={transition}
             >

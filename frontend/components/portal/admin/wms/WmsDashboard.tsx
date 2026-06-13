@@ -28,7 +28,7 @@ function OnTimeGauge({ rate }: { rate: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-serif text-3xl font-light text-deep-teal">{rate}%</span>
+        <span className="font-sans text-3xl font-semibold text-deep-teal">{rate}%</span>
         <span className="text-xs text-deep-teal/45">On-time</span>
       </div>
     </div>
@@ -74,7 +74,7 @@ export function WmsDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-2xl font-light text-deep-teal">WMS Dashboard</h1>
+        <h1 className="font-sans text-2xl font-semibold text-deep-teal">WMS Dashboard</h1>
         <p className="mt-1 text-sm text-deep-teal/55">Fulfillment operations overview</p>
       </div>
 
@@ -83,18 +83,18 @@ export function WmsDashboard() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-2xl border border-deep-teal/10 bg-pure-white px-4 py-5 shadow-sm">
           <p className="text-xs uppercase tracking-wide text-deep-teal/45">Pending Shipments</p>
-          <p className="mt-2 font-serif text-3xl font-light text-deep-teal">{metrics.pendingShipments}</p>
+          <p className="mt-2 font-sans text-3xl font-semibold text-deep-teal">{metrics.pendingShipments}</p>
           <Link href="/portal/admin/wms/queue" className="mt-2 inline-block text-xs text-pacific-teal hover:underline">
             View queue →
           </Link>
         </div>
         <div className="rounded-2xl border border-deep-teal/10 bg-pure-white px-4 py-5 shadow-sm">
           <p className="text-xs uppercase tracking-wide text-deep-teal/45">Avg Days to Ship</p>
-          <p className="mt-2 font-serif text-3xl font-light text-deep-teal">{metrics.avgDaysToShip}</p>
+          <p className="mt-2 font-sans text-3xl font-semibold text-deep-teal">{metrics.avgDaysToShip}</p>
         </div>
         <div className="rounded-2xl border border-deep-teal/10 bg-pure-white px-4 py-5 shadow-sm">
           <p className="text-xs uppercase tracking-wide text-deep-teal/45">Late Orders</p>
-          <p className="mt-2 font-serif text-3xl font-light text-coral-blush">{metrics.lateOrders}</p>
+          <p className="mt-2 font-sans text-3xl font-semibold text-coral-blush">{metrics.lateOrders}</p>
         </div>
         <div className="rounded-2xl border border-deep-teal/10 bg-pure-white px-4 py-5 shadow-sm">
           <p className="text-xs uppercase tracking-wide text-deep-teal/45">On-Time Rate</p>

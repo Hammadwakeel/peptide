@@ -3,6 +3,12 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Tooltip } from "@/components/ui/Tippy";
+import {
+  ProductCardNameRow,
+  ProductCardStatsRow,
+  productCardBodyClass,
+  productStatValue,
+} from "@/components/portal/shared/ProductCardLayout";
 import type { StoreProduct } from "@/lib/products/catalog-types";
 
 type MyStoreProductCardProps = {
@@ -73,28 +79,36 @@ export function MyStoreProductCard({
           unoptimized={imageUrl.startsWith("http")}
         />
       </div>
-      <div className="flex flex-1 flex-col p-4">
-        <span className="w-fit rounded-full bg-deep-teal/5 px-2 py-0.5 text-[10px] font-medium text-deep-teal/60">
-          {product.category.name ?? "Uncategorized"}
-        </span>
-        <h3 className="mt-2 font-medium text-deep-teal">{product.name}</h3>
-        <p className="mt-2 text-xs text-deep-teal/50">
-          Stock:{" "}
-          <span className="font-medium text-deep-teal">{product.stock_count ?? 0}</span>
-        </p>
-        <p className="mt-1 text-xs text-deep-teal/50">
-          Clinic price:{" "}
-          <span className="font-medium text-deep-teal">
-            {product.clinic_cost != null ? `$${product.clinic_cost.toFixed(2)}` : "—"}
-          </span>
-        </p>
-        <label className="mt-4 block">
-          <span className="text-[10px] font-medium uppercase tracking-wide text-deep-teal/45">
+
+      <div className={productCardBodyClass()}>
+        <ProductCardNameRow
+          name={product.name}
+          category={product.category.name ?? "Uncategorized"}
+        />
+
+        <ProductCardStatsRow
+          left={
+            <>
+              Stock: {productStatValue(product.stock_count ?? 0)}
+            </>
+          }
+          right={
+            <>
+              Clinic price:{" "}
+              {productStatValue(
+                product.clinic_cost != null ? `$${product.clinic_cost.toFixed(2)}` : "—",
+              )}
+            </>
+          }
+        />
+
+        <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2.5">
+          <span className="text-xs font-medium uppercase tracking-wide text-deep-teal/65">
             Retail price
           </span>
-          <div className="mt-1 flex items-center gap-2">
-            <div className="flex flex-1 items-center rounded-xl border border-deep-teal/15 px-3 py-2 focus-within:border-pacific-teal">
-              <span className="text-sm text-deep-teal/50">$</span>
+          <div className="flex items-center justify-end gap-2">
+            <div className="flex w-full max-w-[7.5rem] items-center rounded-xl border border-deep-teal/20 bg-surface-muted/30 px-3 py-2 focus-within:border-pacific-teal">
+              <span className="text-sm font-medium text-deep-teal/70">$</span>
               <input
                 type="number"
                 min="0"
@@ -108,7 +122,7 @@ export function MyStoreProductCard({
                 onKeyDown={(e) => {
                   if (e.key === "Enter") commitPrice();
                 }}
-                className="w-full bg-transparent pl-1 text-sm text-deep-teal outline-none disabled:opacity-60"
+                className="w-full bg-transparent pl-1 text-sm font-medium text-deep-teal outline-none disabled:opacity-60"
               />
             </div>
             {priceDirty ? (
@@ -116,23 +130,24 @@ export function MyStoreProductCard({
                 type="button"
                 disabled={isUpdating}
                 onClick={commitPrice}
-                className="rounded-full bg-deep-teal px-3 py-2 text-xs font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-60"
+                className="shrink-0 rounded-full bg-deep-teal px-3 py-1.5 text-xs font-medium text-pure-white hover:bg-pacific-teal disabled:opacity-60"
               >
                 Save
               </button>
             ) : null}
           </div>
-        </label>
-        <label className="mt-4 flex items-center justify-between gap-2 text-xs text-deep-teal/70">
-          <span>Visible to customers</span>
-          <input
-            type="checkbox"
-            checked={product.is_visible}
-            disabled={isUpdating}
-            onChange={(e) => onVisibilityChange(e.target.checked)}
-            className="size-4 rounded disabled:opacity-50"
-          />
-        </label>
+
+          <span className="text-sm text-deep-teal/65">Visible to customers</span>
+          <label className="flex items-center justify-end gap-2">
+            <input
+              type="checkbox"
+              checked={product.is_visible}
+              disabled={isUpdating}
+              onChange={(e) => onVisibilityChange(e.target.checked)}
+              className="size-4 rounded border-deep-teal/25 text-deep-teal disabled:opacity-50"
+            />
+          </label>
+        </div>
       </div>
     </article>
   );

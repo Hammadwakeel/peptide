@@ -4,6 +4,12 @@ export type MessageType = "text" | "image" | "voice" | "document";
 
 export type ChatMediaMessageType = Extract<MessageType, "image" | "voice" | "document">;
 
+export type MessageReaction = {
+  emoji: string;
+  user_id: string;
+  user_name?: string | null;
+};
+
 export type ThreadMessage = {
   id: string;
   sender: ChatSender;
@@ -14,7 +20,15 @@ export type ThreadMessage = {
   mediaUrl?: string | null;
   mediaMime?: string | null;
   mediaDurationMs?: number | null;
+  replyToMessageId?: string | null;
+  reactions?: MessageReaction[];
   pending?: boolean;
+};
+
+export type ReplyTarget = {
+  id: string;
+  senderName: string;
+  preview: string;
 };
 
 export type ChatThread = {
@@ -27,6 +41,8 @@ export type ChatThread = {
   messages: ThreadMessage[];
   unreadProvider: number;
   unreadPatient: number;
+  lastMessagePreview?: string | null;
+  lastMessageAt?: string | null;
 };
 
 export type ApiMessage = {
@@ -40,6 +56,8 @@ export type ApiMessage = {
   media_mime?: string | null;
   media_duration_ms?: number | null;
   sender_name?: string | null;
+  reply_to_message_id?: string | null;
+  reactions?: MessageReaction[];
   created_at: string;
 };
 
@@ -91,6 +109,8 @@ export function apiMessageToThreadMessage(message: ApiMessage): ThreadMessage {
     mediaUrl: message.media_url,
     mediaMime: message.media_mime,
     mediaDurationMs: message.media_duration_ms,
+    replyToMessageId: message.reply_to_message_id,
+    reactions: message.reactions ?? [],
     pending: false,
   };
 }
@@ -132,6 +152,17 @@ export function replacePendingMessage(
   return mergeThreadMessage(messages, incoming);
 }
 
+export function updateThreadMessage(
+  messages: ThreadMessage[],
+  incoming: ThreadMessage,
+): ThreadMessage[] {
+  const index = messages.findIndex((message) => message.id === incoming.id);
+  if (index < 0) return messages;
+  const next = [...messages];
+  next[index] = incoming;
+  return next;
+}
+
 export function apiConversationToThread(
   conversation: ApiConversation,
   messages: ThreadMessage[] = [],
@@ -146,7 +177,102 @@ export function apiConversationToThread(
     messages,
     unreadProvider: conversation.unread_provider ?? 0,
     unreadPatient: conversation.unread_patient ?? 0,
+    lastMessagePreview: conversation.last_message_preview ?? null,
+    lastMessageAt: conversation.last_message_at ?? null,
   };
+}
+
+export function sortMessagesChronologically(messages: ThreadMessage[]): ThreadMessage[] {
+  return [...messages].sort(
+    (a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime(),
+  );
+}
+
+export function formatChatDateLabel(sentAt: string) {
+  const date = new Date(sentAt);
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfMessageDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const dayDiff = Math.round(
+    (startOfToday.getTime() - startOfMessageDay.getTime()) / 86_400_000,
+  );
+
+  if (dayDiff === 0) return "Today";
+  if (dayDiff === 1) return "Yesterday";
+  if (dayDiff < 7) {
+    return date.toLocaleDateString("en-US", { weekday: "long" });
+  }
+  if (date.getFullYear() === now.getFullYear()) {
+    return date.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+  }
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export type MessageDateGroup = {
+  dateKey: string;
+  label: string;
+  messages: ThreadMessage[];
+};
+
+export function groupMessagesByDate(messages: ThreadMessage[]): MessageDateGroup[] {
+  const sorted = sortMessagesChronologically(messages);
+  const groups: MessageDateGroup[] = [];
+
+  for (const message of sorted) {
+    const dateKey = new Date(message.sentAt).toDateString();
+    const lastGroup = groups[groups.length - 1];
+    if (lastGroup?.dateKey === dateKey) {
+      lastGroup.messages.push(message);
+    } else {
+      groups.push({
+        dateKey,
+        label: formatChatDateLabel(message.sentAt),
+        messages: [message],
+      });
+    }
+  }
+
+  return groups;
+}
+
+export function getThreadLastMessage(thread: ChatThread): ThreadMessage | undefined {
+  if (thread.messages.length === 0) return undefined;
+  return sortMessagesChronologically(thread.messages).at(-1);
+}
+
+export function getThreadLastActivityAt(thread: ChatThread): string | null {
+  const lastMessage = getThreadLastMessage(thread);
+  return lastMessage?.sentAt ?? thread.lastMessageAt ?? null;
+}
+
+export function messagePreviewText(message: Pick<ThreadMessage, "messageType" | "content">) {
+  if (message.messageType === "image") {
+    return message.content && message.content !== "Image" ? message.content : "Photo";
+  }
+  if (message.messageType === "voice") return "Voice message";
+  if (message.messageType === "document") return message.content || "Document";
+  return message.content;
+}
+
+export function getThreadPreviewText(thread: ChatThread, viewerRole: ChatSender) {
+  const last = getThreadLastMessage(thread);
+  if (last) {
+    const prefix = last.sender === viewerRole ? "You: " : "";
+    return `${prefix}${messagePreviewText(last)}`;
+  }
+  if (thread.lastMessagePreview) return thread.lastMessagePreview;
+  return "No messages yet";
+}
+
+export function formatBubbleTime(sentAt: string) {
+  return new Date(sentAt).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 export function formatMessageTime(sentAt: string) {

@@ -72,7 +72,7 @@ export const usePatientRequestsStore = create<PatientRequestsState>()(
         });
       },
     }),
-    { name: "frontier-patient-product-requests" },
+    { name: "frontier-patient-product-requests", skipHydration: true },
   ),
 );
 

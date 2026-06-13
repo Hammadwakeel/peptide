@@ -1,27 +1,31 @@
 "use client";
 
-import { Mic, Send, Smile } from "lucide-react";
+import { Mic, Send } from "lucide-react";
 import { Tooltip } from "@/components/ui/Tippy";
 import { useRef, useState } from "react";
 import { ChatAttachmentMenu } from "@/components/chat/ChatAttachmentMenu";
+import { ChatInputEmojiPicker, ChatReplyBar } from "@/components/chat/ChatEmojiPicker";
 import { ChatMediaPreview, type PendingAttachment } from "@/components/chat/ChatMediaPreview";
 import { VoiceNoteRecorder } from "@/components/chat/VoiceNoteRecorder";
+import { replyPreviewText } from "@/lib/chat/media-utils";
 import { createLocalPreviewUrl, revokePreviewUrl } from "@/lib/chat/preview";
 import { useVoiceRecording } from "@/lib/chat/useVoiceRecording";
-import { CHAT_MAX_CHARS, type ChatMediaMessageType } from "@/lib/chat/types";
+import { CHAT_MAX_CHARS, type ChatMediaMessageType, type ReplyTarget, type ThreadMessage } from "@/lib/chat/types";
 
 export type { ChatMediaMessageType };
 
 type ChatMessageInputProps = {
-  onSend: (content: string) => Promise<void> | void;
+  onSend: (content: string, options?: { replyToMessageId?: string }) => Promise<void> | void;
   onUpload?: (
     file: File,
     messageType: ChatMediaMessageType,
-    options?: { content?: string; mediaDurationMs?: number },
+    options?: { content?: string; mediaDurationMs?: number; replyToMessageId?: string },
   ) => Promise<void> | void;
   placeholder?: string;
   draft?: string;
   onDraftChange?: (value: string) => void;
+  replyTo?: ReplyTarget | null;
+  onReplyChange?: (reply: ReplyTarget | null) => void;
   disabled?: boolean;
 };
 
@@ -31,6 +35,8 @@ export function ChatMessageInput({
   placeholder = "Type a message",
   draft: controlledDraft,
   onDraftChange,
+  replyTo = null,
+  onReplyChange,
   disabled = false,
 }: ChatMessageInputProps) {
   const [internalDraft, setInternalDraft] = useState("");
@@ -48,11 +54,17 @@ export function ChatMessageInput({
   const hasText = draft.trim().length > 0;
   const canAttach = Boolean(onUpload) && !disabled;
 
+  function clearReply() {
+    onReplyChange?.(null);
+  }
+
   function handleSendText() {
     const content = draft.trim();
     if (!content || disabled) return;
     setDraft("");
-    void Promise.resolve(onSend(content)).catch(() => {
+    const replyToMessageId = replyTo?.id;
+    clearReply();
+    void Promise.resolve(onSend(content, { replyToMessageId })).catch(() => {
       // Optimistic rollback handled in ChatProvider.
     });
   }
@@ -97,11 +109,12 @@ export function ChatMessageInput({
     setAttachment(null);
 
     void onUpload(current.file, current.messageType, {
-      content:
-        caption || (current.messageType === "document" ? current.file.name : undefined),
+      content: caption || (current.messageType === "document" ? current.file.name : undefined),
+      replyToMessageId: replyTo?.id,
     }).catch(() => {
       // Optimistic rollback handled in ChatProvider.
     });
+    clearReply();
   }
 
   function handleCancelAttachment() {
@@ -120,7 +133,11 @@ export function ChatMessageInput({
         onSend={async (file, durationMs) => {
           setIsRecording(false);
           try {
-            await onUpload(file, "voice", { mediaDurationMs: durationMs });
+            await onUpload(file, "voice", {
+              mediaDurationMs: durationMs,
+              replyToMessageId: replyTo?.id,
+            });
+            clearReply();
           } catch {
             // Optimistic rollback handled in ChatProvider.
           }
@@ -141,11 +158,11 @@ export function ChatMessageInput({
   }
 
   return (
-    <div className="border-t border-deep-teal/10 bg-pure-white">
+    <div className="border-t border-deep-teal/10 bg-[#f0f2f5]">
       <input
         ref={imageInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
         className="hidden"
         onChange={(event) => handleFileSelected(event, "image")}
       />
@@ -164,6 +181,8 @@ export function ChatMessageInput({
         onChange={(event) => handleFileSelected(event, "voice")}
       />
 
+      {replyTo ? <ChatReplyBar replyTo={replyTo} onCancel={clearReply} /> : null}
+
       <div className="flex items-end gap-2 px-3 py-3">
         {onUpload ? (
           <ChatAttachmentMenu
@@ -178,16 +197,7 @@ export function ChatMessageInput({
         ) : null}
 
         <div className="flex min-h-10 flex-1 items-end gap-2 rounded-3xl border border-deep-teal/12 bg-deep-teal/[0.03] px-3 py-2">
-          <Tooltip content="Emoji picker (coming soon)">
-            <button
-              type="button"
-              className="mb-0.5 shrink-0 text-deep-teal/45 hover:text-deep-teal"
-              aria-label="Emoji"
-              tabIndex={-1}
-            >
-              <Smile className="size-5" />
-            </button>
-          </Tooltip>
+          <ChatInputEmojiPicker onPick={(emoji) => setDraft(`${draft}${emoji}`)} />
 
           <textarea
             value={draft}
@@ -199,7 +209,7 @@ export function ChatMessageInput({
             onKeyDown={handleKeyDown}
             disabled={disabled}
             rows={1}
-            placeholder={placeholder}
+            placeholder={replyTo ? "Write a reply…" : placeholder}
             className="max-h-28 min-h-[24px] flex-1 resize-none bg-transparent py-0.5 text-sm leading-6 text-deep-teal outline-none placeholder:text-deep-teal/40 disabled:opacity-60"
           />
         </div>
@@ -244,4 +254,12 @@ export function ChatMessageInput({
       </div>
     </div>
   );
+}
+
+export function toReplyTarget(message: ThreadMessage): ReplyTarget {
+  return {
+    id: message.id,
+    senderName: message.senderName,
+    preview: replyPreviewText(message),
+  };
 }

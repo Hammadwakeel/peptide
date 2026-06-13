@@ -48,7 +48,7 @@ export function PendingPaymentsTab() {
           <p className="py-12 text-center text-sm text-deep-teal/50">Loading orders…</p>
         ) : pendingOrders.length === 0 ? (
           <div className="rounded-xl border border-dashed border-deep-teal/15 px-6 py-16 text-center">
-            <p className="font-serif text-xl font-light text-deep-teal">No orders pending review</p>
+            <p className="font-sans text-xl font-semibold text-deep-teal">No orders pending review</p>
             <Link
               href="/portal/patient/products"
               className="mt-6 inline-flex rounded-full bg-deep-teal px-5 py-2.5 text-sm font-medium text-pure-white hover:bg-pacific-teal"

@@ -47,11 +47,21 @@ export type OnboardingStep = {
   description: string;
   href: string;
   actionLabel?: string;
+  /** Funnel stage number (1 = top of funnel) */
+  stage: number;
+  stageLabel: string;
+  /** Longer guidance shown in the expanded funnel panel */
+  details: string;
+  /** Actionable checklist inside the step */
+  checklist: string[];
+  estimatedMinutes: number;
 };
 
 export type RoleOnboardingConfig = {
   role: UserRole;
   title: string;
   subtitle: string;
+  funnelTitle: string;
+  funnelSubtitle: string;
   steps: OnboardingStep[];
 };

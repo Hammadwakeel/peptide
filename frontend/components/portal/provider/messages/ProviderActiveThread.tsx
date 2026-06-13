@@ -1,44 +1,72 @@
 "use client";
 
-import { useEffect } from "react";
-import { ChatMessageInput } from "@/components/chat/ChatMessageInput";
+import { useEffect, useState } from "react";
+import { ArrowLeft } from "lucide-react";
+import { ChatMessageInput, toReplyTarget } from "@/components/chat/ChatMessageInput";
 import { ChatMessageList } from "@/components/chat/ChatMessageList";
 import { useChat } from "@/context/ChatProvider";
 import { getPatientInitials } from "@/lib/patients/types";
-import type { ChatThread } from "@/lib/chat/types";
+import type { ChatThread, ReplyTarget, ThreadMessage } from "@/lib/chat/types";
 
 type ProviderActiveThreadProps = {
   thread: ChatThread;
   compact?: boolean;
+  onBack?: () => void;
 };
 
-export function ProviderActiveThread({ thread, compact = false }: ProviderActiveThreadProps) {
-  const { sendMessage, sendMedia, markRead, loadMessages } = useChat();
+export function ProviderActiveThread({ thread, compact = false, onBack }: ProviderActiveThreadProps) {
+  const { sendMessage, sendMedia, markRead, loadMessages, toggleReaction } = useChat();
+  const [replyTo, setReplyTo] = useState<ReplyTarget | null>(null);
 
   useEffect(() => {
     void loadMessages(thread.conversationId);
     void markRead(thread.conversationId, "provider");
   }, [thread.conversationId, loadMessages, markRead]);
 
+  function handleReply(message: ThreadMessage) {
+    setReplyTo(toReplyTarget(message));
+  }
+
   return (
-    <div className={`flex flex-col ${compact ? "h-[480px]" : "h-[calc(100dvh-220px)] min-h-[420px]"}`}>
-      <div className="border-b border-deep-teal/10 px-4 py-3">
-        <div className="flex items-center gap-3">
-          <span className="flex size-10 items-center justify-center rounded-full bg-deep-teal/10 text-sm font-medium text-deep-teal">
-            {getPatientInitials(thread.patientName)}
-          </span>
-          <div>
-            <p className="font-medium text-deep-teal">{thread.patientName}</p>
-            <p className="text-xs text-deep-teal/50">Patient conversation</p>
-          </div>
+    <div className={`flex min-h-0 flex-1 flex-col ${compact ? "h-[480px]" : ""}`}>
+      <div className="flex items-center gap-3 border-b border-deep-teal/10 bg-surface-muted/30 px-3 py-2.5 sm:px-4">
+        {onBack ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex size-9 shrink-0 items-center justify-center rounded-full text-deep-teal hover:bg-deep-teal/8 lg:hidden"
+            aria-label="Back to chats"
+          >
+            <ArrowLeft className="size-5" />
+          </button>
+        ) : null}
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-pacific-teal/15 text-sm font-semibold text-deep-teal">
+          {getPatientInitials(thread.patientName)}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-semibold text-deep-teal">{thread.patientName}</p>
+          <p className="text-xs text-deep-teal/50">Patient</p>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto">
-        <ChatMessageList messages={thread.messages} viewerRole="provider" />
+
+      <div className="min-h-0 flex-1">
+        <ChatMessageList
+          messages={thread.messages}
+          viewerRole="provider"
+          onReply={handleReply}
+          onToggleReaction={(messageId, emoji) =>
+            void toggleReaction(thread.conversationId, messageId, emoji)
+          }
+        />
       </div>
+
       <ChatMessageInput
-        onSend={(content) => sendMessage(thread.conversationId, content)}
-        onUpload={(file, messageType) => sendMedia(thread.conversationId, file, messageType)}
+        replyTo={replyTo}
+        onReplyChange={setReplyTo}
+        onSend={(content, options) => sendMessage(thread.conversationId, content, options)}
+        onUpload={(file, messageType, options) =>
+          sendMedia(thread.conversationId, file, messageType, options)
+        }
       />
     </div>
   );

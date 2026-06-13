@@ -81,6 +81,6 @@ export const useOnboardingStore = create<OnboardingState>()(
         set((state) => ({ joyrideRunToken: state.joyrideRunToken + 1 }));
       },
     }),
-    { name: "frontier-onboarding" },
+    { name: "frontier-onboarding", skipHydration: true },
   ),
 );

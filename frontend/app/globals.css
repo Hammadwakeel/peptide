@@ -30,24 +30,60 @@
   --color-surface-warm: #fbf3f0;
   --color-background: var(--color-deep-teal);
   --color-foreground: var(--color-pure-white);
+  /* Aspekta — default for ~90% of UI */
   --font-sans: "Aspekta", system-ui, sans-serif;
-  --font-display: var(--font-fraunces);
-  --font-mono: var(--font-jetbrains-mono);
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
   --spacing-1f: 32px;
   --spacing-2f: 64px;
+}
+
+@utility font-editorial {
+  font-family: var(--font-fraunces), Georgia, "Times New Roman", serif;
+}
+
+/* JetBrains technical register — capped at 12px */
+@utility font-mono-tech {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.125rem;
 }
 
 body {
   background: var(--color-deep-teal);
   color: var(--color-pure-white);
   font-family: var(--font-sans);
+  font-weight: 400;
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+
 html {
   scroll-behavior: auto;
+}
+
+button,
+a {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @media (hover: none) and (pointer: coarse) {

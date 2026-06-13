@@ -3,6 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Tooltip } from "@/components/ui/Tippy";
+import {
+  ProductCardActionRow,
+  ProductCardNameRow,
+  ProductCardStatsRow,
+  productCardBodyClass,
+  productStatValue,
+} from "@/components/portal/shared/ProductCardLayout";
 import type { CatalogProduct, CatalogStockStatus } from "@/lib/products/catalog-types";
 import { CATALOG_STOCK_STATUS_LABELS, getPrimaryImage } from "@/lib/products/catalog-types";
 
@@ -37,6 +44,10 @@ function StockBadge({ status }: { status: CatalogStockStatus }) {
   );
 }
 
+function formatClinicPrice(clinicCost: number | null) {
+  return clinicCost != null ? `$${clinicCost.toFixed(2)}` : "—";
+}
+
 export function ProductGridCard({
   product,
   isFavorite,
@@ -48,6 +59,37 @@ export function ProductGridCard({
 }: ProductGridCardProps) {
   const imageUrl = getPrimaryImage(product) ?? "/brand/product-vial-2x-blend-hero.png";
   const detailHref = `/portal/doctor/inventory/${product.slug ?? product.id}`;
+  const category = product.category.name ?? "Uncategorized";
+
+  const nameNode = (
+    <Link href={detailHref} className="hover:text-pacific-teal">
+      {product.name}
+    </Link>
+  );
+
+  const statsLeft = (
+    <>
+      Stock: {productStatValue(product.stock_count)}
+    </>
+  );
+
+  const statsRight = (
+    <>
+      Clinic price: {productStatValue(formatClinicPrice(product.clinic_cost))}
+    </>
+  );
+
+  const storeToggle = (
+    <label className="flex items-center gap-2">
+      <input
+        type="checkbox"
+        checked={inMyStore}
+        disabled={isStoreUpdating}
+        onChange={onToggleStore}
+        className="size-4 rounded border-deep-teal/25 text-deep-teal disabled:opacity-50"
+      />
+    </label>
+  );
 
   if (view === "list") {
     return (
@@ -55,15 +97,12 @@ export function ProductGridCard({
         <div className="relative size-20 shrink-0 overflow-hidden rounded-xl">
           <Image src={imageUrl} alt="" fill className="object-cover" sizes="80px" unoptimized={imageUrl.startsWith("http")} />
         </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <div>
-              <Link href={detailHref} className="font-medium text-deep-teal hover:text-pacific-teal">
-                {product.name}
-              </Link>
-              <p className="mt-1 text-xs text-deep-teal/50">{product.category.name ?? "Uncategorized"}</p>
+        <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <ProductCardNameRow name={nameNode} category={category} />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               <StockBadge status={product.stock_status} />
               <Tooltip content={isFavorite ? "Remove from favorites" : "Add to favorites"}>
                 <button type="button" onClick={onToggleFavorite} aria-label="Toggle favorite" className="text-lg leading-none">
@@ -72,24 +111,14 @@ export function ProductGridCard({
               </Tooltip>
             </div>
           </div>
-          <p className="mt-2 line-clamp-2 text-sm text-deep-teal/60">
-            {product.description ?? "—"}
-          </p>
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm font-medium text-deep-teal">
-              {product.clinic_cost != null ? `$${product.clinic_cost.toFixed(2)}` : "—"}
-            </p>
-            <label className="flex items-center gap-2 text-xs text-deep-teal/70">
-              <input
-                type="checkbox"
-                checked={inMyStore}
-                disabled={isStoreUpdating}
-                onChange={onToggleStore}
-                className="size-4 rounded"
-              />
-              Add to My Store
-            </label>
-          </div>
+
+          <ProductCardStatsRow left={statsLeft} right={statsRight} />
+
+          {product.description ? (
+            <p className="line-clamp-2 text-xs leading-relaxed text-deep-teal/60">{product.description}</p>
+          ) : null}
+
+          <ProductCardActionRow label="Add to My Store">{storeToggle}</ProductCardActionRow>
         </div>
       </article>
     );
@@ -99,6 +128,9 @@ export function ProductGridCard({
     <article className="flex flex-col overflow-hidden rounded-2xl border border-deep-teal/10 bg-pure-white shadow-sm">
       <div className="relative aspect-[4/3]">
         <Image src={imageUrl} alt="" fill className="object-cover" sizes="(max-width:768px) 100vw, 33vw" unoptimized={imageUrl.startsWith("http")} />
+        <div className="absolute left-3 top-3">
+          <StockBadge status={product.stock_status} />
+        </div>
         <Tooltip content={isFavorite ? "Remove from favorites" : "Add to favorites"}>
           <button
             type="button"
@@ -110,32 +142,16 @@ export function ProductGridCard({
           </button>
         </Tooltip>
       </div>
-      <div className="flex flex-1 flex-col p-4">
-        <div className="flex items-start justify-between gap-2">
-          <span className="rounded-full bg-deep-teal/5 px-2 py-0.5 text-[10px] font-medium text-deep-teal/60">
-            {product.category.name ?? "Uncategorized"}
-          </span>
-          <StockBadge status={product.stock_status} />
-        </div>
-        <Link href={detailHref} className="mt-2 font-medium text-deep-teal hover:text-pacific-teal">
-          {product.name}
-        </Link>
-        <p className="mt-2 line-clamp-2 flex-1 text-xs leading-relaxed text-deep-teal/60">
-          {product.description ?? "—"}
-        </p>
-        <p className="mt-3 text-sm font-medium text-deep-teal">
-          {product.clinic_cost != null ? `$${product.clinic_cost.toFixed(2)}` : "—"}
-        </p>
-        <label className="mt-3 flex items-center gap-2 text-xs text-deep-teal/70">
-          <input
-            type="checkbox"
-            checked={inMyStore}
-            disabled={isStoreUpdating}
-            onChange={onToggleStore}
-            className="size-4 rounded"
-          />
-          Add to My Store
-        </label>
+
+      <div className={productCardBodyClass()}>
+        <ProductCardNameRow name={nameNode} category={category} />
+        <ProductCardStatsRow left={statsLeft} right={statsRight} />
+
+        {product.description ? (
+          <p className="line-clamp-2 text-xs leading-relaxed text-deep-teal/60">{product.description}</p>
+        ) : null}
+
+        <ProductCardActionRow label="Add to My Store">{storeToggle}</ProductCardActionRow>
       </div>
     </article>
   );

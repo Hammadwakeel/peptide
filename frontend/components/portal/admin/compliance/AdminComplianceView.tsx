@@ -52,7 +52,7 @@ export function AdminComplianceView() {
       {tab === "compliance" ? (
         <>
           <div>
-            <h1 className="font-serif text-2xl font-light text-deep-teal">Compliance</h1>
+            <h1 className="font-sans text-2xl font-semibold text-deep-teal">Compliance</h1>
             <p className="mt-1 text-sm text-deep-teal/55">Clinic credential verification status</p>
           </div>
           <div className="overflow-x-auto rounded-2xl border border-deep-teal/10 bg-pure-white shadow-sm">
@@ -92,7 +92,7 @@ export function AdminComplianceView() {
       ) : (
         <>
           <div>
-            <h1 className="font-serif text-2xl font-light text-deep-teal">Audit Log</h1>
+            <h1 className="font-sans text-2xl font-semibold text-deep-teal">Audit Log</h1>
             <p className="mt-1 text-sm text-deep-teal/55">Timestamped platform activity</p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -119,8 +119,8 @@ export function AdminComplianceView() {
                 <p className="mt-2 text-sm text-deep-teal"><span className="text-deep-teal/50">Actor:</span> {entry.actor}</p>
                 <p className="text-sm text-deep-teal"><span className="text-deep-teal/50">Entity:</span> {entry.entity}</p>
                 <div className="mt-3 grid gap-2 rounded-lg bg-deep-teal/[0.03] p-3 text-xs sm:grid-cols-2">
-                  <div><span className="text-deep-teal/45">Before:</span> <span className="font-mono text-deep-teal">{entry.before}</span></div>
-                  <div><span className="text-deep-teal/45">After:</span> <span className="font-mono text-deep-teal">{entry.after}</span></div>
+                  <div><span className="text-deep-teal/45">Before:</span> <span className="font-mono text-xs text-deep-teal">{entry.before}</span></div>
+                  <div><span className="text-deep-teal/45">After:</span> <span className="font-mono text-xs text-deep-teal">{entry.after}</span></div>
                 </div>
               </article>
             ))}

@@ -9,12 +9,14 @@ import {
   transition,
   viewport,
 } from "@/components/motion";
+import { layoutContainerClass } from "@/lib/brand/design-system";
+import { typeTagline } from "@/lib/brand/typography";
 
 const navLinks = [
   { href: "#verification", label: "Process" },
   { href: "#standards", label: "Standards" },
+  { href: "#integrations", label: "Integrations" },
   { href: "#commitment", label: "Commitment" },
-  { href: "/integrations", label: "Integrations" },
 ];
 
 const legalLinks = [
@@ -28,40 +30,38 @@ export function Footer() {
 
   return (
     <motion.footer
-      className="border-t border-deep-teal/10 bg-pure-white text-deep-teal"
+      className="bg-pacific-teal text-pure-white"
       initial="hidden"
       whileInView="visible"
       viewport={viewport}
       variants={staggerContainer}
     >
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-8 md:px-12 lg:px-20">
+      <div className={layoutContainerClass}>
         <motion.div
-          className="grid gap-10 border-b border-deep-teal/10 py-12 sm:gap-12 sm:py-16 lg:grid-cols-12 lg:gap-16 lg:py-20"
+          className="grid gap-10 border-b border-white/15 py-12 sm:gap-12 sm:py-16 lg:grid-cols-12 lg:gap-16 lg:py-20"
           variants={staggerContainer}
         >
           <motion.div className="lg:col-span-5" variants={fadeInUp} transition={transition}>
             <Link href="/" aria-label="Frontier Biomed">
-              <FrontierLogo variant="light" />
+              <FrontierLogo variant="dark" />
             </Link>
-            <p className="mt-5 max-w-sm font-serif text-xl font-light leading-snug tracking-[-0.02em] text-deep-teal sm:mt-6 sm:text-2xl">
+            <p className={`mt-5 max-w-sm text-pure-white sm:mt-6 ${typeTagline}`}>
               The foundational supply layer of the peptide economy.
             </p>
-            <p className="mt-3 max-w-sm text-sm leading-relaxed text-deep-teal/60 sm:mt-4">
+            <p className="mt-3 max-w-sm text-sm leading-relaxed text-pure-white/75 sm:mt-4">
               Verified purity at every bond. Domestic by design — built for
               practitioners, pharmacies, and clinical teams.
             </p>
           </motion.div>
 
           <motion.div className="lg:col-span-3" variants={fadeInUp} transition={transition}>
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-pacific-teal sm:text-xs sm:tracking-[0.35em]">
-              Explore
-            </p>
+            <p className="font-sans text-xs font-medium text-pure-white/80">Explore</p>
             <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 sm:mt-6 sm:block sm:space-y-3">
               {navLinks.map(({ href, label }) => (
                 <li key={label}>
                   <Link
                     href={href}
-                    className="text-sm font-medium text-deep-teal/75 transition-colors hover:text-deep-teal"
+                    className="text-sm font-medium text-pure-white/80 transition-colors hover:text-pure-white"
                   >
                     {label}
                   </Link>
@@ -71,15 +71,13 @@ export function Footer() {
           </motion.div>
 
           <motion.div className="lg:col-span-4" variants={fadeInUp} transition={transition}>
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-pacific-teal sm:text-xs sm:tracking-[0.35em]">
-              Partner Access
-            </p>
-            <p className="mt-4 text-sm leading-relaxed text-deep-teal/60 sm:mt-6">
+            <p className="font-sans text-xs font-medium text-pure-white/80">Partner Access</p>
+            <p className="mt-4 text-sm leading-relaxed text-pure-white/75 sm:mt-6">
               Join the network of verified suppliers and clinical partners.
             </p>
             <Link
               href="/login"
-              className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-deep-teal px-6 py-3 text-sm font-medium text-pure-white transition-colors hover:bg-pacific-teal sm:mt-6 sm:w-auto"
+              className="mt-4 inline-flex w-full rounded-full bg-pure-white px-6 py-3 text-sm font-medium text-deep-teal transition-colors duration-300 hover:bg-coral-blush sm:mt-6 sm:w-auto"
             >
               Partner Portal
             </Link>
@@ -89,7 +87,7 @@ export function Footer() {
                 <li key={label}>
                   <Link
                     href={href}
-                    className="text-xs font-medium text-deep-teal/50 transition-colors hover:text-deep-teal/75"
+                    className="text-xs font-medium text-pure-white/55 transition-colors hover:text-pure-white/85"
                   >
                     {label}
                   </Link>
@@ -100,12 +98,12 @@ export function Footer() {
         </motion.div>
 
         <motion.div
-          className="flex flex-col gap-3 py-6 text-xs text-deep-teal/45 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:py-8"
+          className="flex flex-col gap-3 py-6 text-xs text-pure-white/55 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:py-8"
           variants={fadeInUp}
           transition={{ ...transition, delay: 0.2 }}
         >
           <p>© {year} Frontier Biomed. All rights reserved.</p>
-          <p className="font-mono text-[10px] uppercase tracking-[0.12em] sm:text-xs sm:tracking-[0.2em]">
+          <p className={`${typeTagline} text-xs text-pure-white/70`}>
             Molecular certainty, unconditionally.
           </p>
         </motion.div>

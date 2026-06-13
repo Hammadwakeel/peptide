@@ -107,7 +107,7 @@ export function AdminProductList() {
               <Package className="size-4" />
             </div>
             <div>
-              <h2 className="font-serif text-lg font-light">Products</h2>
+              <h2 className="font-sans text-lg font-semibold">Products</h2>
               <p className="text-xs text-pure-white/75">
                 {isLoading ? "Loading…" : `${sortedProducts.length} shown`}
               </p>
@@ -192,7 +192,7 @@ export function AdminProductList() {
           </div>
         ) : (
           <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-deep-teal/10 text-[10px] uppercase tracking-[0.18em] text-deep-teal/60">
+            <thead className="border-b border-deep-teal/10 text-[10px] text-deep-teal/60">
               <tr>
                 <th className="px-5 py-3 font-medium">Product</th>
                 <th className="hidden px-4 py-3 font-medium sm:table-cell">SKU</th>
@@ -250,7 +250,7 @@ export function AdminProductList() {
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm font-medium text-deep-teal">
+                      <span className="font-sans text-sm font-medium text-deep-teal">
                         {product.stock_count}
                       </span>
                       <span

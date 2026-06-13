@@ -1,13 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MessageSquare } from "lucide-react";
-import { ChatMessageInput } from "@/components/chat/ChatMessageInput";
+import { ChatMessageInput, toReplyTarget } from "@/components/chat/ChatMessageInput";
 import { ChatMessageList } from "@/components/chat/ChatMessageList";
-import { PortalPageSection } from "@/components/portal/shared/PortalPageSection";
-import { PortalPageToolbar } from "@/components/portal/shared/PortalPageToolbar";
 import { useChat } from "@/context/ChatProvider";
-import { PATIENT_QUICK_TEMPLATES } from "@/lib/chat/types";
+import { PATIENT_QUICK_TEMPLATES, type ReplyTarget, type ThreadMessage } from "@/lib/chat/types";
 
 function OnlineIndicator({ online }: { online: boolean }) {
   return (
@@ -22,9 +19,11 @@ function OnlineIndicator({ online }: { online: boolean }) {
 }
 
 export function ChatWithPhysicianTab() {
-  const { threads, loading, error, sendMessage, sendMedia, markRead, loadMessages } = useChat();
+  const { threads, loading, error, sendMessage, sendMedia, markRead, loadMessages, toggleReaction } =
+    useChat();
   const thread = threads[0];
   const [draft, setDraft] = useState("");
+  const [replyTo, setReplyTo] = useState<ReplyTarget | null>(null);
 
   useEffect(() => {
     if (thread) {
@@ -38,77 +37,67 @@ export function ChatWithPhysicianTab() {
   }
 
   if (error) {
-    return (
-      <div className="space-y-5">
-        <PortalPageToolbar title="Chat" />
-        <p className="text-sm text-coral-blush">{error}</p>
-      </div>
-    );
+    return <p className="text-sm text-coral-blush">{error}</p>;
   }
 
   if (!thread) {
-    return (
-      <div className="space-y-5">
-        <PortalPageToolbar title="Chat" />
-        <p className="text-sm text-deep-teal/50">Unable to load chat.</p>
-      </div>
-    );
+    return <p className="text-sm text-deep-teal/50">Unable to load chat.</p>;
   }
 
   return (
-    <div className="space-y-5">
-      <PortalPageToolbar title="Chat with Physician" />
-
-      <PortalPageSection
-        icon={MessageSquare}
-        title={thread.providerName}
-        subtitle={thread.providerSpecialty ?? "Your physician"}
-      >
-        <div className="mb-4 flex items-start gap-4">
-          <span className="relative flex size-14 shrink-0 items-center justify-center rounded-full bg-deep-teal/10 text-lg font-medium text-deep-teal">
+    <div className="flex h-[calc(100dvh-72px)] min-h-[520px] overflow-hidden rounded-2xl border border-deep-teal/10 bg-pure-white shadow-[0_4px_24px_rgba(1,26,36,0.08)]">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex items-center gap-3 border-b border-deep-teal/10 bg-surface-muted/30 px-4 py-3">
+          <span className="relative flex size-10 shrink-0 items-center justify-center rounded-full bg-pacific-teal/15 text-sm font-semibold text-deep-teal">
             DR
             <span
-              className={`absolute bottom-0 right-0 size-3.5 rounded-full border-2 border-pure-white ${
+              className={`absolute bottom-0 right-0 size-3 rounded-full border-2 border-pure-white ${
                 thread.providerOnline ? "bg-pacific-teal" : "bg-deep-teal/25"
               }`}
               aria-hidden="true"
             />
           </span>
-          <div>
-            <span className="rounded-full bg-pacific-teal/10 px-2 py-0.5 text-xs font-medium text-pacific-teal">
-              Active
-            </span>
-            <div className="mt-2">
-              <OnlineIndicator online={thread.providerOnline} />
-            </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-semibold text-deep-teal">{thread.providerName}</p>
+            <OnlineIndicator online={thread.providerOnline} />
           </div>
         </div>
 
-        <div className="mb-4 flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 border-b border-deep-teal/8 bg-pure-white px-3 py-2">
           {PATIENT_QUICK_TEMPLATES.map((template) => (
             <button
               key={template}
               type="button"
               onClick={() => setDraft(template)}
-              className="rounded-full border border-deep-teal/15 px-3 py-1.5 text-xs text-deep-teal/70 hover:border-pacific-teal hover:text-deep-teal"
+              className="rounded-full border border-deep-teal/15 px-3 py-1 text-xs text-deep-teal/70 hover:border-pacific-teal hover:text-deep-teal"
             >
               {template}
             </button>
           ))}
         </div>
 
-        <div className="overflow-hidden rounded-xl border border-deep-teal/10">
-          <div className="h-[420px] overflow-hidden">
-            <ChatMessageList messages={thread.messages} viewerRole="patient" />
-          </div>
-          <ChatMessageInput
-            draft={draft}
-            onDraftChange={setDraft}
-            onSend={(content) => sendMessage(thread.conversationId, content)}
-            onUpload={(file, messageType) => sendMedia(thread.conversationId, file, messageType)}
+        <div className="min-h-0 flex-1">
+          <ChatMessageList
+            messages={thread.messages}
+            viewerRole="patient"
+            onReply={(message: ThreadMessage) => setReplyTo(toReplyTarget(message))}
+            onToggleReaction={(messageId, emoji) =>
+              void toggleReaction(thread.conversationId, messageId, emoji)
+            }
           />
         </div>
-      </PortalPageSection>
+
+        <ChatMessageInput
+          draft={draft}
+          onDraftChange={setDraft}
+          replyTo={replyTo}
+          onReplyChange={setReplyTo}
+          onSend={(content, options) => sendMessage(thread.conversationId, content, options)}
+          onUpload={(file, messageType, options) =>
+            sendMedia(thread.conversationId, file, messageType, options)
+          }
+        />
+      </div>
     </div>
   );
 }

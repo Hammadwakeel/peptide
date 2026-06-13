@@ -40,9 +40,13 @@ async def chat_websocket(websocket: WebSocket) -> None:
     user_id = user["sub"]
     await ws_manager.connect(websocket, user_id)
     subscribed = await _auto_subscribe_user_conversations(websocket, user)
-    await websocket.send_text(
-        json.dumps({"type": "ready", "conversation_ids": subscribed})
-    )
+    try:
+        await websocket.send_text(
+            json.dumps({"type": "ready", "conversation_ids": subscribed})
+        )
+    except WebSocketDisconnect:
+        await ws_manager.disconnect(websocket, user_id)
+        return
 
     try:
         while True:
@@ -58,11 +62,17 @@ async def chat_websocket(websocket: WebSocket) -> None:
                 try:
                     await get_conversation_if_allowed(user, conversation_id)
                     await ws_manager.subscribe(websocket, conversation_id)
-                    await websocket.send_text(
-                        json.dumps({"type": "subscribed", "conversation_id": conversation_id})
-                    )
+                    try:
+                        await websocket.send_text(
+                            json.dumps({"type": "subscribed", "conversation_id": conversation_id})
+                        )
+                    except WebSocketDisconnect:
+                        break
                 except Exception as exc:
-                    await websocket.send_text(json.dumps({"type": "error", "message": str(exc)}))
+                    try:
+                        await websocket.send_text(json.dumps({"type": "error", "message": str(exc)}))
+                    except WebSocketDisconnect:
+                        break
             elif action == "unsubscribe" and conversation_id:
                 await ws_manager.unsubscribe(websocket, conversation_id)
     except WebSocketDisconnect:

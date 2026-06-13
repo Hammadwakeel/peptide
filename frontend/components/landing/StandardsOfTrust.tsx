@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { LandingSectionHeader, layoutContainerClass } from "@/components/landing/LandingSectionHeader";
 import {
   fadeInUp,
   motion,
@@ -9,7 +10,7 @@ import {
   transition,
   viewport,
 } from "@/components/motion";
-import { BRAND_SURFACE_CLASSES } from "@/lib/brand/colors";
+import { layoutSectionYClass, shapeStandardsCards } from "@/lib/brand/design-system";
 
 const metrics = [
   {
@@ -17,52 +18,61 @@ const metrics = [
     label: "Purity Verification Rate",
     description:
       "Every molecular batch undergoes multi-stage verification before release.",
-    bg: BRAND_SURFACE_CLASSES[0],
+    cardClass: "bg-coral-blush text-deep-teal",
+    dividerClass: "bg-deep-teal/20",
+    bodyClass: "text-deep-teal/75",
+    hoverClass: "sm:hover:shadow-md sm:hover:brightness-[0.98]",
+    shapeClass: shapeStandardsCards[0],
   },
   {
     value: "24/7",
     label: "Batch Traceability",
     description:
       "Complete chain-of-custody visibility from synthesis to practitioner delivery.",
-    bg: BRAND_SURFACE_CLASSES[1],
+    cardClass: "bg-pacific-teal text-pure-white",
+    dividerClass: "bg-pure-white/30",
+    bodyClass: "text-pure-white/85",
+    hoverClass: "sm:hover:shadow-md sm:hover:brightness-110",
+    shapeClass: shapeStandardsCards[1],
   },
   {
     value: "3x",
     label: "Validation Layers",
     description:
       "Independent verification protocols eliminate single-point failure.",
-    bg: BRAND_SURFACE_CLASSES[2],
+    cardClass: "bg-deep-teal text-pure-white",
+    dividerClass: "bg-pure-white/30",
+    bodyClass: "text-pure-white/85",
+    hoverClass: "sm:hover:shadow-md sm:hover:brightness-125",
+    shapeClass: shapeStandardsCards[2],
   },
   {
     value: "100%",
     label: "Domestic Workflow",
     description:
       "Controlled verification and documentation within a single ecosystem.",
-    bg: BRAND_SURFACE_CLASSES[3],
+    cardClass: "bg-pure-white text-deep-teal",
+    dividerClass: "bg-pacific-teal/30",
+    bodyClass: "text-deep-teal/75",
+    hoverClass: "sm:hover:shadow-md sm:hover:brightness-[0.98]",
+    shapeClass: shapeStandardsCards[3],
   },
 ];
 
 export function StandardsOfTrust() {
   return (
-    <section id="standards" className="bg-surface-muted py-14 sm:py-20 lg:py-24">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-8 md:px-12 lg:px-20 xl:px-28">
-        <motion.div
-          className="mb-10 text-center sm:mb-16"
-          initial="hidden"
-          whileInView="visible"
-          viewport={viewport}
-          variants={fadeInUp}
-          transition={transition}
-        >
-          <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-pacific-teal sm:text-xs sm:tracking-[0.3em]">
-            Standards of Trust
-          </span>
-          <h2 className="mt-3 font-serif text-3xl font-light leading-[1.08] tracking-[-0.03em] text-deep-teal sm:text-5xl md:text-6xl lg:text-7xl">
-            Proven by standard.
-            <br />
-            Backed by data.
-          </h2>
-        </motion.div>
+    <section id="standards" className={`bg-surface-muted ${layoutSectionYClass}`}>
+      <div className={layoutContainerClass}>
+        <LandingSectionHeader
+          label="Standards of Trust"
+          title={
+            <>
+              Proven by standard.
+              <br />
+              Backed by data.
+            </>
+          }
+        />
 
         <div className="grid gap-8 sm:gap-12 lg:grid-cols-2 lg:items-center">
           <motion.div
@@ -92,18 +102,18 @@ export function StandardsOfTrust() {
             {metrics.map((metric) => (
               <motion.div
                 key={metric.label}
-                className={`group rounded-2xl border border-deep-teal/5 ${metric.bg} p-6 transition-all duration-500 sm:rounded-[2.5rem] sm:p-10 sm:hover:-translate-y-2 sm:hover:shadow-[0_20px_50px_rgba(1,26,36,0.08)]`}
+                className={`group p-6 transition-[box-shadow,filter] duration-300 sm:p-10 ${metric.shapeClass} ${metric.cardClass} ${metric.hoverClass}`}
                 variants={fadeInUp}
                 transition={transition}
               >
-                <div className="font-serif text-4xl font-light leading-none tracking-[-0.04em] text-deep-teal sm:text-5xl">
+                <div className="font-sans text-3xl font-semibold leading-none sm:text-4xl">
                   {metric.value}
                 </div>
-                <div className="mt-4 h-px w-12 bg-deep-teal/20 sm:mt-6 sm:w-16" />
-                <h3 className="mt-4 font-serif text-xl font-light text-deep-teal sm:mt-6 sm:text-2xl">
+                <div className={`mt-4 h-px w-12 sm:mt-6 sm:w-16 ${metric.dividerClass}`} />
+                <h3 className="mt-4 font-sans text-xl font-semibold sm:mt-6 sm:text-2xl">
                   {metric.label}
                 </h3>
-                <p className="mt-3 text-sm leading-relaxed text-deep-teal/75 sm:mt-4 sm:text-base">
+                <p className={`mt-3 text-sm leading-relaxed sm:mt-4 sm:text-base ${metric.bodyClass}`}>
                   {metric.description}
                 </p>
               </motion.div>

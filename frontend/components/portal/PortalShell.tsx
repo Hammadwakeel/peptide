@@ -38,15 +38,15 @@ export function PortalShell({
       <header className="border-b border-deep-teal/10 bg-pure-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
           <div>
-            <p className="font-mono text-xs uppercase tracking-[0.35em] text-pacific-teal">
+            <p className="font-sans text-xs font-medium text-pacific-teal">
               {PORTAL_LABELS[role]}
             </p>
-            <h1 className="mt-1 font-serif text-2xl font-light">{title}</h1>
+            <h1 className="mt-1 font-sans text-2xl font-semibold">{title}</h1>
           </div>
           <button
             type="button"
             onClick={logout}
-            className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal transition-colors hover:border-pacific-teal hover:text-pacific-teal"
+            className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal transition-colors hover:bg-pacific-teal/12 hover:text-pacific-teal"
           >
             Sign out
           </button>

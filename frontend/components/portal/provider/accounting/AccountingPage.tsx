@@ -260,7 +260,7 @@ export function AccountingPage() {
       {breakdown ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-deep-teal/40 p-4">
           <div className="w-full max-w-md rounded-2xl border border-deep-teal/10 bg-pure-white p-6 shadow-xl">
-            <h3 className="font-serif text-xl font-light text-deep-teal">Payout breakdown</h3>
+            <h3 className="font-sans text-xl font-semibold text-deep-teal">Payout breakdown</h3>
             <p className="mt-1 font-mono text-xs text-deep-teal/50">{breakdown.batchId}</p>
             <dl className="mt-4 space-y-2 text-sm">
               <div className="flex justify-between">

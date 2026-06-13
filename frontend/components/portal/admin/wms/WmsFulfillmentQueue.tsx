@@ -47,7 +47,7 @@ function WmsUpdateTrackingModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-deep-teal/40 p-4">
       <div role="dialog" aria-modal="true" className="w-full max-w-md rounded-2xl border border-deep-teal/10 bg-pure-white p-6 shadow-xl">
-        <h2 className="font-serif text-xl font-light text-deep-teal">Update tracking</h2>
+        <h2 className="font-sans text-xl font-semibold text-deep-teal">Update tracking</h2>
         <p className="mt-1 font-mono text-xs text-deep-teal/45">{orderId}</p>
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
           <div>
@@ -93,7 +93,7 @@ export function WmsFulfillmentQueue() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-2xl font-light text-deep-teal">Fulfillment Queue</h1>
+        <h1 className="font-sans text-2xl font-semibold text-deep-teal">Fulfillment Queue</h1>
         <p className="mt-1 text-sm text-deep-teal/55">{queue.length} paid orders awaiting shipment</p>
       </div>
 

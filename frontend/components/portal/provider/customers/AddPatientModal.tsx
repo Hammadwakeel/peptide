@@ -58,7 +58,7 @@ export function AddPatientModal({ open, onClose, onSubmit }: AddPatientModalProp
         aria-labelledby="add-patient-title"
         className="relative z-10 max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-[1.5rem] border border-deep-teal/10 bg-pure-white p-6 shadow-xl"
       >
-        <h2 id="add-patient-title" className="font-serif text-xl font-light text-deep-teal">
+        <h2 id="add-patient-title" className="font-sans text-xl font-semibold text-deep-teal">
           Invite patient
         </h2>
         <p className="mt-1 text-sm text-deep-teal/55">

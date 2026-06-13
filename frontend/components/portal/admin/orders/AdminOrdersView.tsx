@@ -84,7 +84,7 @@ export function AdminOrdersView() {
   return (
     <div className="space-y-5">
       <div className="rounded-2xl border border-deep-teal/10 bg-deep-teal/[0.02] px-4 py-4 sm:px-5">
-        <h2 className="font-serif text-xl font-light text-deep-teal">All Orders</h2>
+        <h2 className="font-sans text-xl font-semibold text-deep-teal">All Orders</h2>
         <p className="mt-1 text-sm text-deep-teal/60">
           Cross-clinic order visibility with bulk actions and flagging.
         </p>

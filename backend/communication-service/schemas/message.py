@@ -1,8 +1,19 @@
 from pydantic import BaseModel, Field
 
 
+class MessageReaction(BaseModel):
+    emoji: str
+    user_id: str
+    user_name: str | None = None
+
+
 class SendMessageRequest(BaseModel):
     content: str = Field(min_length=1, max_length=2000)
+    reply_to_message_id: str | None = None
+
+
+class ToggleReactionRequest(BaseModel):
+    emoji: str = Field(min_length=1, max_length=16)
 
 
 class MessageResponse(BaseModel):
@@ -17,6 +28,8 @@ class MessageResponse(BaseModel):
     media_mime: str | None = None
     media_duration_ms: int | None = None
     sender_name: str | None = None
+    reply_to_message_id: str | None = None
+    reactions: list[MessageReaction] = Field(default_factory=list)
     created_at: str
 
 

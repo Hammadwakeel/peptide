@@ -64,7 +64,7 @@ export function AdminPayoutsDashboard() {
   return (
     <div className="space-y-5">
       <div className="rounded-2xl border border-deep-teal/10 bg-deep-teal/[0.02] px-4 py-4 sm:px-5">
-        <h2 className="font-serif text-xl font-light text-deep-teal">Payouts Dashboard</h2>
+        <h2 className="font-sans text-xl font-semibold text-deep-teal">Payouts Dashboard</h2>
         <p className="mt-1 text-sm text-deep-teal/60">
           All clinic payout batches with manual triggers and error monitoring.
         </p>
@@ -143,7 +143,7 @@ export function AdminPayoutsDashboard() {
                     <button
                       type="button"
                       onClick={() => handleManualTrigger(payout)}
-                      className="rounded-full border border-deep-teal/15 px-3 py-1 text-xs font-medium text-deep-teal hover:border-pacific-teal"
+                      className="rounded-full border border-deep-teal/15 px-3 py-1 text-xs font-medium text-deep-teal hover:bg-pacific-teal/12"
                     >
                       Manual Trigger
                     </button>

@@ -15,8 +15,8 @@ type ChatAttachmentMenuProps = {
 };
 
 const MENU_ITEMS = [
-  { id: "document", label: "Document", icon: FileText, onPick: "onPickDocument" as const },
-  { id: "image", label: "Photos", icon: ImageIcon, onPick: "onPickImage" as const },
+  { id: "document", label: "Report / document", icon: FileText, onPick: "onPickDocument" as const },
+  { id: "image", label: "Photo / X-ray", icon: ImageIcon, onPick: "onPickImage" as const },
   { id: "audio", label: "Audio", icon: Music, onPick: "onPickAudio" as const },
 ] as const;
 

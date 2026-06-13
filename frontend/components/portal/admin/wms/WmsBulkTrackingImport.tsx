@@ -44,7 +44,7 @@ export function WmsBulkTrackingImport() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-2xl font-light text-deep-teal">Bulk Tracking Import</h1>
+        <h1 className="font-sans text-2xl font-semibold text-deep-teal">Bulk Tracking Import</h1>
         <p className="mt-1 text-sm text-deep-teal/55">Upload carrier tracking updates via CSV</p>
       </div>
 

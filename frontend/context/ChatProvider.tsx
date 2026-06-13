@@ -79,6 +79,7 @@ export function useChat() {
       loadMessages: state.loadMessages,
       sendMessage: state.sendMessage,
       sendMedia: state.sendMedia,
+      toggleReaction: state.toggleReaction,
       markRead: state.markRead,
       ensureDoctorThread: state.ensureDoctorThread,
     })),

@@ -1,7 +1,12 @@
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 
 from middleware.auth import get_current_user
-from schemas.message import MessageListResponse, MessageResponse, SendMessageRequest
+from schemas.message import (
+    MessageListResponse,
+    MessageResponse,
+    SendMessageRequest,
+    ToggleReactionRequest,
+)
 from services import message_service
 
 router = APIRouter(tags=["messages"])
@@ -30,7 +35,12 @@ async def send_message(
     body: SendMessageRequest,
     user: dict = Depends(get_current_user),
 ) -> MessageResponse:
-    message = await message_service.send_text_message(user, conversation_id, body.content)
+    message = await message_service.send_text_message(
+        user,
+        conversation_id,
+        body.content,
+        reply_to_message_id=body.reply_to_message_id,
+    )
     return MessageResponse(**message)
 
 
@@ -41,6 +51,7 @@ async def upload_message(
     file: UploadFile = File(...),
     content: str | None = Form(None),
     media_duration_ms: int | None = Form(None),
+    reply_to_message_id: str | None = Form(None),
     user: dict = Depends(get_current_user),
 ) -> MessageResponse:
     message = await message_service.send_media_message(
@@ -50,5 +61,25 @@ async def upload_message(
         message_type=message_type,
         content=content,
         media_duration_ms=media_duration_ms,
+        reply_to_message_id=reply_to_message_id,
+    )
+    return MessageResponse(**message)
+
+
+@router.post(
+    "/conversations/{conversation_id}/messages/{message_id}/reactions",
+    response_model=MessageResponse,
+)
+async def toggle_reaction(
+    conversation_id: str,
+    message_id: str,
+    body: ToggleReactionRequest,
+    user: dict = Depends(get_current_user),
+) -> MessageResponse:
+    message = await message_service.toggle_message_reaction(
+        user,
+        conversation_id,
+        message_id,
+        body.emoji,
     )
     return MessageResponse(**message)

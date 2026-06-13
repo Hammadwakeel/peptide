@@ -13,7 +13,7 @@ export function AdminReportsDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-2xl font-light text-deep-teal">Reports</h1>
+        <h1 className="font-sans text-2xl font-semibold text-deep-teal">Reports</h1>
         <p className="mt-1 text-sm text-deep-teal/55">Platform performance and revenue analytics</p>
       </div>
 
@@ -26,7 +26,7 @@ export function AdminReportsDashboard() {
         ].map((kpi) => (
           <div key={kpi.label} className="rounded-2xl border border-deep-teal/10 bg-pure-white px-4 py-5 shadow-sm">
             <p className="text-xs uppercase tracking-wide text-deep-teal/45">{kpi.label}</p>
-            <p className="mt-2 font-serif text-3xl font-light text-deep-teal">{kpi.value}</p>
+            <p className="mt-2 font-sans text-3xl font-semibold text-deep-teal">{kpi.value}</p>
           </div>
         ))}
       </div>

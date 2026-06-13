@@ -36,7 +36,7 @@ export function ProductDetailModal({ product, open, onClose, onRequest, onOrder 
           <span className="rounded-full bg-deep-teal/5 px-2 py-0.5 text-[10px] font-medium text-deep-teal/60">
             {product.category}
           </span>
-          <h2 className="mt-2 font-serif text-2xl font-light text-deep-teal">{product.name}</h2>
+          <h2 className="mt-2 font-sans text-2xl font-semibold text-deep-teal">{product.name}</h2>
           <p className="mt-1 text-lg font-medium text-deep-teal">${product.price}</p>
           <p className="mt-4 text-sm leading-relaxed text-deep-teal/70">{product.description}</p>
           <div className="mt-4 rounded-xl bg-deep-teal/[0.03] px-4 py-3">

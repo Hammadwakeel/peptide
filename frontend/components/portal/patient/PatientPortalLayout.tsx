@@ -1,21 +1,26 @@
 "use client";
 
 import { useMemo } from "react";
+import {
+  LayoutDashboard,
+  MessageSquare,
+  Package,
+  ShoppingBag,
+  User,
+} from "lucide-react";
 import { RoleOnboardingJoyride } from "@/components/onboarding/RoleOnboardingJoyride";
 import { PortalSidebarLayout, type SidebarLink } from "@/components/portal/shared/PortalSidebarLayout";
 import { usePatientUnreadTotal } from "@/context/ChatProvider";
-import { usePatientPortal } from "@/context/PatientPortalProvider";
 
 const BASE_PATIENT_LINKS: Omit<SidebarLink, "badge">[] = [
-  { href: "/portal/patient", label: "Dashboard", exact: true },
-  { href: "/portal/patient/orders", label: "Orders", exact: false },
-  { href: "/portal/patient/products", label: "Products", exact: false },
-  { href: "/portal/patient/chat", label: "Chat", exact: false },
-  { href: "/portal/patient/profile", label: "Account", exact: true },
+  { href: "/portal/patient", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/portal/patient/orders", label: "Orders", icon: Package, exact: false },
+  { href: "/portal/patient/products", label: "Products", icon: ShoppingBag, exact: false },
+  { href: "/portal/patient/chat", label: "Chat", icon: MessageSquare, exact: false },
+  { href: "/portal/patient/profile", label: "Account", icon: User, exact: true },
 ];
 
 export function PatientPortalLayout({ children }: { children: React.ReactNode }) {
-  const { clinicName } = usePatientPortal();
   const patientUnreadTotal = usePatientUnreadTotal();
 
   const links = useMemo(
@@ -29,11 +34,7 @@ export function PatientPortalLayout({ children }: { children: React.ReactNode })
   );
 
   return (
-    <PortalSidebarLayout
-      portalLabel="Patient portal"
-      brandTitle={clinicName ?? "Frontier Biomed"}
-      links={links}
-    >
+    <PortalSidebarLayout links={links} onboardingRole="patient">
       <RoleOnboardingJoyride role="patient" />
       {children}
     </PortalSidebarLayout>

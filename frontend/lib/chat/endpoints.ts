@@ -14,6 +14,8 @@ export const CHAT_ENDPOINTS = {
     `${COMMUNICATION_API_URL}/conversations/${conversationId}/messages`,
   upload: (conversationId: string) =>
     `${COMMUNICATION_API_URL}/conversations/${conversationId}/messages/upload`,
+  reaction: (conversationId: string, messageId: string) =>
+    `${COMMUNICATION_API_URL}/conversations/${conversationId}/messages/${messageId}/reactions`,
   markRead: (conversationId: string) =>
     `${COMMUNICATION_API_URL}/conversations/${conversationId}/read`,
   templates: `${COMMUNICATION_API_URL}/message-templates`,

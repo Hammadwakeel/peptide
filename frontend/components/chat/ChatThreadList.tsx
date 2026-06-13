@@ -2,60 +2,82 @@
 
 import { TruncateTooltip } from "@/components/ui/Tippy";
 import { getPatientInitials } from "@/lib/patients/types";
-import { formatThreadPreviewTime, type ChatThread } from "@/lib/chat/types";
+import {
+  formatThreadPreviewTime,
+  getThreadLastActivityAt,
+  getThreadPreviewText,
+  type ChatSender,
+  type ChatThread,
+} from "@/lib/chat/types";
 
 type ChatThreadListProps = {
   threads: ChatThread[];
   activePatientId: string | null;
   onSelect: (patientId: string) => void;
+  viewerRole?: ChatSender;
 };
 
-export function ChatThreadList({ threads, activePatientId, onSelect }: ChatThreadListProps) {
+export function ChatThreadList({
+  threads,
+  activePatientId,
+  onSelect,
+  viewerRole = "provider",
+}: ChatThreadListProps) {
   const sorted = [...threads].sort((a, b) => {
-    const aTime = a.messages[a.messages.length - 1]?.sentAt ?? "";
-    const bTime = b.messages[b.messages.length - 1]?.sentAt ?? "";
+    const aTime = getThreadLastActivityAt(a);
+    const bTime = getThreadLastActivityAt(b);
+    if (!aTime && !bTime) return 0;
+    if (!aTime) return 1;
+    if (!bTime) return -1;
     return new Date(bTime).getTime() - new Date(aTime).getTime();
   });
 
   return (
-    <ul className="divide-y divide-deep-teal/10 overflow-y-auto">
+    <ul className="overflow-y-auto">
       {sorted.map((thread) => {
-        const last = thread.messages[thread.messages.length - 1];
         const active = thread.patientId === activePatientId;
+        const preview = getThreadPreviewText(thread, viewerRole);
+        const lastActivityAt = getThreadLastActivityAt(thread);
+        const unread = viewerRole === "provider" ? thread.unreadProvider : thread.unreadPatient;
+
         return (
           <li key={thread.patientId}>
             <button
               type="button"
               onClick={() => onSelect(thread.patientId)}
-              className={`flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-deep-teal/[0.03] ${
-                active ? "bg-deep-teal/[0.05]" : ""
+              className={`flex w-full items-center gap-3 border-b border-deep-teal/6 px-4 py-3 text-left transition-colors hover:bg-deep-teal/[0.04] ${
+                active ? "bg-deep-teal/[0.07]" : "bg-pure-white"
               }`}
             >
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-deep-teal/10 text-xs font-medium text-deep-teal">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-pacific-teal/15 text-sm font-semibold text-deep-teal">
                 {getPatientInitials(thread.patientName)}
               </span>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex items-baseline justify-between gap-2">
                   <TruncateTooltip content={thread.patientName}>
-                    <p className="truncate font-medium text-deep-teal">{thread.patientName}</p>
+                    <p className="truncate font-semibold text-deep-teal">{thread.patientName}</p>
                   </TruncateTooltip>
-                  {last ? (
-                    <span className="shrink-0 text-[10px] text-deep-teal/45">
-                      {formatThreadPreviewTime(last.sentAt)}
+                  {lastActivityAt ? (
+                    <span
+                      className={`shrink-0 text-[11px] tabular-nums ${
+                        unread > 0 ? "font-semibold text-pacific-teal" : "text-deep-teal/45"
+                      }`}
+                    >
+                      {formatThreadPreviewTime(lastActivityAt)}
                     </span>
                   ) : null}
                 </div>
-                <TruncateTooltip content={last?.content ?? "No messages yet"}>
-                  <p className="mt-0.5 truncate text-xs text-deep-teal/55">
-                    {last?.content ?? "No messages yet"}
-                  </p>
-                </TruncateTooltip>
+                <div className="mt-0.5 flex items-center justify-between gap-2">
+                  <TruncateTooltip content={preview}>
+                    <p className="truncate text-sm text-deep-teal/55">{preview}</p>
+                  </TruncateTooltip>
+                  {unread > 0 ? (
+                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-pacific-teal text-[10px] font-semibold text-pure-white">
+                      {unread > 9 ? "9+" : unread}
+                    </span>
+                  ) : null}
+                </div>
               </div>
-              {thread.unreadProvider > 0 ? (
-                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-pacific-teal text-[10px] font-medium text-pure-white">
-                  {thread.unreadProvider}
-                </span>
-              ) : null}
             </button>
           </li>
         );

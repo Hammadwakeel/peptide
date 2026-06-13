@@ -37,7 +37,7 @@ export function UpdateTrackingModal({ open, orderId, onClose }: UpdateTrackingMo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-deep-teal/40 p-4">
       <div role="dialog" aria-modal="true" className="w-full max-w-md rounded-2xl border border-deep-teal/10 bg-pure-white p-6 shadow-xl">
-        <h2 className="font-serif text-xl font-light text-deep-teal">Update tracking</h2>
+        <h2 className="font-sans text-xl font-semibold text-deep-teal">Update tracking</h2>
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
           <div>
             <label htmlFor="tracking-carrier" className={authLabelClassName}>Carrier</label>

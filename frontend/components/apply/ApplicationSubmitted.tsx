@@ -40,7 +40,7 @@ export function ApplicationSubmitted() {
           </svg>
         </div>
 
-        <h1 className="mt-5 font-serif text-2xl font-light text-deep-teal">
+        <h1 className="mt-5 font-sans text-2xl font-semibold text-deep-teal">
           Application submitted
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-deep-teal/65">

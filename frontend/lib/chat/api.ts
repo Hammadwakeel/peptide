@@ -40,14 +40,21 @@ async function chatFetch<T>(input: string, options: RequestInit = {}): Promise<T
   const token = await getAccessToken();
   const isFormData = options.body instanceof FormData;
 
-  const response = await fetch(input, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      ...(isFormData ? {} : { "Content-Type": "application/json" }),
-      ...options.headers,
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(input, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...(isFormData ? {} : { "Content-Type": "application/json" }),
+        ...options.headers,
+      },
+    });
+  } catch {
+    throw new Error(
+      "Unable to reach the chat service. Make sure the communication service is running on port 3003.",
+    );
+  }
 
   const payload = await response.json().catch(() => null);
   if (!response.ok) {
@@ -77,10 +84,17 @@ export async function listMessages(conversationId: string): Promise<ApiMessage[]
   return data.messages ?? [];
 }
 
-export async function sendTextMessage(conversationId: string, content: string): Promise<ApiMessage> {
+export async function sendTextMessage(
+  conversationId: string,
+  content: string,
+  options?: { replyToMessageId?: string },
+): Promise<ApiMessage> {
   return chatFetch<ApiMessage>(CHAT_ENDPOINTS.messages(conversationId), {
     method: "POST",
-    body: JSON.stringify({ content }),
+    body: JSON.stringify({
+      content,
+      reply_to_message_id: options?.replyToMessageId ?? null,
+    }),
   });
 }
 
@@ -88,7 +102,7 @@ export async function uploadChatMedia(
   conversationId: string,
   file: File,
   messageType: "image" | "voice" | "document",
-  options?: { content?: string; mediaDurationMs?: number },
+  options?: { content?: string; mediaDurationMs?: number; replyToMessageId?: string },
 ): Promise<ApiMessage> {
   const formData = new FormData();
   formData.append("message_type", messageType);
@@ -97,9 +111,23 @@ export async function uploadChatMedia(
   if (options?.mediaDurationMs != null) {
     formData.append("media_duration_ms", String(options.mediaDurationMs));
   }
+  if (options?.replyToMessageId) {
+    formData.append("reply_to_message_id", options.replyToMessageId);
+  }
   return chatFetch<ApiMessage>(CHAT_ENDPOINTS.upload(conversationId), {
     method: "POST",
     body: formData,
+  });
+}
+
+export async function toggleMessageReaction(
+  conversationId: string,
+  messageId: string,
+  emoji: string,
+): Promise<ApiMessage> {
+  return chatFetch<ApiMessage>(CHAT_ENDPOINTS.reaction(conversationId, messageId), {
+    method: "POST",
+    body: JSON.stringify({ emoji }),
   });
 }
 

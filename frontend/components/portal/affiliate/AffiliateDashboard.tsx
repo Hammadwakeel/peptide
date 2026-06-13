@@ -27,7 +27,7 @@ function StatCell({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-xl border border-deep-teal/10 bg-pure-white px-4 py-3 text-center shadow-sm">
       <p className="text-[10px] font-medium uppercase tracking-wide text-deep-teal/45">{label}</p>
-      <p className="mt-1 font-serif text-2xl font-light text-deep-teal">{value}</p>
+      <p className="mt-1 font-sans text-2xl font-semibold text-deep-teal">{value}</p>
     </div>
   );
 }
@@ -85,8 +85,8 @@ export function AffiliateDashboard() {
         filterStepIds={isMain ? undefined : ["sub-affiliates"]}
       />
 
-      <div className="flex items-center gap-4 rounded-2xl border border-deep-teal/20 bg-pure-white px-4 py-3 shadow-[0_2px_12px_rgba(1,26,36,0.08)] sm:px-5">
-        <h1 className="shrink-0 font-serif text-xl font-light text-deep-teal sm:text-2xl">Dashboard</h1>
+      <div className="flex items-center gap-4 rounded-2xl border border-deep-teal/20 bg-pure-white px-4 py-2.5 shadow-[0_2px_12px_rgba(1,26,36,0.08)] sm:px-5">
+        <h1 className="shrink-0 font-sans text-xl font-semibold text-deep-teal sm:text-2xl">Dashboard</h1>
         <div className="min-w-4 flex-1" aria-hidden="true" />
         <div className="flex flex-wrap items-center justify-end gap-2">
           {toolbarActions.map(({ href, label, icon: Icon, primary }) => (
@@ -133,7 +133,7 @@ export function AffiliateDashboard() {
               <LayoutGrid className="size-4" />
             </div>
             <div>
-              <h2 className="font-serif text-lg font-light">Account</h2>
+              <h2 className="font-sans text-lg font-semibold">Account</h2>
               <p className="text-xs text-pure-white/75">{profile.email}</p>
             </div>
           </div>
@@ -144,7 +144,7 @@ export function AffiliateDashboard() {
             <DetailCell label="Email" value={profile.email} />
             <DetailCell label="Type" value={<span className="capitalize">{profile.affiliate_type}</span>} />
             <DetailCell label="Status" value={<span className="capitalize">{profile.status}</span>} />
-            <DetailCell label="Affiliate code" value={<span className="font-mono">{profile.affiliate_code}</span>} />
+            <DetailCell label="Affiliate code" value={<span className="font-mono text-xs">{profile.affiliate_code}</span>} />
             <DetailCell label="Profit margin" value={`${profile.profit_margin_percent}%`} />
             {isMain ? (
               <DetailCell
@@ -171,7 +171,7 @@ export function AffiliateDashboard() {
               <button
                 type="button"
                 onClick={() => void copyReferralLink()}
-                className="inline-flex items-center gap-1.5 rounded-full border border-deep-teal/15 px-3 py-1 text-xs font-medium text-deep-teal hover:border-pacific-teal"
+                className="inline-flex items-center gap-1.5 rounded-full border border-deep-teal/15 px-3 py-1 text-xs font-medium text-deep-teal hover:bg-pacific-teal/12"
               >
                 <Copy className="size-3" aria-hidden="true" />
                 Copy
@@ -192,7 +192,7 @@ export function AffiliateDashboard() {
               <Users className="size-4" />
             </div>
             <div>
-              <h2 className="font-serif text-lg font-light">Referral stats</h2>
+              <h2 className="font-sans text-lg font-semibold">Referral stats</h2>
               <p className="text-xs text-pure-white/75">Your network at a glance</p>
             </div>
           </div>

@@ -58,7 +58,7 @@ export function PlaceOrderModal({ product, open, onClose }: PlaceOrderModalProps
         className="relative z-10 w-full max-w-md overflow-hidden rounded-[1.5rem] border border-deep-teal/10 bg-pure-white shadow-xl"
       >
         <div className="border-b border-deep-teal/10 px-6 py-4">
-          <h2 className="font-serif text-xl font-light text-deep-teal">Place order</h2>
+          <h2 className="font-sans text-xl font-semibold text-deep-teal">Place order</h2>
           <p className="mt-1 text-sm text-deep-teal/60">{product.name}</p>
         </div>
         <div className="space-y-4 px-6 py-5">

@@ -36,6 +36,7 @@ def get_messages_collection(db: AsyncIOMotorDatabase):
 
 def serialize_message(doc: dict[str, Any]) -> dict[str, Any]:
     message_id = doc.get("id") or str(doc["_id"])
+    reactions = doc.get("reactions") or []
     return {
         "id": message_id,
         "conversation_id": doc["conversation_id"],
@@ -48,6 +49,8 @@ def serialize_message(doc: dict[str, Any]) -> dict[str, Any]:
         "media_mime": doc.get("media_mime"),
         "media_duration_ms": doc.get("media_duration_ms"),
         "sender_name": doc.get("sender_name"),
+        "reply_to_message_id": doc.get("reply_to_message_id"),
+        "reactions": reactions,
         "created_at": doc["created_at"].isoformat()
         if isinstance(doc.get("created_at"), datetime)
         else str(doc.get("created_at", "")),
@@ -55,6 +58,42 @@ def serialize_message(doc: dict[str, Any]) -> dict[str, Any]:
 
 
 import uuid
+
+
+async def get_message_by_id(db: AsyncIOMotorDatabase, message_id: str) -> dict[str, Any] | None:
+    doc = await db.messages.find_one({"id": message_id})
+    return doc
+
+
+async def toggle_message_reaction(
+    db: AsyncIOMotorDatabase,
+    *,
+    message_id: str,
+    conversation_id: str,
+    emoji: str,
+    user_id: str,
+    user_name: str | None,
+) -> dict[str, Any] | None:
+    doc = await db.messages.find_one({"id": message_id, "conversation_id": conversation_id})
+    if not doc:
+        return None
+
+    reactions: list[dict[str, Any]] = list(doc.get("reactions") or [])
+    existing_index = next(
+        (index for index, reaction in enumerate(reactions) if reaction.get("user_id") == user_id),
+        None,
+    )
+
+    if existing_index is not None and reactions[existing_index].get("emoji") == emoji:
+        reactions.pop(existing_index)
+    else:
+        if existing_index is not None:
+            reactions.pop(existing_index)
+        reactions.append({"emoji": emoji, "user_id": user_id, "user_name": user_name})
+
+    await db.messages.update_one({"id": message_id}, {"$set": {"reactions": reactions}})
+    updated = await db.messages.find_one({"id": message_id})
+    return serialize_message(updated) if updated else None
 
 
 async def insert_message(db: AsyncIOMotorDatabase, data: dict[str, Any]) -> dict[str, Any]:

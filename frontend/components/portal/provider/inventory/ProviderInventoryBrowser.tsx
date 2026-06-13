@@ -107,7 +107,7 @@ export function ProviderInventoryBrowser() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <ProviderPageToolbar title="Inventory">
         <select
           value={catalogTab}
@@ -143,8 +143,9 @@ export function ProviderInventoryBrowser() {
             ? "Loading…"
             : `${filteredProducts.length} product${filteredProducts.length === 1 ? "" : "s"} · ${CATALOG_PRODUCT_TYPE_LABELS[catalogTab]}`
         }
+        compact
       >
-        <div className="mb-5 flex flex-wrap gap-3">
+        <div className="mb-4 flex flex-wrap gap-3">
           <input
             type="search"
             value={catalogSearch}

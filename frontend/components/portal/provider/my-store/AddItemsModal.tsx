@@ -10,6 +10,11 @@ import {
   getPrimaryImage,
 } from "@/lib/products/catalog-types";
 import { TruncateTooltip } from "@/components/ui/Tippy";
+import {
+  ProductCardNameRow,
+  ProductCardStatsRow,
+  productStatValue,
+} from "@/components/portal/shared/ProductCardLayout";
 import { fuseSearch } from "@/lib/search/fuse";
 import { CATALOG_PRODUCT_SEARCH_KEYS } from "@/lib/search/keys";
 
@@ -83,7 +88,7 @@ export function AddItemsModal({ open, onClose, excludedIds, onAddSelected }: Add
         className="relative z-10 flex max-h-[90dvh] w-full max-w-3xl flex-col overflow-hidden rounded-[1.5rem] border border-deep-teal/10 bg-pure-white shadow-xl"
       >
         <div className="border-b border-deep-teal/10 px-5 py-4 sm:px-6">
-          <h2 id="add-items-title" className="font-serif text-xl font-light text-deep-teal">
+          <h2 id="add-items-title" className="font-sans text-xl font-semibold text-deep-teal">
             Add items to My Store
           </h2>
           <p className="mt-1 text-sm text-deep-teal/55">
@@ -154,31 +159,57 @@ export function AddItemsModal({ open, onClose, excludedIds, onAddSelected }: Add
                         />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <TruncateTooltip content={product.name}>
-                          <p className="truncate text-sm font-medium text-deep-teal">{product.name}</p>
-                        </TruncateTooltip>
-                        <p className="text-xs text-deep-teal/50">
-                          {product.category.name ?? "Uncategorized"} ·{" "}
-                          {CATALOG_PRODUCT_TYPE_LABELS[product.product_type]} · Clinic $
-                          {product.clinic_cost?.toFixed(2) ?? "—"}
-                        </p>
+                        <ProductCardNameRow
+                          name={
+                            <TruncateTooltip content={product.name}>
+                              <span className="block truncate">{product.name}</span>
+                            </TruncateTooltip>
+                          }
+                          category={product.category.name ?? "Uncategorized"}
+                        />
+                        <div className="mt-2">
+                          <ProductCardStatsRow
+                            left={
+                              <>
+                                Type: {productStatValue(CATALOG_PRODUCT_TYPE_LABELS[product.product_type])}
+                              </>
+                            }
+                            right={
+                              <>
+                                Clinic price:{" "}
+                                {productStatValue(
+                                  product.clinic_cost != null
+                                    ? `$${product.clinic_cost.toFixed(2)}`
+                                    : "—",
+                                )}
+                              </>
+                            }
+                          />
+                        </div>
                         {isSelected ? (
-                          <div className="mt-2 flex items-center gap-2">
-                            <span className="text-xs text-deep-teal/55">Retail $</span>
-                            <input
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              value={selected.get(product.id) ?? 0}
-                              onChange={(e) =>
-                                setSelected((current) => {
-                                  const next = new Map(current);
-                                  next.set(product.id, Number(e.target.value));
-                                  return next;
-                                })
-                              }
-                              className="w-24 rounded-lg border border-deep-teal/15 px-2 py-1 text-xs"
-                            />
+                          <div className="mt-2 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3">
+                            <span className="text-xs font-medium uppercase tracking-wide text-deep-teal/65">
+                              Retail price
+                            </span>
+                            <div className="flex justify-end">
+                              <div className="flex w-full max-w-[7.5rem] items-center rounded-lg border border-deep-teal/20 bg-surface-muted/30 px-2 py-1">
+                                <span className="text-xs font-medium text-deep-teal/70">$</span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  value={selected.get(product.id) ?? 0}
+                                  onChange={(e) =>
+                                    setSelected((current) => {
+                                      const next = new Map(current);
+                                      next.set(product.id, Number(e.target.value));
+                                      return next;
+                                    })
+                                  }
+                                  className="w-full bg-transparent pl-1 text-xs font-medium text-deep-teal outline-none"
+                                />
+                              </div>
+                            </div>
                           </div>
                         ) : null}
                       </div>

@@ -8,12 +8,16 @@ import {
   markConversationRead,
   sendTextMessage,
   uploadChatMedia,
+  toggleMessageReaction,
 } from "@/lib/chat/api";
 import {
   apiConversationToThread,
   apiMessageToThreadMessage,
   mergeThreadMessage,
+  messagePreviewText,
   replacePendingMessage,
+  sortMessagesChronologically,
+  updateThreadMessage,
   type ApiMessage,
   type ChatSender,
   type ChatThread,
@@ -42,13 +46,14 @@ type ChatState = {
   refreshThreads: (options?: { force?: boolean }) => Promise<void>;
   reset: () => void;
   loadMessages: (conversationId: string) => Promise<void>;
-  sendMessage: (conversationId: string, content: string) => Promise<void>;
+  sendMessage: (conversationId: string, content: string, options?: { replyToMessageId?: string }) => Promise<void>;
   sendMedia: (
     conversationId: string,
     file: File,
     messageType: ChatMediaMessageType,
-    options?: { content?: string; mediaDurationMs?: number },
+    options?: { content?: string; mediaDurationMs?: number; replyToMessageId?: string },
   ) => Promise<void>;
+  toggleReaction: (conversationId: string, messageId: string, emoji: string) => Promise<void>;
   markRead: (conversationId: string, role: "provider" | "patient") => Promise<void>;
   ensureDoctorThread: (patientId: string) => Promise<ChatThread | undefined>;
   getThread: (patientId: string) => ChatThread | undefined;
@@ -79,12 +84,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
   applyWsEvent: (event) => {
     if (event.type === "message.new" && event.conversation_id && event.message) {
       const message = apiMessageToThreadMessage(event.message as ApiMessage);
+      let refreshUnknownThread = false;
+
       set((state) => {
         const hasThread = state.threads.some(
           (thread) => thread.conversationId === event.conversation_id,
         );
         if (!hasThread) {
-          void get().refreshThreads({ force: true });
+          refreshUnknownThread = true;
           return state;
         }
         return {
@@ -93,6 +100,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
               ? {
                   ...thread,
                   messages: mergeThreadMessage(thread.messages, message),
+                  lastMessageAt: message.sentAt,
+                  lastMessagePreview: messagePreviewText(message),
                   unreadProvider:
                     message.sender === "patient" ? thread.unreadProvider + 1 : thread.unreadProvider,
                   unreadPatient:
@@ -102,6 +111,22 @@ export const useChatStore = create<ChatState>((set, get) => ({
           ),
         };
       });
+
+      if (refreshUnknownThread) {
+        queueMicrotask(() => {
+          void get().refreshThreads({ force: true });
+        });
+      }
+    }
+    if (event.type === "message.updated" && event.conversation_id && event.message) {
+      const message = apiMessageToThreadMessage(event.message as ApiMessage);
+      set((state) => ({
+        threads: state.threads.map((thread) =>
+          thread.conversationId === event.conversation_id
+            ? { ...thread, messages: updateThreadMessage(thread.messages, message) }
+            : thread,
+        ),
+      }));
     }
     if (event.type === "message.read" && event.conversation_id) {
       set((state) => ({
@@ -162,14 +187,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set((state) => ({
       threads: state.threads.map((thread) =>
         thread.conversationId === conversationId
-          ? { ...thread, messages: messages.map(apiMessageToThreadMessage) }
+          ? { ...thread, messages: sortMessagesChronologically(messages.map(apiMessageToThreadMessage)) }
           : thread,
       ),
     }));
     chatSubscribe(conversationId);
   },
 
-  sendMessage: async (conversationId, content) => {
+  sendMessage: async (conversationId, content, options) => {
     const trimmed = content.trim();
     if (!trimmed) return;
 
@@ -184,6 +209,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
       content: trimmed,
       sentAt: new Date().toISOString(),
       messageType: "text",
+      replyToMessageId: options?.replyToMessageId ?? null,
+      reactions: [],
       pending: true,
     };
 
@@ -196,13 +223,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }));
 
     try {
-      const message = await sendTextMessage(conversationId, trimmed);
+      const message = await sendTextMessage(conversationId, trimmed, {
+        replyToMessageId: options?.replyToMessageId,
+      });
       const mapped = apiMessageToThreadMessage(message);
       set((state) => ({
         threads: state.threads.map((item) => {
           if (item.conversationId !== conversationId) return item;
           const withoutPending = item.messages.filter((m) => m.id !== tempId);
-          return { ...item, messages: mergeThreadMessage(withoutPending, mapped) };
+          return { ...item, messages: mergeThreadMessage(withoutPending, mapped), lastMessageAt: mapped.sentAt, lastMessagePreview: messagePreviewText(mapped) };
         }),
       }));
     } catch (err) {
@@ -236,6 +265,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
       mediaUrl: null,
       mediaMime: file.type || null,
       mediaDurationMs: options?.mediaDurationMs ?? null,
+      replyToMessageId: options?.replyToMessageId ?? null,
+      reactions: [],
       pending: true,
     };
 
@@ -294,6 +325,18 @@ export const useChatStore = create<ChatState>((set, get) => ({
         revokePreviewUrl(localPreviewUrl);
       }
     }
+  },
+
+  toggleReaction: async (conversationId, messageId, emoji) => {
+    const message = await toggleMessageReaction(conversationId, messageId, emoji);
+    const mapped = apiMessageToThreadMessage(message);
+    set((state) => ({
+      threads: state.threads.map((thread) =>
+        thread.conversationId === conversationId
+          ? { ...thread, messages: updateThreadMessage(thread.messages, mapped) }
+          : thread,
+      ),
+    }));
   },
 
   markRead: async (conversationId, role) => {

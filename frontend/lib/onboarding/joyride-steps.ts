@@ -80,8 +80,8 @@ export function getRoleJoyrideSteps(role: UserRole, options?: JoyrideStepOptions
 
   const welcome: Step = {
     target: "body",
-    title: config.title,
-    content: config.subtitle,
+    title: config.funnelTitle,
+    content: config.funnelSubtitle,
     placement: "center",
     skipBeacon: true,
     skipScroll: true,
@@ -90,9 +90,9 @@ export function getRoleJoyrideSteps(role: UserRole, options?: JoyrideStepOptions
 
   const checklistStep: Step = {
     target: '[data-tour="onboarding-checklist"]',
-    title: "Your setup checklist",
+    title: "Your launch funnel",
     content:
-      "Track onboarding tasks here. Mark steps complete as you go, then continue the tour to explore each area.",
+      "Work through each funnel stage in order. Expand a stage for detailed tasks, mark it complete, then continue the tour to visit each area of the portal.",
     placement: "bottom",
     skipBeacon: true,
     offset: 12,
@@ -103,8 +103,8 @@ export function getRoleJoyrideSteps(role: UserRole, options?: JoyrideStepOptions
 
     return {
       target,
-      title: step.title,
-      content: step.description,
+      title: `${step.stageLabel}: ${step.title}`,
+      content: `${step.details} (${step.checklist.length} tasks · ~${step.estimatedMinutes} min)`,
       placement: role === "patient" ? "bottom" : "right",
       skipBeacon: true,
       offset: 12,

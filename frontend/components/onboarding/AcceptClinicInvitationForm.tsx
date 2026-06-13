@@ -67,14 +67,14 @@ export function AcceptClinicInvitationForm() {
             variants={staggerContainer}
           >
             <motion.span
-              className="font-mono text-xs uppercase tracking-[0.35em] text-pacific-teal"
+              className="font-sans text-xs font-medium text-pacific-teal"
               variants={fadeInUp}
               transition={transition}
             >
               Clinic team invitation
             </motion.span>
             <motion.h1
-              className="mt-3 font-serif text-2xl font-light tracking-[-0.02em] text-deep-teal sm:text-3xl"
+              className="mt-3 font-sans text-2xl font-semibold tracking-[-0.02em] text-deep-teal sm:text-3xl"
               variants={fadeInUp}
               transition={transition}
             >

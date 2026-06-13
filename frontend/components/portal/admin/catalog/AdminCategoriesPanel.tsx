@@ -81,7 +81,7 @@ export function AdminCategoriesPanel() {
             <FolderTree className="size-4" />
           </div>
           <div>
-            <h2 className="font-serif text-lg font-light">Categories</h2>
+            <h2 className="font-sans text-lg font-semibold">Categories</h2>
             <p className="text-xs text-pure-white/75">
               {isLoading ? "Loading…" : `${categories.length} in catalog`}
             </p>
@@ -112,7 +112,7 @@ export function AdminCategoriesPanel() {
           onSubmit={(event) => void handleCreate(event)}
           className="border-b border-deep-teal/10 bg-coral-blush/25 px-5 py-4"
         >
-          <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-deep-teal">
+          <p className="font-sans text-[10px] font-medium text-deep-teal">
             New category
           </p>
           <div className="mt-3 grid gap-3">

@@ -58,7 +58,7 @@ function InviteUserModal({ open, onClose, onInvite }: InviteUserModalProps) {
         aria-labelledby="invite-user-title"
         className="w-full max-w-md rounded-2xl border border-deep-teal/10 bg-pure-white p-6 shadow-xl"
       >
-        <h2 id="invite-user-title" className="font-serif text-xl font-light text-deep-teal">
+        <h2 id="invite-user-title" className="font-sans text-xl font-semibold text-deep-teal">
           Invite organization member
         </h2>
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">

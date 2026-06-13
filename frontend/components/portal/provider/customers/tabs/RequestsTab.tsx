@@ -86,21 +86,21 @@ export function RequestsTab({ patientId, patientName, requests, onChat }: Reques
                 updateRequestStatus(patientId, request.id, "rejected");
                 toast.success("Request rejected.");
               }}
-              className="rounded-full border border-deep-teal/15 px-3 py-1.5 text-xs font-medium text-deep-teal hover:border-coral-blush disabled:opacity-40"
+              className="rounded-full border border-deep-teal/15 px-3 py-1.5 text-xs font-medium text-deep-teal hover:bg-coral-blush/30 disabled:opacity-40"
             >
               Reject
             </button>
             <button
               type="button"
               onClick={onChat}
-              className="rounded-full border border-deep-teal/15 px-3 py-1.5 text-xs font-medium text-deep-teal hover:border-pacific-teal"
+              className="rounded-full border border-deep-teal/15 px-3 py-1.5 text-xs font-medium text-deep-teal hover:bg-pacific-teal/12"
             >
               Chat
             </button>
             <button
               type="button"
               onClick={() => toast.info(`Viewing details for ${request.productName}.`)}
-              className="rounded-full border border-deep-teal/15 px-3 py-1.5 text-xs font-medium text-deep-teal hover:border-pacific-teal"
+              className="rounded-full border border-deep-teal/15 px-3 py-1.5 text-xs font-medium text-deep-teal hover:bg-pacific-teal/12"
             >
               View Details
             </button>

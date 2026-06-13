@@ -1,5 +1,6 @@
 "use client";
 
+import { LandingSectionHeader, layoutContainerClass } from "@/components/landing/LandingSectionHeader";
 import {
   fadeInUp,
   motion,
@@ -7,7 +8,7 @@ import {
   transition,
   viewport,
 } from "@/components/motion";
-import { BRAND_SURFACE_CLASSES } from "@/lib/brand/colors";
+import { layoutSectionYClass, shapeProcessCards } from "@/lib/brand/design-system";
 
 const steps = [
   {
@@ -15,48 +16,55 @@ const steps = [
     title: "Raw Bond Analysis",
     description:
       "Automated spectroscopic analysis identifies contaminants at the molecular level before synthesis begins.",
-    bg: BRAND_SURFACE_CLASSES[0],
+    cardClass: "bg-coral-blush text-deep-teal",
+    numberClass: "text-pacific-teal",
+    bodyClass: "text-deep-teal/75",
+    hoverClass: "sm:hover:shadow-md sm:hover:brightness-[0.98]",
+    shapeClass: shapeProcessCards[0],
   },
   {
     number: "02",
     title: "Controlled Synthesis",
     description:
       "Our domestic, proprietary synthesis environment eliminates variables introduced by international shipping.",
-    bg: BRAND_SURFACE_CLASSES[0],
+    cardClass: "bg-pacific-teal text-pure-white",
+    numberClass: "text-pure-white/70",
+    bodyClass: "text-pure-white/85",
+    hoverClass: "sm:hover:shadow-md sm:hover:brightness-110",
+    shapeClass: shapeProcessCards[1],
   },
   {
     number: "03",
     title: "Blockchain Certification",
     description:
       "Every batch receives an immutable digital certificate, verifiable by the practitioner in real-time.",
-    bg: BRAND_SURFACE_CLASSES[0],
+    cardClass: "bg-deep-teal text-pure-white",
+    numberClass: "text-pure-white/70",
+    bodyClass: "text-pure-white/85",
+    hoverClass: "sm:hover:shadow-md sm:hover:brightness-125",
+    shapeClass: shapeProcessCards[2],
   },
 ];
 
 export function VerificationProcess() {
   return (
-    <section id="verification" className="bg-pure-white py-14 sm:py-20 lg:py-24">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-8 md:px-12 lg:px-20 xl:px-28">
-        <motion.div
-          className="max-w-5xl"
-          initial="hidden"
-          whileInView="visible"
-          viewport={viewport}
-          variants={fadeInUp}
-          transition={transition}
-        >
-          <span className="inline-block rounded-full bg-pacific-teal/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-pacific-teal sm:px-4 sm:text-xs sm:tracking-[0.2em]">
-            Verification Process
-          </span>
-          <h2 className="mt-4 font-serif text-3xl font-light leading-[1.08] tracking-[-0.03em] text-deep-teal sm:mt-6 sm:text-5xl md:text-6xl lg:text-7xl">
-            Precision-engineered
-            <br />
-            verification.
-          </h2>
-        </motion.div>
+    <section id="verification" className={`bg-pure-white ${layoutSectionYClass}`}>
+      <div className={layoutContainerClass}>
+        <LandingSectionHeader
+          align="left"
+          label="Verification Process"
+          title={
+            <>
+              Precision-engineered
+              <br />
+              verification.
+            </>
+          }
+          className="mb-10 sm:mb-12"
+        />
 
         <motion.div
-          className="mt-10 grid gap-4 sm:mt-16 sm:gap-8 md:grid-cols-3"
+          className="grid gap-4 sm:gap-8 md:grid-cols-3"
           initial="hidden"
           whileInView="visible"
           viewport={viewport}
@@ -65,19 +73,17 @@ export function VerificationProcess() {
           {steps.map((step) => (
             <motion.div
               key={step.number}
-              className={`flex flex-col rounded-2xl ${step.bg} p-6 transition-all duration-300 sm:rounded-[2rem] sm:p-10 sm:hover:shadow-lg`}
+              className={`flex flex-col p-6 transition-[box-shadow,filter] duration-300 sm:p-10 ${step.shapeClass} ${step.cardClass} ${step.hoverClass}`}
               variants={fadeInUp}
               transition={transition}
             >
-              <div className="self-end font-mono text-lg text-pacific-teal/60 sm:text-xl">
+              <div className={`self-end font-sans text-base font-semibold ${step.numberClass}`}>
                 {step.number}
               </div>
 
               <div className="mt-4 flex flex-grow flex-col sm:mt-6">
-                <h3 className="font-serif text-2xl font-light text-deep-teal sm:text-3xl">
-                  {step.title}
-                </h3>
-                <p className="mt-3 text-sm leading-7 text-deep-teal/70 sm:mt-4 sm:text-base">
+                <h3 className="font-sans text-xl font-semibold sm:text-2xl">{step.title}</h3>
+                <p className={`mt-3 text-sm leading-7 sm:mt-4 sm:text-base ${step.bodyClass}`}>
                   {step.description}
                 </p>
               </div>

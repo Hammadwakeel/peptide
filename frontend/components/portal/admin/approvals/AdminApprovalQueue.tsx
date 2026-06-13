@@ -58,7 +58,7 @@ function DetailPanel({
     >
       <div className="flex items-center gap-1.5 border-b border-deep-teal/8 pb-2">
         <Icon className="size-3 shrink-0 text-deep-teal" aria-hidden="true" />
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-deep-teal">{label}</p>
+        <p className="font-sans text-[10px] font-medium text-deep-teal">{label}</p>
       </div>
       <div className="mt-2 flex flex-col gap-1.5 text-sm leading-snug text-deep-teal">{children}</div>
     </div>
@@ -138,7 +138,7 @@ function ApplicationCard({
               {application.clinic_name.slice(0, 1).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <h2 className="font-serif text-lg font-light leading-tight sm:text-xl">
+              <h2 className="font-sans text-lg font-semibold leading-tight sm:text-xl">
                 {application.clinic_name}
               </h2>
               <p className="text-xs text-pure-white/75">
@@ -205,7 +205,7 @@ function ApplicationCard({
                       href={doc.file_url}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center rounded-full border border-deep-teal/10 bg-surface-muted px-2.5 py-0.5 text-[11px] font-medium text-deep-teal transition-colors hover:border-deep-teal/25 hover:bg-deep-teal/5"
+                      className="inline-flex items-center rounded-full border border-deep-teal/10 bg-surface-muted px-2.5 py-0.5 text-[11px] font-medium text-deep-teal transition-colors hover:bg-deep-teal/5"
                     >
                       {DOCUMENT_TYPE_LABELS[doc.document_type] ?? doc.document_type}
                     </a>
@@ -339,7 +339,7 @@ function ApplicationCard({
               setShowInfoForm((value) => !value);
               setShowRejectForm(false);
             }}
-            className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal transition-colors hover:border-deep-teal hover:bg-deep-teal/5 disabled:opacity-60"
+            className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal transition-colors hover:bg-deep-teal/5 disabled:opacity-60"
           >
             Request more info
           </button>
@@ -386,8 +386,8 @@ export function AdminApprovalQueue() {
     <div className="space-y-5">
       <RoleOnboardingChecklist role="admin" />
 
-      <div className="flex items-center gap-4 rounded-2xl border border-deep-teal/20 bg-pure-white px-4 py-3 shadow-[0_2px_12px_rgba(1,26,36,0.08)] sm:px-5">
-        <h1 className="shrink-0 font-serif text-xl font-light text-deep-teal sm:text-2xl">
+      <div className="flex items-center gap-4 rounded-2xl border border-deep-teal/20 bg-pure-white px-4 py-2.5 shadow-[0_2px_12px_rgba(1,26,36,0.08)] sm:px-5">
+        <h1 className="shrink-0 font-sans text-xl font-semibold text-deep-teal sm:text-2xl">
           Approval Queue
         </h1>
         <div className="min-w-4 flex-1" aria-hidden="true" />
@@ -414,7 +414,7 @@ export function AdminApprovalQueue() {
           </div>
         ) : pending.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-deep-teal/20 bg-surface-muted/50 px-6 py-16 text-center">
-            <p className="font-serif text-xl font-light text-deep-teal">All caught up</p>
+            <p className="font-sans text-xl font-semibold text-deep-teal">All caught up</p>
             <p className="mt-2 text-sm text-deep-teal/55">No pending clinic applications right now.</p>
           </div>
         ) : (

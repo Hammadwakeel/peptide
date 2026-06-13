@@ -1,21 +1,39 @@
 "use client";
 
-import { Download, FileText, Loader2 } from "lucide-react";
-import { useEffect, useRef } from "react";
-import { VoiceMessageBubble } from "@/components/chat/VoiceMessageBubble";
-import {
-  formatMessageTime,
-  type ChatSender,
-  type ThreadMessage,
-} from "@/lib/chat/types";
+import { useEffect, useMemo, useRef } from "react";
+import { ChatMessageBubble } from "@/components/chat/ChatMessageBubble";
+import { groupMessagesByDate, type ChatSender, type ThreadMessage } from "@/lib/chat/types";
 
 type ChatMessageListProps = {
   messages: ThreadMessage[];
   viewerRole: ChatSender;
+  onReply?: (message: ThreadMessage) => void;
+  onToggleReaction?: (messageId: string, emoji: string) => void;
 };
 
-export function ChatMessageList({ messages, viewerRole }: ChatMessageListProps) {
+function ChatDateSeparator({ label }: { label: string }) {
+  return (
+    <div className="flex justify-center py-2">
+      <span className="rounded-lg bg-deep-teal/10 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-deep-teal/60 shadow-sm">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+export function ChatMessageList({
+  messages,
+  viewerRole,
+  onReply,
+  onToggleReaction,
+}: ChatMessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const messageById = useMemo(
+    () => new Map(messages.map((message) => [message.id, message])),
+    [messages],
+  );
+  const groupedMessages = useMemo(() => groupMessagesByDate(messages), [messages]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -23,94 +41,46 @@ export function ChatMessageList({ messages, viewerRole }: ChatMessageListProps) 
 
   if (messages.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-deep-teal/50">No messages yet. Start the conversation.</p>
+      <div className="flex h-full flex-col items-center justify-center bg-[#efeae2]/40 px-6 text-center">
+        <p className="rounded-xl bg-pure-white/80 px-4 py-2 text-sm text-deep-teal/55 shadow-sm">
+          No messages yet. Start the conversation.
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="flex h-full flex-col gap-3 overflow-y-auto px-4 py-4">
-      {messages.map((message) => {
-        const isOwn = message.sender === viewerRole;
-        return (
-          <div
-            key={message.id}
-            className={`max-w-[85%] sm:max-w-md ${isOwn ? "ml-auto" : "mr-auto"}`}
-          >
-            <p className={`mb-1 text-[10px] ${isOwn ? "text-right" : "text-left"} text-deep-teal/45`}>
-              {message.senderName} · {formatMessageTime(message.sentAt)}
-            </p>
-            <div
-              className={`overflow-hidden rounded-2xl text-sm leading-relaxed ${
-                message.messageType === "image" && message.mediaUrl
-                  ? "bg-transparent p-0"
-                  : `px-4 py-3 ${
-                      isOwn
-                        ? "bg-deep-teal text-pure-white"
-                        : "bg-deep-teal/[0.06] text-deep-teal"
-                    }`
-              } ${message.pending ? "opacity-75" : ""}`}
-            >
-              {message.messageType === "image" ? (
-                <div className="overflow-hidden rounded-2xl border border-deep-teal/10 bg-pure-white shadow-sm">
-                  {message.mediaUrl ? (
-                    <img
-                      src={message.mediaUrl}
-                      alt={message.content || "Shared image"}
-                      className="max-h-72 w-full cursor-pointer object-cover"
-                      onClick={() => window.open(message.mediaUrl!, "_blank", "noopener,noreferrer")}
-                    />
-                  ) : (
-                    <div className="flex h-48 items-center justify-center bg-deep-teal/[0.03] text-deep-teal/45">
-                      <Loader2 className="size-6 animate-spin" />
-                    </div>
-                  )}
-                  {message.content && message.content !== "Image" ? (
-                    <p className="px-3 py-2 text-sm text-deep-teal">{message.content}</p>
-                  ) : null}
-                </div>
-              ) : null}
+    <div
+      ref={scrollRef}
+      className="flex h-full flex-col overflow-y-auto bg-[#efeae2]/40 px-3 py-3 sm:px-4"
+    >
+      <div className="mt-auto flex flex-col gap-1">
+        {groupedMessages.map((group) => (
+          <div key={group.dateKey}>
+            <ChatDateSeparator label={group.label} />
+            <div className="flex flex-col gap-0.5">
+              {group.messages.map((message) => {
+                const isOwn = message.sender === viewerRole;
+                const replyToMessage = message.replyToMessageId
+                  ? messageById.get(message.replyToMessageId)
+                  : undefined;
 
-              {message.messageType === "document" && message.mediaUrl ? (
-                <a
-                  href={message.mediaUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`flex items-center gap-3 rounded-xl border p-3 transition-opacity hover:opacity-90 ${
-                    isOwn ? "border-pure-white/20 bg-pure-white/10" : "border-deep-teal/10 bg-pure-white"
-                  }`}
-                >
-                  <span
-                    className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${
-                      isOwn ? "bg-pure-white/15 text-pure-white" : "bg-deep-teal/10 text-deep-teal"
-                    }`}
-                  >
-                    <FileText className="size-5" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-medium">{message.content || "Document"}</span>
-                    <span className={`text-xs ${isOwn ? "text-pure-white/70" : "text-deep-teal/50"}`}>
-                      Tap to open
-                    </span>
-                  </span>
-                  <Download className={`size-4 shrink-0 ${isOwn ? "text-pure-white/80" : "text-deep-teal/50"}`} />
-                </a>
-              ) : null}
-
-              {message.messageType === "voice" && message.mediaUrl ? (
-                <VoiceMessageBubble
-                  mediaUrl={message.mediaUrl}
-                  durationMs={message.mediaDurationMs}
-                  messageId={message.id}
-                  isOwn={isOwn}
-                />
-              ) : null}
-
-              {message.messageType === "text" ? <p>{message.content}</p> : null}
+                return (
+                  <ChatMessageBubble
+                    key={message.id}
+                    message={message}
+                    isOwn={isOwn}
+                    replyToMessage={replyToMessage}
+                    onReply={onReply}
+                    onToggleReaction={onToggleReaction}
+                  />
+                );
+              })}
             </div>
           </div>
-        );
-      })}
-      <div ref={bottomRef} />
+        ))}
+        <div ref={bottomRef} />
+      </div>
     </div>
   );
 }

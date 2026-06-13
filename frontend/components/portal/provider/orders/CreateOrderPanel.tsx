@@ -108,7 +108,7 @@ export function CreateOrderPanel({ open, onClose }: CreateOrderPanelProps) {
         className="fixed inset-y-0 right-0 z-50 flex w-full max-w-4xl flex-col border-l border-deep-teal/10 bg-pure-white shadow-2xl"
       >
         <div className="flex items-center justify-between border-b border-deep-teal/10 px-5 py-4">
-          <h2 id="create-order-title" className="font-serif text-xl font-light text-deep-teal">
+          <h2 id="create-order-title" className="font-sans text-xl font-semibold text-deep-teal">
             Create new order
           </h2>
           <Tooltip content="Close">
@@ -155,7 +155,7 @@ export function CreateOrderPanel({ open, onClose }: CreateOrderPanelProps) {
                   <button
                     type="button"
                     onClick={() => setAddPatientOpen(true)}
-                    className="shrink-0 rounded-full border border-deep-teal/15 px-3 py-2 text-xs font-medium text-pacific-teal hover:border-pacific-teal"
+                    className="shrink-0 rounded-full border border-deep-teal/15 px-3 py-2 text-xs font-medium text-pacific-teal hover:bg-pacific-teal/12"
                   >
                     Add New
                   </button>
@@ -209,7 +209,7 @@ export function CreateOrderPanel({ open, onClose }: CreateOrderPanelProps) {
             <button
               type="button"
               onClick={handleAddToCart}
-              className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal hover:border-pacific-teal"
+              className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm font-medium text-deep-teal hover:bg-pacific-teal/12"
             >
               Add to Cart
             </button>

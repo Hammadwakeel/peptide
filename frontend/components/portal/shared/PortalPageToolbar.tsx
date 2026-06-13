@@ -1,26 +1,37 @@
 "use client";
 
 import type { ReactNode } from "react";
+import {
+  btnGhostClass,
+  btnPrimaryClass,
+} from "@/lib/brand/design-system";
+import { typePageTitle } from "@/lib/brand/typography";
 
 type PortalPageToolbarProps = {
   title: string;
+  subtitle?: string;
   children?: ReactNode;
 };
 
-export function PortalPageToolbar({ title, children }: PortalPageToolbarProps) {
+export function PortalPageToolbar({ title, subtitle, children }: PortalPageToolbarProps) {
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-deep-teal/20 bg-pure-white px-4 py-3 shadow-[0_2px_12px_rgba(1,26,36,0.08)] sm:px-5">
-      <h1 className="shrink-0 font-serif text-xl font-light text-deep-teal sm:text-2xl">{title}</h1>
-      <div className="min-w-4 flex-1" aria-hidden="true" />
+    <div className="flex items-center gap-4 rounded-2xl border border-deep-teal/20 bg-pure-white px-4 py-2.5 shadow-[0_2px_12px_rgba(1,26,36,0.08)] sm:px-5">
+      <h1 className={`min-w-0 shrink-0 ${typePageTitle}`}>
+        {title}
+        {subtitle ? (
+          <span className="font-normal text-deep-teal/50"> · {subtitle}</span>
+        ) : null}
+      </h1>
       {children ? (
-        <div className="flex flex-wrap items-center justify-end gap-2">{children}</div>
+        <>
+          <div className="min-w-4 flex-1" aria-hidden="true" />
+          <div className="flex flex-wrap items-center justify-end gap-2">{children}</div>
+        </>
       ) : null}
     </div>
   );
 }
 
-export const toolbarBtnClass =
-  "inline-flex items-center gap-2 rounded-full border border-deep-teal/25 px-4 py-2 text-sm font-medium text-deep-teal transition-colors hover:bg-deep-teal/5 disabled:opacity-50";
+export const toolbarBtnClass = btnGhostClass;
 
-export const toolbarBtnPrimaryClass =
-  "inline-flex items-center gap-2 rounded-full bg-deep-teal px-4 py-2 text-sm font-medium text-pure-white transition-opacity hover:opacity-90 disabled:opacity-50";
+export const toolbarBtnPrimaryClass = btnPrimaryClass;
