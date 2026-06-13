@@ -1,6 +1,6 @@
 "use client";
 
-import { ScrollFocusText } from "@/components/landing/ScrollFocusText";
+import { ScrollFocusHeading } from "@/components/landing/ScrollFocusText";
 import {
   layoutContainerClass,
   typeDisplayTitle,
@@ -31,9 +31,9 @@ export function LandingSectionHeader({
       transition={transition}
     >
       <p className={typeSectionLabel}>{label}</p>
-      <ScrollFocusText as="h2" className={`mt-3 ${typeDisplayTitle}`}>
+      <ScrollFocusHeading as="h2" className={`mt-3 ${typeDisplayTitle}`} tone="light">
         {title}
-      </ScrollFocusText>
+      </ScrollFocusHeading>
     </motion.div>
   );
 }

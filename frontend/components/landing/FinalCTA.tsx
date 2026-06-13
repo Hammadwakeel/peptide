@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { ScrollFocusHeading } from "@/components/landing/ScrollFocusText";
 import { layoutContainerClass } from "@/components/landing/LandingSectionHeader";
 import { fadeInUp, motion, transition, viewport } from "@/components/motion";
 import { layoutSectionYClass, shapeCtaBanner, typeSectionLabel } from "@/lib/brand/design-system";
@@ -20,11 +21,15 @@ export function FinalCTA() {
         >
           <p className={`${typeSectionLabel} text-pure-white/55`}>Partner Access</p>
 
-          <h2 className="mx-auto mt-4 max-w-3xl font-editorial text-3xl font-light leading-tight text-pure-white sm:mt-5 sm:text-4xl lg:text-[2.75rem]">
+          <ScrollFocusHeading
+            as="h2"
+            className="mx-auto mt-4 max-w-3xl font-editorial text-3xl font-light leading-tight sm:mt-5 sm:text-4xl lg:text-[2.75rem]"
+            tone="dark"
+          >
             Ready to verify
             <br />
             the future?
-          </h2>
+          </ScrollFocusHeading>
 
           <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-pure-white/65 sm:mt-6 sm:text-lg">
             Join the network of practitioners, pharmacies, and clinical teams who refuse to compromise

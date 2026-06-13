@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { InteractivePortraitTile } from "@/components/landing/InteractivePortraitTile";
-import { ScrollFocusText } from "@/components/landing/ScrollFocusText";
+import { ScrollFocusHeading } from "@/components/landing/ScrollFocusText";
 import {
   btnPrimaryClass,
   layoutContainerClass,
@@ -35,11 +35,11 @@ export function ClinicalCommitment() {
             transition={transition}
           >
             <span className={typeSectionLabel}>Clinical Commitment</span>
-            <ScrollFocusText as="h2" className={`mt-3 sm:mt-4 ${typeDisplayTitle}`}>
+            <ScrollFocusHeading as="h2" className={`mt-3 sm:mt-4 ${typeDisplayTitle}`} tone="light">
               Trusted by people,
               <br />
               not just protocols.
-            </ScrollFocusText>
+            </ScrollFocusHeading>
             <p className="mt-5 font-editorial text-base font-light leading-relaxed text-deep-teal/80 sm:mt-6 sm:text-lg">
               Verification is more than a technical process. It is a commitment
               to practitioners, patients, and every decision that depends on
