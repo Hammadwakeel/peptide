@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import HTTPException, UploadFile
 
-from config import ALLOWED_IMAGE_TYPES, ALLOWED_VOICE_TYPES, MAX_TEXT_BYTES
+from config import ALLOWED_IMAGE_TYPES, ALLOWED_VOICE_TYPES, CHAT_MESSAGES_DEFAULT_LIMIT, MAX_TEXT_BYTES
 from db import connect
 from repository.conversation_repository import update_conversation_last_message
 from repository.patient_lookup import get_doctor_profile, get_patient_by_id, get_patient_by_user_id
@@ -95,7 +95,7 @@ async def list_conversation_messages(
     user: dict,
     conversation_id: str,
     *,
-    limit: int = 100,
+    limit: int = CHAT_MESSAGES_DEFAULT_LIMIT,
     before_id: str | None = None,
 ) -> tuple[list[dict], bool]:
     await conversation_service.get_conversation_if_allowed(user, conversation_id)

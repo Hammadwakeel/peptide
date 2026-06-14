@@ -19,6 +19,8 @@ async def connect_mongo() -> AsyncIOMotorDatabase:
     _db = _client[MONGODB_DB_NAME]
     await _db.messages.create_index([("conversation_id", 1), ("created_at", -1)])
     await _db.messages.create_index([("conversation_id", 1), ("_id", 1)])
+    # Match existing Atlas index (unique + sparse) so startup does not conflict on id_1.
+    await _db.messages.create_index([("id", 1)], unique=True, sparse=True)
     return _db
 
 
@@ -115,11 +117,30 @@ async def list_messages(
 ) -> tuple[list[dict[str, Any]], bool]:
     query: dict[str, Any] = {"conversation_id": conversation_id}
     if before_id:
-        anchor = await db.messages.find_one({"id": before_id})
-        if anchor:
-            query["created_at"] = {"$lt": anchor["created_at"]}
+        anchor = await db.messages.find_one({"id": before_id, "conversation_id": conversation_id})
+        if not anchor:
+            return [], False
+        query["created_at"] = {"$lt": anchor["created_at"]}
 
-    cursor = db.messages.find(query).sort("created_at", -1).limit(limit + 1)
+    cursor = db.messages.find(
+        query,
+        {
+            "_id": 0,
+            "id": 1,
+            "conversation_id": 1,
+            "sender_user_id": 1,
+            "sender_role": 1,
+            "message_type": 1,
+            "content": 1,
+            "media_url": 1,
+            "media_mime": 1,
+            "media_duration_ms": 1,
+            "sender_name": 1,
+            "reply_to_message_id": 1,
+            "reactions": 1,
+            "created_at": 1,
+        },
+    ).sort("created_at", -1).limit(limit + 1)
     docs = await cursor.to_list(length=limit + 1)
     has_more = len(docs) > limit
     docs = docs[:limit]

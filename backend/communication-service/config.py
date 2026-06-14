@@ -46,6 +46,10 @@ MAX_IMAGE_BYTES = int(os.getenv("CHAT_MAX_IMAGE_BYTES", str(10 * 1024 * 1024)))
 MAX_VOICE_BYTES = int(os.getenv("CHAT_MAX_VOICE_BYTES", str(25 * 1024 * 1024)))
 MAX_DOCUMENT_BYTES = int(os.getenv("CHAT_MAX_DOCUMENT_BYTES", str(25 * 1024 * 1024)))
 
+# Message list pagination (cursor via before_id)
+CHAT_MESSAGES_DEFAULT_LIMIT = int(os.getenv("CHAT_MESSAGES_DEFAULT_LIMIT", "20"))
+CHAT_MESSAGES_MAX_LIMIT = int(os.getenv("CHAT_MESSAGES_MAX_LIMIT", "100"))
+
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
 ALLOWED_VOICE_TYPES = {
     "audio/webm",

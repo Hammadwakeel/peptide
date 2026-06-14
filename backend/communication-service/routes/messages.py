@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 
+from config import CHAT_MESSAGES_DEFAULT_LIMIT, CHAT_MESSAGES_MAX_LIMIT
 from middleware.auth import get_current_user
 from schemas.message import (
     MessageListResponse,
@@ -15,9 +16,8 @@ router = APIRouter(tags=["messages"])
 @router.get("/conversations/{conversation_id}/messages", response_model=MessageListResponse)
 async def list_messages(
     conversation_id: str,
-    page: int = Query(1, ge=1),
-    limit: int = Query(100, ge=1, le=100),
-    before_id: str | None = Query(None),
+    limit: int = Query(CHAT_MESSAGES_DEFAULT_LIMIT, ge=1, le=CHAT_MESSAGES_MAX_LIMIT),
+    before_id: str | None = Query(None, description="Load messages older than this message id"),
     user: dict = Depends(get_current_user),
 ) -> MessageListResponse:
     messages, has_more = await message_service.list_conversation_messages(
@@ -26,7 +26,7 @@ async def list_messages(
         limit=limit,
         before_id=before_id,
     )
-    return MessageListResponse(messages=messages, page=page, limit=limit, has_more=has_more)
+    return MessageListResponse(messages=messages, page=1, limit=limit, has_more=has_more)
 
 
 @router.post("/conversations/{conversation_id}/messages", response_model=MessageResponse, status_code=201)

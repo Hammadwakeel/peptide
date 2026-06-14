@@ -25,15 +25,52 @@ import {
   type ThreadMessage,
 } from "@/lib/chat/types";
 import { createLocalPreviewUrl, revokePreviewUrl } from "@/lib/chat/preview";
+import { CHAT_MESSAGES_PAGE_SIZE } from "@/lib/chat/constants";
 import { readSession } from "@/lib/auth/storage";
 import { chatSubscribe } from "@/lib/chat/ws-bridge";
 import type { ChatWsEvent } from "@/lib/chat/ws";
-import { patchIfChanged } from "@/lib/cache/set-if-changed";
 
 function chatSenderFromSession(): ChatSender {
   const role = readSession()?.role;
   return role === "patient" ? "patient" : "provider";
 }
+
+function mergeConversationThreads(existing: ChatThread[], incoming: ChatThread[]): ChatThread[] {
+  const byConversationId = new Map(existing.map((thread) => [thread.conversationId, thread]));
+  return incoming.map((thread) => {
+    const previous = byConversationId.get(thread.conversationId);
+    if (!previous) return thread;
+    return {
+      ...thread,
+      messages: previous.messages,
+      messagesLoaded: previous.messagesLoaded,
+      hasMoreMessages: previous.hasMoreMessages,
+      messagesLoading: previous.messagesLoading,
+      messagesLoadingMore: previous.messagesLoadingMore,
+    };
+  });
+}
+
+function dedupeMessages(messages: ThreadMessage[]): ThreadMessage[] {
+  const seen = new Set<string>();
+  return sortMessagesChronologically(messages).filter((message) => {
+    if (seen.has(message.id)) return false;
+    seen.add(message.id);
+    return true;
+  });
+}
+
+function oldestPersistedMessageId(messages: ThreadMessage[]): string | undefined {
+  const sorted = sortMessagesChronologically(messages);
+  for (const message of sorted) {
+    if (!message.id.startsWith("pending-")) return message.id;
+  }
+  return undefined;
+}
+
+const messagesLoadInFlight = new Map<string, Promise<void>>();
+const messagesLoadMoreInFlight = new Map<string, Promise<void>>();
+const loadAllMessagesInFlight = new Map<string, Promise<void>>();
 
 type ChatState = {
   threads: ChatThread[];
@@ -46,6 +83,8 @@ type ChatState = {
   refreshThreads: (options?: { force?: boolean }) => Promise<void>;
   reset: () => void;
   loadMessages: (conversationId: string) => Promise<void>;
+  loadMoreMessages: (conversationId: string) => Promise<void>;
+  loadAllMessages: (conversationId: string) => Promise<void>;
   sendMessage: (conversationId: string, content: string, options?: { replyToMessageId?: string }) => Promise<void>;
   sendMedia: (
     conversationId: string,
@@ -162,11 +201,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
         const nextThreads = conversations.map((conversation) => apiConversationToThread(conversation));
         set((state) => ({
-          threads: patchIfChanged(state.threads, nextThreads),
+          threads: mergeConversationThreads(state.threads, nextThreads),
           isHydrated: true,
         }));
         for (const thread of nextThreads) {
           chatSubscribe(thread.conversationId);
+        }
+
+        const prefetchConversationId = nextThreads[0]?.conversationId;
+        if (prefetchConversationId) {
+          void get().loadMessages(prefetchConversationId);
         }
       } catch (err) {
         set({
@@ -183,15 +227,137 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   loadMessages: async (conversationId) => {
-    const messages = await listMessages(conversationId);
-    set((state) => ({
-      threads: state.threads.map((thread) =>
-        thread.conversationId === conversationId
-          ? { ...thread, messages: sortMessagesChronologically(messages.map(apiMessageToThreadMessage)) }
-          : thread,
-      ),
-    }));
-    chatSubscribe(conversationId);
+    const existing = get().threads.find((thread) => thread.conversationId === conversationId);
+    if (existing?.messagesLoaded) {
+      chatSubscribe(conversationId);
+      return;
+    }
+    if (messagesLoadInFlight.has(conversationId)) {
+      return messagesLoadInFlight.get(conversationId)!;
+    }
+
+    const promise = (async () => {
+      set((state) => ({
+        threads: state.threads.map((thread) =>
+          thread.conversationId === conversationId
+            ? { ...thread, messagesLoading: true }
+            : thread,
+        ),
+      }));
+
+      try {
+        const { messages, hasMore } = await listMessages(conversationId, {
+          limit: CHAT_MESSAGES_PAGE_SIZE,
+        });
+        const mapped = sortMessagesChronologically(messages.map(apiMessageToThreadMessage));
+        set((state) => ({
+          threads: state.threads.map((thread) =>
+            thread.conversationId === conversationId
+              ? {
+                  ...thread,
+                  messages: mapped,
+                  messagesLoaded: true,
+                  hasMoreMessages: hasMore,
+                  messagesLoading: false,
+                  messagesLoadingMore: false,
+                }
+              : thread,
+          ),
+        }));
+        chatSubscribe(conversationId);
+      } catch {
+        set((state) => ({
+          threads: state.threads.map((thread) =>
+            thread.conversationId === conversationId
+              ? { ...thread, messagesLoading: false, messagesLoaded: false }
+              : thread,
+          ),
+        }));
+      } finally {
+        messagesLoadInFlight.delete(conversationId);
+      }
+    })();
+
+    messagesLoadInFlight.set(conversationId, promise);
+    return promise;
+  },
+
+  loadMoreMessages: async (conversationId) => {
+    const thread = get().threads.find((item) => item.conversationId === conversationId);
+    if (!thread?.messagesLoaded || !thread.hasMoreMessages || thread.messagesLoadingMore) {
+      return;
+    }
+    if (messagesLoadMoreInFlight.has(conversationId)) {
+      return messagesLoadMoreInFlight.get(conversationId)!;
+    }
+
+    const beforeId = oldestPersistedMessageId(thread.messages);
+    if (!beforeId) return;
+
+    const promise = (async () => {
+      set((state) => ({
+        threads: state.threads.map((item) =>
+          item.conversationId === conversationId
+            ? { ...item, messagesLoadingMore: true }
+            : item,
+        ),
+      }));
+
+      try {
+        const { messages, hasMore } = await listMessages(conversationId, {
+          limit: CHAT_MESSAGES_PAGE_SIZE,
+          beforeId,
+        });
+        const mapped = messages.map(apiMessageToThreadMessage);
+        set((state) => ({
+          threads: state.threads.map((item) =>
+            item.conversationId === conversationId
+              ? {
+                  ...item,
+                  messages: dedupeMessages([...mapped, ...item.messages]),
+                  hasMoreMessages: hasMore,
+                  messagesLoadingMore: false,
+                }
+              : item,
+          ),
+        }));
+      } catch {
+        set((state) => ({
+          threads: state.threads.map((item) =>
+            item.conversationId === conversationId
+              ? { ...item, messagesLoadingMore: false }
+              : item,
+          ),
+        }));
+      } finally {
+        messagesLoadMoreInFlight.delete(conversationId);
+      }
+    })();
+
+    messagesLoadMoreInFlight.set(conversationId, promise);
+    return promise;
+  },
+
+  loadAllMessages: async (conversationId) => {
+    if (loadAllMessagesInFlight.has(conversationId)) {
+      return loadAllMessagesInFlight.get(conversationId)!;
+    }
+
+    const promise = (async () => {
+      await get().loadMessages(conversationId);
+      for (let page = 0; page < 200; page += 1) {
+        const thread = get().threads.find((item) => item.conversationId === conversationId);
+        if (!thread?.hasMoreMessages) break;
+        await get().loadMoreMessages(conversationId);
+      }
+    })();
+
+    loadAllMessagesInFlight.set(conversationId, promise);
+    try {
+      await promise;
+    } finally {
+      loadAllMessagesInFlight.delete(conversationId);
+    }
   },
 
   sendMessage: async (conversationId, content, options) => {

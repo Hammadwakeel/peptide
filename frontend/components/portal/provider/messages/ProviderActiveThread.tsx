@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeft } from "lucide-react";
 import { ChatMessageInput, toReplyTarget } from "@/components/chat/ChatMessageInput";
 import { ChatMessageList } from "@/components/chat/ChatMessageList";
+import { ChatProfileModal } from "@/components/chat/ChatProfileModal";
+import { ChatThreadHeader } from "@/components/chat/ChatThreadHeader";
 import { useChat } from "@/context/ChatProvider";
 import { getPatientInitials } from "@/lib/patients/types";
 import type { ChatThread, ReplyTarget, ThreadMessage } from "@/lib/chat/types";
@@ -15,12 +16,15 @@ type ProviderActiveThreadProps = {
 };
 
 export function ProviderActiveThread({ thread, compact = false, onBack }: ProviderActiveThreadProps) {
-  const { sendMessage, sendMedia, markRead, loadMessages, toggleReaction } = useChat();
+  const { sendMessage, sendMedia, markRead, loadMessages, loadMoreMessages, toggleReaction } = useChat();
   const [replyTo, setReplyTo] = useState<ReplyTarget | null>(null);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
-    void loadMessages(thread.conversationId);
-    void markRead(thread.conversationId, "provider");
+    void Promise.all([
+      loadMessages(thread.conversationId),
+      markRead(thread.conversationId, "provider"),
+    ]);
   }, [thread.conversationId, loadMessages, markRead]);
 
   function handleReply(message: ThreadMessage) {
@@ -28,31 +32,23 @@ export function ProviderActiveThread({ thread, compact = false, onBack }: Provid
   }
 
   return (
-    <div className={`flex min-h-0 flex-1 flex-col ${compact ? "h-[480px]" : ""}`}>
-      <div className="flex items-center gap-3 border-b border-deep-teal/10 bg-surface-muted/30 px-3 py-2.5 sm:px-4">
-        {onBack ? (
-          <button
-            type="button"
-            onClick={onBack}
-            className="flex size-9 shrink-0 items-center justify-center rounded-full text-deep-teal hover:bg-deep-teal/8 lg:hidden"
-            aria-label="Back to chats"
-          >
-            <ArrowLeft className="size-5" />
-          </button>
-        ) : null}
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-pacific-teal/15 text-sm font-light text-deep-teal">
-          {getPatientInitials(thread.patientName)}
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-light text-deep-teal">{thread.patientName}</p>
-          <p className="text-xs text-deep-teal/50">Patient</p>
-        </div>
-      </div>
+    <div className={`relative flex min-h-0 flex-1 flex-col overflow-hidden ${compact ? "h-[480px]" : ""}`}>
+      <ChatThreadHeader
+        avatarLabel={getPatientInitials(thread.patientName)}
+        name={thread.patientName}
+        subtitle="Patient"
+        onBack={onBack}
+        onProfileClick={() => setProfileOpen(true)}
+      />
 
       <div className="min-h-0 flex-1">
         <ChatMessageList
           messages={thread.messages}
           viewerRole="provider"
+          loading={thread.messagesLoading}
+          loadingMore={thread.messagesLoadingMore}
+          hasMore={thread.hasMoreMessages}
+          onLoadMore={() => void loadMoreMessages(thread.conversationId)}
           onReply={handleReply}
           onToggleReaction={(messageId, emoji) =>
             void toggleReaction(thread.conversationId, messageId, emoji)
@@ -67,6 +63,15 @@ export function ProviderActiveThread({ thread, compact = false, onBack }: Provid
         onUpload={(file, messageType, options) =>
           sendMedia(thread.conversationId, file, messageType, options)
         }
+      />
+
+      <ChatProfileModal
+        open={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        conversationId={thread.conversationId}
+        contactName={thread.patientName}
+        contactInitials={getPatientInitials(thread.patientName)}
+        contactSubtitle="Patient"
       />
     </div>
   );

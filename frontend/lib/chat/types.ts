@@ -43,6 +43,14 @@ export type ChatThread = {
   unreadPatient: number;
   lastMessagePreview?: string | null;
   lastMessageAt?: string | null;
+  /** First page fetched for this thread. */
+  messagesLoaded?: boolean;
+  /** More older messages exist on the server. */
+  hasMoreMessages?: boolean;
+  /** Initial message page loading. */
+  messagesLoading?: boolean;
+  /** Older page loading (scroll up). */
+  messagesLoadingMore?: boolean;
 };
 
 export type ApiMessage = {

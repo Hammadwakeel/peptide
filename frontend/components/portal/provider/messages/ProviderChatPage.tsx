@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useEffect, useState } from "react";
 import { MessageSquare } from "lucide-react";
 import { ChatThreadList } from "@/components/chat/ChatThreadList";
+import { ProviderChatPageSkeleton } from "@/components/chat/ChatSkeletons";
 import { ProviderActiveThread } from "@/components/portal/provider/messages/ProviderActiveThread";
 import { useChat } from "@/context/ChatProvider";
 
@@ -39,8 +40,8 @@ export function ProviderChatPage() {
     void ensureDoctorThread(patientId);
   }
 
-  if (loading) {
-    return <p className="py-12 text-center text-sm text-deep-teal/50">Loading messages…</p>;
+  if (loading && threads.length === 0) {
+    return <ProviderChatPageSkeleton />;
   }
 
   if (error) {

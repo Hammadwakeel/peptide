@@ -77,6 +77,8 @@ export function useChat() {
       getThreadByConversationId: state.getThreadByConversationId,
       refreshThreads: state.refreshThreads,
       loadMessages: state.loadMessages,
+      loadMoreMessages: state.loadMoreMessages,
+      loadAllMessages: state.loadAllMessages,
       sendMessage: state.sendMessage,
       sendMedia: state.sendMedia,
       toggleReaction: state.toggleReaction,

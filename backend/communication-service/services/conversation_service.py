@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from datetime import datetime, timezone
 
 from fastapi import HTTPException
@@ -41,6 +42,70 @@ def _doctor_display_name(profile: dict | None, fallback_email: str | None = None
     return email.split("@")[0]
 
 
+def _preview_from_last_message(last: dict | None) -> str | None:
+    if not last:
+        return None
+    message_type = last.get("message_type")
+    if message_type == "text":
+        return last.get("content")
+    if message_type == "image":
+        return "Image"
+    if message_type == "voice":
+        return "Voice message"
+    if message_type == "document":
+        return last.get("content") or "Document"
+    return None
+
+
+async def _enrich_conversations_batch(
+    rows: list[dict],
+    *,
+    doctor_name: str | None = None,
+    doctor_email: str | None = None,
+    db=None,
+) -> list[ConversationResponse]:
+    if not rows:
+        return []
+
+    conversation_ids = [str(row["id"]) for row in rows]
+    last_messages: dict[str, dict] = {}
+    unread_provider: dict[str, int] = {}
+    unread_patient: dict[str, int] = {}
+
+    if db is not None:
+        last_messages_task = mongo_service.get_last_messages_for_conversations(db, conversation_ids)
+        unread_task = redis_bus.get_unread_maps(conversation_ids)
+        last_messages, (unread_provider, unread_patient) = await asyncio.gather(
+            last_messages_task,
+            unread_task,
+        )
+    else:
+        unread_provider, unread_patient = await redis_bus.get_unread_maps(conversation_ids)
+
+    results: list[ConversationResponse] = []
+    for row in rows:
+        conversation_id = str(row["id"])
+        patient_name = _patient_display_name(row) if row.get("patient_first_name") else None
+        last_message_at = row.get("last_message_at")
+        results.append(
+            ConversationResponse(
+                id=conversation_id,
+                doctor_id=str(row["doctor_id"]),
+                clinic_id=str(row["clinic_id"]),
+                patient_id=str(row["patient_id"]),
+                status=row["status"],
+                last_message_at=last_message_at.isoformat() if last_message_at else None,
+                patient_name=patient_name,
+                doctor_name=doctor_name,
+                doctor_email=doctor_email,
+                unread_provider=unread_provider.get(conversation_id, 0),
+                unread_patient=unread_patient.get(conversation_id, 0),
+                last_message_preview=_preview_from_last_message(last_messages.get(conversation_id)),
+            )
+        )
+    return results
+
+
 async def _enrich_conversation(
     row: dict,
     *,
@@ -50,20 +115,24 @@ async def _enrich_conversation(
     db=None,
 ) -> ConversationResponse:
     conversation_id = str(row["id"])
-    unread_provider = await redis_bus.get_unread(conversation_id, "provider")
-    unread_patient = await redis_bus.get_unread(conversation_id, "patient")
     last_message_preview = None
+    unread_provider = 0
+    unread_patient = 0
+
     if db is not None:
-        last = await mongo_service.get_last_message(db, conversation_id)
-        if last:
-            if last.get("message_type") == "text":
-                last_message_preview = last.get("content")
-            elif last.get("message_type") == "image":
-                last_message_preview = "Image"
-            elif last.get("message_type") == "voice":
-                last_message_preview = "Voice message"
-            elif last.get("message_type") == "document":
-                last_message_preview = last.get("content") or "Document"
+        unread_task = redis_bus.get_unread_maps([conversation_id])
+        last_task = mongo_service.get_last_message(db, conversation_id)
+        (unread_provider_map, unread_patient_map), last = await asyncio.gather(
+            unread_task,
+            last_task,
+        )
+        unread_provider = unread_provider_map.get(conversation_id, 0)
+        unread_patient = unread_patient_map.get(conversation_id, 0)
+        last_message_preview = _preview_from_last_message(last)
+    else:
+        unread_provider_map, unread_patient_map = await redis_bus.get_unread_maps([conversation_id])
+        unread_provider = unread_provider_map.get(conversation_id, 0)
+        unread_patient = unread_patient_map.get(conversation_id, 0)
 
     last_message_at = row.get("last_message_at")
     return ConversationResponse(
@@ -159,16 +228,12 @@ async def list_doctor_conversations(user: dict) -> list[ConversationResponse]:
         doctor_profile = get_doctor_profile(cursor, user["sub"])
         doctor_name = _doctor_display_name(doctor_profile, user.get("email"))
         db = await mongo_service.connect_mongo()
-        return [
-            await _enrich_conversation(
-                row,
-                patient_name=_patient_display_name(row),
-                doctor_name=doctor_name,
-                doctor_email=user.get("email"),
-                db=db,
-            )
-            for row in rows
-        ]
+        return await _enrich_conversations_batch(
+            rows,
+            doctor_name=doctor_name,
+            doctor_email=user.get("email"),
+            db=db,
+        )
     finally:
         cursor.close()
         conn.close()

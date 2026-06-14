@@ -79,9 +79,22 @@ export async function getMyConversation(): Promise<ApiConversation> {
   return chatFetch<ApiConversation>(CHAT_ENDPOINTS.myConversation);
 }
 
-export async function listMessages(conversationId: string): Promise<ApiMessage[]> {
-  const data = await chatFetch<{ messages: ApiMessage[] }>(CHAT_ENDPOINTS.messages(conversationId));
-  return data.messages ?? [];
+export async function listMessages(
+  conversationId: string,
+  options?: { limit?: number; beforeId?: string },
+): Promise<{ messages: ApiMessage[]; hasMore: boolean }> {
+  const params = new URLSearchParams();
+  if (options?.limit != null) params.set("limit", String(options.limit));
+  if (options?.beforeId) params.set("before_id", options.beforeId);
+  const query = params.toString();
+  const url = query
+    ? `${CHAT_ENDPOINTS.messages(conversationId)}?${query}`
+    : CHAT_ENDPOINTS.messages(conversationId);
+  const data = await chatFetch<{ messages: ApiMessage[]; has_more?: boolean }>(url);
+  return {
+    messages: data.messages ?? [],
+    hasMore: Boolean(data.has_more),
+  };
 }
 
 export async function sendTextMessage(

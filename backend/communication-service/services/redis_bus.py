@@ -154,6 +154,35 @@ async def get_unread(conversation_id: str, role: str) -> int:
     return await _safe_redis(_get, fallback=0, action="get_unread")
 
 
+async def get_unread_maps(
+    conversation_ids: list[str],
+) -> tuple[dict[str, int], dict[str, int]]:
+    """Batch-fetch unread counts for many conversations (2 Redis round-trips max)."""
+    if not conversation_ids:
+        return {}, {}
+
+    async def _get() -> tuple[dict[str, int], dict[str, int]]:
+        client = await _get_pub_client()
+        provider_keys = [unread_key(conversation_id, "provider") for conversation_id in conversation_ids]
+        patient_keys = [unread_key(conversation_id, "patient") for conversation_id in conversation_ids]
+        provider_values, patient_values = await asyncio.gather(
+            _await_redis(client.mget(provider_keys)),
+            _await_redis(client.mget(patient_keys)),
+        )
+        provider_map = {
+            conversation_id: int(value or 0)
+            for conversation_id, value in zip(conversation_ids, provider_values)
+        }
+        patient_map = {
+            conversation_id: int(value or 0)
+            for conversation_id, value in zip(conversation_ids, patient_values)
+        }
+        return provider_map, patient_map
+
+    empty = {conversation_id: 0 for conversation_id in conversation_ids}
+    return await _safe_redis(_get, fallback=(empty, empty), action="get_unread_maps")
+
+
 async def set_last_read(conversation_id: str, user_id: str, iso_timestamp: str) -> None:
     async def _set() -> None:
         client = await _get_pub_client()

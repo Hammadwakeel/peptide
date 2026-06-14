@@ -50,3 +50,16 @@ export function replyPreviewText(message: {
   if (message.messageType === "document") return message.content || "Document";
   return message.content;
 }
+
+export type SharedMediaTab = "media" | "audio" | "docs";
+
+export function groupSharedMediaMessages<T extends { messageType: string; mediaUrl?: string | null; pending?: boolean }>(
+  messages: T[],
+) {
+  const shared = messages.filter((message) => message.mediaUrl && !message.pending);
+  return {
+    media: shared.filter((message) => message.messageType === "image"),
+    audio: shared.filter((message) => message.messageType === "voice"),
+    docs: shared.filter((message) => message.messageType === "document"),
+  };
+}

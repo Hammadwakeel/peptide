@@ -10,13 +10,13 @@ import { useProviderPortalStore } from "@/stores/provider-portal-store";
 const bootstrapPromises = new Map<UserRole, Promise<void>>();
 
 async function bootstrapDoctor(force = false) {
+  await useChatStore.getState().refreshThreads({ force });
   await Promise.all([
     useOrdersStore.getState().refreshOrders({ force }),
     usePatientsStore.getState().refreshPatients({ force }),
     useProviderPortalStore.getState().refreshMyStore({ force }),
     useProviderPortalStore.getState().loadCatalog(force),
     useProviderPortalStore.getState().loadFullCatalog({ force }),
-    useChatStore.getState().refreshThreads({ force }),
   ]);
 }
 
@@ -29,8 +29,8 @@ async function bootstrapAdmin(force = false) {
 
 async function bootstrapPatient(force = false) {
   await Promise.all([
-    usePatientPortalStore.getState().loadPortalData({ force }),
     useChatStore.getState().refreshThreads({ force }),
+    usePatientPortalStore.getState().loadPortalData({ force }),
   ]);
 }
 

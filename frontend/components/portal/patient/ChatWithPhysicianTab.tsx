@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { ChatMessageInput, toReplyTarget } from "@/components/chat/ChatMessageInput";
 import { ChatMessageList } from "@/components/chat/ChatMessageList";
+import { ChatProfileModal } from "@/components/chat/ChatProfileModal";
+import { ChatPatientShellSkeleton } from "@/components/chat/ChatSkeletons";
+import { ChatThreadHeader } from "@/components/chat/ChatThreadHeader";
 import { useChat } from "@/context/ChatProvider";
 import { PATIENT_QUICK_TEMPLATES, type ReplyTarget, type ThreadMessage } from "@/lib/chat/types";
 
@@ -19,21 +22,23 @@ function OnlineIndicator({ online }: { online: boolean }) {
 }
 
 export function ChatWithPhysicianTab() {
-  const { threads, loading, error, sendMessage, sendMedia, markRead, loadMessages, toggleReaction } =
+  const { threads, loading, error, sendMessage, sendMedia, markRead, loadMessages, loadMoreMessages, toggleReaction } =
     useChat();
   const thread = threads[0];
   const [draft, setDraft] = useState("");
   const [replyTo, setReplyTo] = useState<ReplyTarget | null>(null);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
-    if (thread) {
-      void loadMessages(thread.conversationId);
-      void markRead(thread.conversationId, "patient");
-    }
+    if (!thread) return;
+    void Promise.all([
+      loadMessages(thread.conversationId),
+      markRead(thread.conversationId, "patient"),
+    ]);
   }, [thread?.conversationId, loadMessages, markRead]);
 
-  if (loading) {
-    return <p className="py-12 text-center text-sm text-deep-teal/50">Loading chat…</p>;
+  if (loading && !thread) {
+    return <ChatPatientShellSkeleton />;
   }
 
   if (error) {
@@ -46,22 +51,14 @@ export function ChatWithPhysicianTab() {
 
   return (
     <div className="flex h-[calc(100dvh-72px)] min-h-[520px] overflow-hidden rounded-2xl border border-deep-teal/10 bg-pure-white shadow-[0_4px_24px_rgba(1,26,36,0.08)]">
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-center gap-3 border-b border-deep-teal/10 bg-surface-muted/30 px-4 py-3">
-          <span className="relative flex size-10 shrink-0 items-center justify-center rounded-full bg-pacific-teal/15 text-sm font-light text-deep-teal">
-            DR
-            <span
-              className={`absolute bottom-0 right-0 size-3 rounded-full border-2 border-pure-white ${
-                thread.providerOnline ? "bg-pacific-teal" : "bg-deep-teal/25"
-              }`}
-              aria-hidden="true"
-            />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="truncate font-light text-deep-teal">{thread.providerName}</p>
-            <OnlineIndicator online={thread.providerOnline} />
-          </div>
-        </div>
+      <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
+        <ChatThreadHeader
+          avatarLabel="DR"
+          name={thread.providerName}
+          subtitle={<OnlineIndicator online={thread.providerOnline} />}
+          online={thread.providerOnline}
+          onProfileClick={() => setProfileOpen(true)}
+        />
 
         <div className="flex flex-wrap gap-2 border-b border-deep-teal/8 bg-pure-white px-3 py-2">
           {PATIENT_QUICK_TEMPLATES.map((template) => (
@@ -80,6 +77,10 @@ export function ChatWithPhysicianTab() {
           <ChatMessageList
             messages={thread.messages}
             viewerRole="patient"
+            loading={thread.messagesLoading}
+            loadingMore={thread.messagesLoadingMore}
+            hasMore={thread.hasMoreMessages}
+            onLoadMore={() => void loadMoreMessages(thread.conversationId)}
             onReply={(message: ThreadMessage) => setReplyTo(toReplyTarget(message))}
             onToggleReaction={(messageId, emoji) =>
               void toggleReaction(thread.conversationId, messageId, emoji)
@@ -98,6 +99,16 @@ export function ChatWithPhysicianTab() {
           }
         />
       </div>
+
+      <ChatProfileModal
+        open={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        conversationId={thread.conversationId}
+        contactName={thread.providerName}
+        contactInitials="DR"
+        contactSubtitle={thread.providerSpecialty || "Your physician"}
+        online={thread.providerOnline}
+      />
     </div>
   );
 }
