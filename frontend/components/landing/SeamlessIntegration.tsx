@@ -15,7 +15,6 @@ import {
 import {
   layoutSectionYClass,
   shapeIntegrationCards,
-  shapePortraitClipPath,
   shapePortraitShowcase,
   shapeStadiumCapsule,
 } from "@/lib/brand/design-system";
@@ -70,13 +69,11 @@ const cards = [
   },
 ];
 
-const PRODUCT_DASHBOARD_EDGE_MASK: CSSProperties = {
+const PRODUCT_DASHBOARD_SIDE_MASK: CSSProperties = {
   WebkitMaskImage:
-    "linear-gradient(to right, transparent 0%, #000 6%, #000 94%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 5%, #000 95%, transparent 100%)",
+    "linear-gradient(to right, transparent 0%, #000 4%, #000 96%, transparent 100%)",
   maskImage:
-    "linear-gradient(to right, transparent 0%, #000 6%, #000 94%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 5%, #000 95%, transparent 100%)",
-  WebkitMaskComposite: "source-in",
-  maskComposite: "intersect",
+    "linear-gradient(to right, transparent 0%, #000 4%, #000 96%, transparent 100%)",
 };
 
 const EDGE_FADE_CLASS =
@@ -93,12 +90,10 @@ function ProductDashboardImage({
 }) {
   const reduceMotion = useReducedMotion();
   const shapeClass = shape === "capsule" ? shapeStadiumCapsule : shapePortraitShowcase;
-  const shapeStyle = shape === "portrait" ? shapePortraitClipPath : undefined;
 
   return (
     <motion.div
       className={`group relative min-h-[280px] cursor-pointer overflow-hidden bg-pure-white ring-1 ring-deep-teal/[0.06] ${shapeClass} ${className}`}
-      style={shapeStyle}
       variants={scaleIn}
       transition={transition}
       whileHover={
@@ -110,32 +105,34 @@ function ProductDashboardImage({
             }
       }
     >
-      <div className="relative h-full w-full" style={PRODUCT_DASHBOARD_EDGE_MASK}>
-        <Image
-          src={PRODUCT_DASHBOARD_SRC}
-          alt="Frontier mobile dashboard on iPhone"
-          fill
-          sizes={sizes}
-          priority
-          className="object-contain object-center drop-shadow-[0_24px_48px_rgba(1,26,36,0.18)] transition-[transform,filter] duration-500 ease-out group-hover:scale-[1.03] group-hover:drop-shadow-[0_36px_64px_rgba(1,26,36,0.28)]"
-        />
+      {/* Crop the hand at the bottom while keeping the full phone visible at the top. */}
+      <div
+        className="relative h-full w-full overflow-hidden"
+        style={PRODUCT_DASHBOARD_SIDE_MASK}
+      >
+        <div className="absolute inset-x-0 top-0 h-[78%] overflow-hidden sm:h-[76%]">
+          <Image
+            src={PRODUCT_DASHBOARD_SRC}
+            alt="Frontier mobile dashboard on iPhone"
+            fill
+            sizes={sizes}
+            priority
+            className="origin-top object-contain object-top scale-[1.16] drop-shadow-[0_24px_48px_rgba(1,26,36,0.18)] transition-[transform,filter] duration-500 ease-out group-hover:scale-[1.2] group-hover:drop-shadow-[0_36px_64px_rgba(1,26,36,0.28)]"
+          />
+        </div>
       </div>
 
       <div
         aria-hidden="true"
-        className={`${EDGE_FADE_CLASS} inset-x-0 top-0 h-10 bg-gradient-to-b sm:h-14`}
+        className={`${EDGE_FADE_CLASS} inset-x-0 bottom-0 h-16 bg-gradient-to-t sm:h-20`}
       />
       <div
         aria-hidden="true"
-        className={`${EDGE_FADE_CLASS} inset-x-0 bottom-0 h-10 bg-gradient-to-t sm:h-14`}
+        className={`${EDGE_FADE_CLASS} inset-y-0 left-0 w-6 bg-gradient-to-r sm:w-10`}
       />
       <div
         aria-hidden="true"
-        className={`${EDGE_FADE_CLASS} inset-y-0 left-0 w-8 bg-gradient-to-r sm:w-12`}
-      />
-      <div
-        aria-hidden="true"
-        className={`${EDGE_FADE_CLASS} inset-y-0 right-0 w-8 bg-gradient-to-l sm:w-12`}
+        className={`${EDGE_FADE_CLASS} inset-y-0 right-0 w-6 bg-gradient-to-l sm:w-10`}
       />
     </motion.div>
   );
@@ -157,7 +154,7 @@ function IntegrationCard({
       transition={transition}
     >
       <Icon className={`h-7 w-7 sm:h-8 sm:w-8 ${card.iconClass}`} />
-      <h3 className="mt-4 font-sans text-xl font-light sm:mt-6 sm:text-2xl">{card.title}</h3>
+      <h3 className="mt-4 font-sans text-xl font-medium tracking-[-0.01em] sm:mt-6 sm:text-2xl">{card.title}</h3>
       <p className={`mt-2 text-sm leading-7 sm:mt-3 ${card.bodyClass}`}>{card.description}</p>
     </motion.div>
   );

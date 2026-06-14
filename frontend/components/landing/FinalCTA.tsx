@@ -23,7 +23,7 @@ export function FinalCTA() {
 
           <ScrollFocusHeading
             as="h2"
-            className="mx-auto mt-4 max-w-3xl font-editorial text-3xl font-light leading-tight sm:mt-5 sm:text-4xl lg:text-[2.75rem]"
+            className="type-editorial-primary mx-auto mt-4 max-w-3xl sm:mt-5"
             tone="dark"
           >
             Ready to verify
@@ -31,7 +31,7 @@ export function FinalCTA() {
             the future?
           </ScrollFocusHeading>
 
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-pure-white/65 sm:mt-6 sm:text-lg">
+          <p className="mx-auto mt-5 max-w-2xl type-body-l text-pure-white/65 sm:mt-6 sm:text-lg">
             Join the network of practitioners, pharmacies, and clinical teams who refuse to compromise
             on molecular certainty.
           </p>

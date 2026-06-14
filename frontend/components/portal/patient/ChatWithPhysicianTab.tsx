@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { ChatMessageInput, toReplyTarget } from "@/components/chat/ChatMessageInput";
 import { ChatMessageList } from "@/components/chat/ChatMessageList";
 import { ChatProfileModal } from "@/components/chat/ChatProfileModal";
+import { ChatQuickTemplates } from "@/components/chat/ChatQuickTemplates";
 import { ChatPatientShellSkeleton } from "@/components/chat/ChatSkeletons";
 import { ChatThreadHeader } from "@/components/chat/ChatThreadHeader";
 import { useChat } from "@/context/ChatProvider";
-import { PATIENT_QUICK_TEMPLATES, type ReplyTarget, type ThreadMessage } from "@/lib/chat/types";
+import type { ReplyTarget, ThreadMessage } from "@/lib/chat/types";
 
 function OnlineIndicator({ online }: { online: boolean }) {
   return (
@@ -22,7 +23,7 @@ function OnlineIndicator({ online }: { online: boolean }) {
 }
 
 export function ChatWithPhysicianTab() {
-  const { threads, loading, error, sendMessage, sendMedia, markRead, loadMessages, loadMoreMessages, toggleReaction } =
+  const { threads, loading, error, sendMessage, sendMedia, markRead, loadMessages, loadMoreMessages, toggleReaction, getQuickTemplates, templatesLoading } =
     useChat();
   const thread = threads[0];
   const [draft, setDraft] = useState("");
@@ -60,18 +61,11 @@ export function ChatWithPhysicianTab() {
           onProfileClick={() => setProfileOpen(true)}
         />
 
-        <div className="flex flex-wrap gap-2 border-b border-deep-teal/8 bg-pure-white px-3 py-2">
-          {PATIENT_QUICK_TEMPLATES.map((template) => (
-            <button
-              key={template}
-              type="button"
-              onClick={() => setDraft(template)}
-              className="rounded-full border border-deep-teal/15 px-3 py-1 text-xs text-deep-teal/70 hover:border-pacific-teal hover:text-deep-teal"
-            >
-              {template}
-            </button>
-          ))}
-        </div>
+        <ChatQuickTemplates
+          templates={getQuickTemplates("patient")}
+          loading={templatesLoading}
+          onSelect={setDraft}
+        />
 
         <div className="min-h-0 flex-1">
           <ChatMessageList

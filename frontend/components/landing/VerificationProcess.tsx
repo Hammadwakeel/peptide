@@ -82,7 +82,7 @@ export function VerificationProcess() {
               </div>
 
               <div className="mt-4 flex flex-grow flex-col sm:mt-6">
-                <h3 className="font-sans text-xl font-light sm:text-2xl">{step.title}</h3>
+                <h3 className="font-sans text-xl font-medium tracking-[-0.01em] sm:text-2xl">{step.title}</h3>
                 <p className={`mt-3 text-sm leading-7 sm:mt-4 sm:text-base ${step.bodyClass}`}>
                   {step.description}
                 </p>

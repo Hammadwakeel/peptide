@@ -159,7 +159,7 @@ export function StorefrontBrandingPanel() {
               )}
               <div>
                 <p className="font-light text-deep-teal">{branding.clinicName || "Clinic name"}</p>
-                <p className="font-editorial text-xs text-deep-teal/55">{branding.tagline || "Your tagline"}</p>
+                <p className="font-sans text-xs font-light text-deep-teal/55">{branding.tagline || "Your tagline"}</p>
               </div>
             </div>
           </div>

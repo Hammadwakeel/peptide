@@ -102,7 +102,7 @@ export function PatientActivationForm() {
             </div>
             <div>
               <p className="font-light text-deep-teal">{clinicName}</p>
-              <p className="font-editorial text-sm text-deep-teal/55">{tagline}</p>
+              <p className="font-sans text-sm font-light text-deep-teal/55">{tagline}</p>
             </div>
           </div>
           <h1 className="mt-10 max-w-md font-sans text-3xl font-light leading-tight text-deep-teal sm:text-4xl">

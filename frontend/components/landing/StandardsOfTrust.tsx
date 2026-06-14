@@ -110,7 +110,7 @@ export function StandardsOfTrust() {
                   {metric.value}
                 </div>
                 <div className={`mt-4 h-px w-12 sm:mt-6 sm:w-16 ${metric.dividerClass}`} />
-                <h3 className="mt-4 font-sans text-xl font-light sm:mt-6 sm:text-2xl">
+                <h3 className="mt-4 font-sans text-xl font-medium tracking-[-0.01em] sm:mt-6 sm:text-2xl">
                   {metric.label}
                 </h3>
                 <p className={`mt-3 text-sm leading-relaxed sm:mt-4 sm:text-base ${metric.bodyClass}`}>

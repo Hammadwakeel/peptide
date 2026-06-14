@@ -332,7 +332,7 @@ export const PortalSidebarLayout = memo(function PortalSidebarLayout({
                 </button>
               </Tooltip>
               {!hideHeaderTitle ? (
-                <h1 className="truncate font-sans text-xl font-light text-deep-teal sm:text-2xl">
+                <h1 className="truncate font-sans text-xl font-extrabold tracking-[-0.01em] text-deep-teal sm:text-2xl">
                   {activeLink?.label ?? "Dashboard"}
                 </h1>
               ) : null}

@@ -454,7 +454,7 @@ export function ProviderSettings() {
               style={{ borderTopColor: branding.theme_color, borderTopWidth: 4 }}
             >
               <p className="text-sm font-light text-deep-teal">{practice.clinic_name}</p>
-              <p className="font-editorial text-xs text-deep-teal/55">{branding.tagline || "Your tagline"}</p>
+              <p className="font-sans text-xs font-light text-deep-teal/55">{branding.tagline || "Your tagline"}</p>
             </aside>
           </div>
         ) : null}

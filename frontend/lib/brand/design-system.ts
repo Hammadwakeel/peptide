@@ -12,16 +12,17 @@ export const layoutSectionYClass = "py-14 sm:py-20 lg:py-24";
 
 export { typeSectionLabel } from "@/lib/brand/typography";
 
-/** 48px display — section heroes (not 7xl/8xl) */
-export const typeDisplayTitle =
-  "font-sans text-3xl font-light leading-[1.1] text-deep-teal sm:text-4xl lg:text-5xl";
+/** Display · light — marketing hero & section statements (guide Display tier) */
+export const typeDisplayTitle = "type-display text-deep-teal";
 
-/** Onboarding / guide title — 48px at lg */
-export const typeGuideTitle =
-  "font-sans text-3xl font-light leading-tight text-deep-teal sm:text-4xl lg:text-[3rem]";
+/** Section header · H2 · 600 — functional section headings */
+export const typeSectionHeading = "type-h2 text-deep-teal";
 
-/** 12px guide subtitle */
-export const typeGuideSubtitle = "font-sans text-sm font-light leading-relaxed text-deep-teal/60";
+/** Onboarding / guide title — H1 · 800 (guide page-title tier) */
+export const typeGuideTitle = "type-h1 text-deep-teal";
+
+/** Guide subtitle — Body L · 400 */
+export const typeGuideSubtitle = "type-body-l text-deep-teal/60";
 
 /** Primary CTA — smooth teal fade, no border stroke on hover */
 export const btnPrimaryClass =

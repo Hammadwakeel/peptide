@@ -7,8 +7,8 @@ import {
   Loader2,
   ScanLine,
 } from "lucide-react";
-import { useMemo, useState } from "react";
-import { ChatEmojiPicker, CHAT_QUICK_EMOJIS } from "@/components/chat/ChatEmojiPicker";
+import { useMemo } from "react";
+import { ChatReactionBar } from "@/components/chat/ChatEmojiPicker";
 import { VoiceMessageBubble } from "@/components/chat/VoiceMessageBubble";
 import { Tooltip } from "@/components/ui/Tippy";
 import {
@@ -43,7 +43,6 @@ export function ChatMessageBubble({
   onReply,
   onToggleReaction,
 }: ChatMessageBubbleProps) {
-  const [emojiOpen, setEmojiOpen] = useState(false);
   const sessionUserId = readSession()?.userId;
   const reactionGroups = useMemo(() => groupReactions(message.reactions), [message.reactions]);
   const myReaction = message.reactions?.find((reaction) => reaction.user_id === sessionUserId)?.emoji;
@@ -77,6 +76,19 @@ export function ChatMessageBubble({
       <div className="flex max-w-[min(78%,22rem)] flex-col items-stretch gap-1">
 
         <div className={`relative w-fit max-w-full ${isOwn ? "self-end" : "self-start"}`}>
+          {onToggleReaction ? (
+            <div
+              className={`absolute -top-12 z-20 hidden group-hover/message:flex group-focus-within/message:flex ${
+                isOwn ? "right-0" : "left-0"
+              }`}
+            >
+              <ChatReactionBar
+                onPick={(emoji) => onToggleReaction(message.id, emoji)}
+                className={isOwn ? "items-end" : "items-start"}
+              />
+            </div>
+          ) : null}
+
           <div className="absolute -top-2 right-0 z-10 hidden gap-1 group-hover/message:flex group-focus-within/message:flex">
             {onReply ? (
               <Tooltip content="Reply">
@@ -89,27 +101,6 @@ export function ChatMessageBubble({
                   <CornerUpLeft className="size-3.5" />
                 </button>
               </Tooltip>
-            ) : null}
-            {onToggleReaction ? (
-              <div className="relative">
-                <Tooltip content="Add reaction">
-                  <button
-                    type="button"
-                    onClick={() => setEmojiOpen((value) => !value)}
-                    className="flex size-7 items-center justify-center rounded-full border border-deep-teal/10 bg-pure-white text-sm shadow-sm hover:bg-deep-teal/5"
-                    aria-label="Add reaction"
-                    aria-expanded={emojiOpen}
-                  >
-                    {myReaction ?? "😊"}
-                  </button>
-                </Tooltip>
-                <ChatEmojiPicker
-                  open={emojiOpen}
-                  onClose={() => setEmojiOpen(false)}
-                  onPick={(emoji) => onToggleReaction(message.id, emoji)}
-                  className="right-0 left-auto"
-                />
-              </div>
             ) : null}
           </div>
 

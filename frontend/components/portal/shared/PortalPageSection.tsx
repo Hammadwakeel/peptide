@@ -40,7 +40,7 @@ export function PortalPageSection({
           </div>
           <div className="min-w-0">
             <h2
-              className={`font-sans font-light text-pure-white ${
+              className={`font-sans font-semibold tracking-[-0.01em] text-pure-white ${
                 compact ? "truncate text-base leading-tight" : "text-lg"
               }`}
             >

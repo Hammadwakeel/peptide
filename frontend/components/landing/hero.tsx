@@ -62,7 +62,7 @@ export function Hero() {
                   Or it doesn&apos;t arrive.
                 </h1>
 
-                <p className="mt-5 max-w-2xl text-base font-light leading-relaxed text-pure-white/90 sm:mt-6 sm:text-lg">
+                <p className="mt-5 max-w-2xl type-body-l text-pure-white/90 sm:mt-6 sm:text-lg">
                   For pharmacies and practitioners who need unconditional trust,
                   Frontier Biomed verifies purity at every bond, domestic by
                   design.

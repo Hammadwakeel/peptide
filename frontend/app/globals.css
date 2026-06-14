@@ -48,24 +48,213 @@
   line-height: 1.125rem;
 }
 
-body {
-  background: var(--color-deep-teal);
-  color: var(--color-pure-white);
+/* =========================================================================
+   Brand type scale (guide 5.4) — sizes, weights, leading & tracking locked
+   per tier. Aspekta is the primary voice for the entire scale.
+
+   Heading-level tiers and the heading weight scale are defined OUTSIDE @layer
+   on purpose so they take precedence over stray utility weights (e.g. a
+   leftover `font-light` on a heading). This enforces the guide weight scale
+   across every dashboard/component without per-file edits. A .type-* class
+   (specificity 0,1,0) still beats the bare element rule, so explicit light
+   display headings keep their intent.
+
+   Body & data tiers stay in @layer components so component text-* / font-*
+   utilities can still override them where needed.
+   ========================================================================= */
+
+/* Display · 72px · light — hero statements */
+.type-display {
   font-family: var(--font-sans);
   font-weight: 300;
-  overflow-x: hidden;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
+  font-size: clamp(2.5rem, 4.5vw + 1rem, 4.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
 }
 
-h1,
-h2,
-h3,
+/* H1 · 48px · 800 — page titles */
+.type-h1 {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: clamp(2rem, 2.5vw + 1rem, 3rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+/* H2 · 36px · 600 — section headers */
+.type-h2 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: clamp(1.75rem, 1.5vw + 1rem, 2.25rem);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+}
+
+/* H3 · 24px · 500 — sub-headers */
+.type-h3 {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: clamp(1.25rem, 0.8vw + 1rem, 1.5rem);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+/* H4 · 18px · 500 — callout labels */
+.type-h4 {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 1.125rem;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+
+/* --- Fraunces editorial display (guide 5.4) — display only, ≥28px --- */
+
+/* Light · 60px — largest editorial display */
+.type-editorial-display {
+  font-family: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  font-weight: 300;
+  font-size: clamp(2.25rem, 3.5vw + 1rem, 3.75rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+/* Light · 40px — primary editorial */
+.type-editorial-primary {
+  font-family: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  font-weight: 300;
+  font-size: clamp(1.75rem, 2vw + 1rem, 2.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.005em;
+}
+
+/* Regular · 28px — editorial ceiling weight (minimum Fraunces size) */
+.type-editorial-ceiling {
+  font-family: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-size: 1.75rem;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+/* Heading weight scale (guide 5.4) — voice + weight locked over utilities.
+   Sizes stay controlled by component text-* utilities; only family + weight
+   are enforced here so a stray `font-light` can't break the hierarchy. */
+h1 {
+  font-family: var(--font-sans);
+  font-weight: 800;
+}
+
+h2 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+
+h3 {
+  font-family: var(--font-sans);
+  font-weight: 500;
+}
+
 h4,
 h5,
 h6 {
   font-family: var(--font-sans);
-  font-weight: 300;
+  font-weight: 500;
+}
+
+@layer components {
+  /* Body L · 16px · 400 — primary body */
+  .type-body-l {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.6;
+    letter-spacing: 0;
+  }
+
+  /* Body S · 12px · 300 — footnotes */
+  .type-body-s {
+    font-family: var(--font-sans);
+    font-weight: 300;
+    font-size: 0.75rem;
+    line-height: 1.55;
+    letter-spacing: 0.01em;
+  }
+
+  /* Micro · 10px · 400 — compliance */
+  .type-micro {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 0.625rem;
+    line-height: 1.45;
+    letter-spacing: 0.04em;
+  }
+
+  /* --- JetBrains Mono technical register (guide 5.4) — ≤14px --- */
+
+  /* Bold · 12px — field labels */
+  .type-mono-label {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.75rem;
+    line-height: 1.3;
+    letter-spacing: 0.04em;
+  }
+
+  /* Regular · 13px — data values */
+  .type-mono-value {
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+    letter-spacing: 0;
+  }
+
+  /* Regular · 11px — compliance footer */
+  .type-mono-footer {
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: 0.6875rem;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+  }
+}
+
+@layer base {
+  body {
+    background: var(--color-deep-teal);
+    color: var(--color-pure-white);
+    font-family: var(--font-sans);
+    /* Body L · 400 — primary body default */
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Default leading & tracking per heading level — overridable by utilities. */
+  h1 {
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  h2 {
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  h4,
+  h5,
+  h6 {
+    line-height: 1.4;
+  }
 }
 
 html {

@@ -60,6 +60,7 @@ export type ApiMessage = {
   sender_role: string;
   message_type: MessageType;
   content?: string | null;
+  media_key?: string | null;
   media_url?: string | null;
   media_mime?: string | null;
   media_duration_ms?: number | null;
@@ -99,6 +100,23 @@ export const PATIENT_QUICK_TEMPLATES = [
   "I need to schedule a follow-up",
   "I'm experiencing side effects",
 ] as const;
+
+export function filterTemplatesForRole(templates: ApiTemplate[], viewerRole: ChatSender): ApiTemplate[] {
+  const roleKey = viewerRole === "patient" ? "patient" : "provider";
+  return templates.filter(
+    (template) => template.role === roleKey || template.role === "both" || template.role === "all",
+  );
+}
+
+export function fallbackQuickTemplates(viewerRole: ChatSender): ApiTemplate[] {
+  if (viewerRole !== "patient") return [];
+  return PATIENT_QUICK_TEMPLATES.map((content, index) => ({
+    id: `fallback-${index}`,
+    label: content.length > 36 ? `${content.slice(0, 33)}…` : content,
+    content,
+    role: "patient",
+  }));
+}
 
 export function apiMessageToThreadMessage(message: ApiMessage): ThreadMessage {
   return {

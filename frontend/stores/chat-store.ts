@@ -4,6 +4,7 @@ import { create } from "zustand";
 import {
   getMyConversation,
   listConversations,
+  listMessageTemplates,
   listMessages,
   markConversationRead,
   sendTextMessage,
@@ -13,12 +14,15 @@ import {
 import {
   apiConversationToThread,
   apiMessageToThreadMessage,
+  fallbackQuickTemplates,
+  filterTemplatesForRole,
   mergeThreadMessage,
   messagePreviewText,
   replacePendingMessage,
   sortMessagesChronologically,
   updateThreadMessage,
   type ApiMessage,
+  type ApiTemplate,
   type ChatSender,
   type ChatThread,
   type ChatMediaMessageType,
@@ -28,6 +32,7 @@ import { createLocalPreviewUrl, revokePreviewUrl } from "@/lib/chat/preview";
 import { CHAT_MESSAGES_PAGE_SIZE } from "@/lib/chat/constants";
 import { readSession } from "@/lib/auth/storage";
 import { chatSubscribe } from "@/lib/chat/ws-bridge";
+import { showError } from "@/lib/toast";
 import type { ChatWsEvent } from "@/lib/chat/ws";
 
 function chatSenderFromSession(): ChatSender {
@@ -74,6 +79,9 @@ const loadAllMessagesInFlight = new Map<string, Promise<void>>();
 
 type ChatState = {
   threads: ChatThread[];
+  messageTemplates: ApiTemplate[];
+  templatesLoading: boolean;
+  templatesLoaded: boolean;
   loading: boolean;
   error: string | null;
   isHydrated: boolean;
@@ -81,6 +89,8 @@ type ChatState = {
   setThreads: (updater: ChatThread[] | ((current: ChatThread[]) => ChatThread[])) => void;
   applyWsEvent: (event: ChatWsEvent) => void;
   refreshThreads: (options?: { force?: boolean }) => Promise<void>;
+  loadMessageTemplates: (options?: { force?: boolean }) => Promise<void>;
+  getQuickTemplates: (role: ChatSender) => ApiTemplate[];
   reset: () => void;
   loadMessages: (conversationId: string) => Promise<void>;
   loadMoreMessages: (conversationId: string) => Promise<void>;
@@ -101,13 +111,25 @@ type ChatState = {
 
 export const useChatStore = create<ChatState>((set, get) => ({
   threads: [],
+  messageTemplates: [],
+  templatesLoading: false,
+  templatesLoaded: false,
   loading: true,
   error: null,
   isHydrated: false,
   refreshInFlight: null,
 
   reset: () =>
-    set({ threads: [], loading: true, error: null, isHydrated: false, refreshInFlight: null }),
+    set({
+      threads: [],
+      messageTemplates: [],
+      templatesLoading: false,
+      templatesLoaded: false,
+      loading: true,
+      error: null,
+      isHydrated: false,
+      refreshInFlight: null,
+    }),
 
   setThreads: (updater) => {
     set((state) => ({
@@ -121,7 +143,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
     get().threads.find((thread) => thread.conversationId === conversationId),
 
   applyWsEvent: (event) => {
-    if (event.type === "message.new" && event.conversation_id && event.message) {
+    if (event.type === "error" && typeof event.message === "string") {
+      showError(new Error(event.message), event.message);
+      return;
+    }
+
+    if (
+      event.type === "message.new" &&
+      event.conversation_id &&
+      event.message &&
+      typeof event.message === "object"
+    ) {
       const message = apiMessageToThreadMessage(event.message as ApiMessage);
       let refreshUnknownThread = false;
 
@@ -157,7 +189,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
         });
       }
     }
-    if (event.type === "message.updated" && event.conversation_id && event.message) {
+    if (
+      event.type === "message.updated" &&
+      event.conversation_id &&
+      event.message &&
+      typeof event.message === "object"
+    ) {
       const message = apiMessageToThreadMessage(event.message as ApiMessage);
       set((state) => ({
         threads: state.threads.map((thread) =>
@@ -224,6 +261,27 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
     set({ refreshInFlight: promise });
     return promise;
+  },
+
+  loadMessageTemplates: async (options = {}) => {
+    const { force = false } = options;
+    if (!force && get().templatesLoaded) return;
+
+    set({ templatesLoading: true });
+    try {
+      const templates = await listMessageTemplates();
+      set({ messageTemplates: templates, templatesLoaded: true });
+    } catch {
+      set({ messageTemplates: [], templatesLoaded: true });
+    } finally {
+      set({ templatesLoading: false });
+    }
+  },
+
+  getQuickTemplates: (role) => {
+    const filtered = filterTemplatesForRole(get().messageTemplates, role);
+    if (filtered.length > 0) return filtered;
+    return fallbackQuickTemplates(role);
   },
 
   loadMessages: async (conversationId) => {

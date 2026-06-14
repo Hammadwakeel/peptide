@@ -40,7 +40,7 @@ export function ClinicalCommitment() {
               <br />
               not just protocols.
             </ScrollFocusHeading>
-            <p className="mt-5 font-editorial text-base font-light leading-relaxed text-deep-teal/80 sm:mt-6 sm:text-lg">
+            <p className="mt-5 type-body-l text-deep-teal/80 sm:mt-6 sm:text-lg">
               Verification is more than a technical process. It is a commitment
               to practitioners, patients, and every decision that depends on
               molecular certainty.

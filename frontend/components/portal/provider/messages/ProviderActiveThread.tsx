@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ChatMessageInput, toReplyTarget } from "@/components/chat/ChatMessageInput";
 import { ChatMessageList } from "@/components/chat/ChatMessageList";
 import { ChatProfileModal } from "@/components/chat/ChatProfileModal";
+import { ChatQuickTemplates } from "@/components/chat/ChatQuickTemplates";
 import { ChatThreadHeader } from "@/components/chat/ChatThreadHeader";
 import { useChat } from "@/context/ChatProvider";
 import { getPatientInitials } from "@/lib/patients/types";
@@ -16,7 +17,7 @@ type ProviderActiveThreadProps = {
 };
 
 export function ProviderActiveThread({ thread, compact = false, onBack }: ProviderActiveThreadProps) {
-  const { sendMessage, sendMedia, markRead, loadMessages, loadMoreMessages, toggleReaction } = useChat();
+  const { sendMessage, sendMedia, markRead, loadMessages, loadMoreMessages, toggleReaction, getQuickTemplates, templatesLoading } = useChat();
   const [replyTo, setReplyTo] = useState<ReplyTarget | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
 
@@ -39,6 +40,12 @@ export function ProviderActiveThread({ thread, compact = false, onBack }: Provid
         subtitle="Patient"
         onBack={onBack}
         onProfileClick={() => setProfileOpen(true)}
+      />
+
+      <ChatQuickTemplates
+        templates={getQuickTemplates("provider")}
+        loading={templatesLoading}
+        onSelect={(content) => void sendMessage(thread.conversationId, content)}
       />
 
       <div className="min-h-0 flex-1">

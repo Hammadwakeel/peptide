@@ -42,7 +42,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     void client.connect({
       onEvent: applyWsEvent,
       onOpen: () => subscribeAllThreads(),
+      onReady: () => subscribeAllThreads(),
     });
+
+    void useChatStore.getState().loadMessageTemplates();
 
     return () => {
       client.disconnect();
@@ -73,6 +76,8 @@ export function useChat() {
       error: state.error,
       providerUnreadTotal: state.threads.reduce((sum, thread) => sum + thread.unreadProvider, 0),
       patientUnreadTotal: state.threads.reduce((sum, thread) => sum + thread.unreadPatient, 0),
+      templatesLoading: state.templatesLoading,
+      getQuickTemplates: state.getQuickTemplates,
       getThread: state.getThread,
       getThreadByConversationId: state.getThreadByConversationId,
       refreshThreads: state.refreshThreads,

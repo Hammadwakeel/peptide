@@ -1,6 +1,11 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    // Monorepo has lockfiles at repo root and frontend/; pin Turbopack to this app.
+    root: path.resolve(__dirname),
+  },
   images: {
     remotePatterns: [
       {
