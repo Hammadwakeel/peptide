@@ -33,11 +33,12 @@ const MOTION_TAGS = {
   h3: motion.h3,
 } as const;
 
-const HIGHLIGHT_RGB = [37, 181, 194] as const;
+/** Pacific Teal — scroll highlight accent */
+const HIGHLIGHT_RGB = [13, 113, 123] as const;
 
 const INACTIVE_RGB = {
   light: [1, 26, 36] as const,
-  dark: [180, 210, 214] as const,
+  dark: [255, 255, 255] as const,
 } as const;
 
 function stripTextColor(className: string) {
@@ -225,7 +226,7 @@ function ScrollFocusWord({
   );
 }
 
-/** Scroll down — a single #25B5C2 highlight travels word-by-word across the heading. */
+/** Scroll down — a Pacific Teal highlight travels word-by-word across the heading. */
 export function ScrollFocusHeading({
   as = "h2",
   children,

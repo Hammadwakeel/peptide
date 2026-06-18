@@ -22,7 +22,7 @@ export function ChatThreadListSkeleton({ rows = 6 }: { rows?: number }) {
 export function ChatMessageListSkeleton() {
   return (
     <div
-      className="flex h-full flex-col justify-end gap-3 overflow-hidden bg-[#efeae2]/40 px-4 py-4"
+      className="flex h-full flex-col justify-end gap-3 overflow-hidden bg-coral-blush/40 px-4 py-4"
       aria-busy="true"
       aria-label="Loading messages"
     >

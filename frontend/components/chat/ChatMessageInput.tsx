@@ -160,7 +160,7 @@ export function ChatMessageInput({
   }
 
   return (
-    <div className="border-t border-deep-teal/10 bg-[#f0f2f5]">
+    <div className="border-t border-deep-teal/10 bg-surface-muted">
       <input
         ref={imageInputRef}
         type="file"

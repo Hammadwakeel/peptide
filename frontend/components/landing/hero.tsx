@@ -1,108 +1,98 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
 import {
   fadeInUp,
   motion,
-  scaleIn,
   staggerContainer,
   transition,
 } from "@/components/motion";
-import { HeroScrollSequence } from "@/components/landing/HeroScrollSequence";
-import { layoutContainerClass, shapeHeroCards, typeDisplayTitle } from "@/lib/brand/design-system";
-
-function ArrowRightIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M5 12h14M13 6l6 6-6 6"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+import { Navbar } from "@/components/Navbar";
+import {
+  glassCtaGhostOnMediaClass,
+  glassCtaOnMediaClass,
+  glassPanelClass,
+} from "@/lib/brand/design-system";
+import { LANDING_CTA, LANDING_HERO } from "@/lib/landing/content";
+import { LANDING_HERO_CAPSULE_IMAGE, LANDING_HERO_VIDEO } from "@/lib/landing/preload-assets";
+import { PortalCtaMark } from "@/components/landing/PortalCtaMark";
 
 export function Hero() {
-  const sectionRef = useRef<HTMLElement>(null);
-
   return (
     <section
-      ref={sectionRef}
-      className="relative bg-pure-white font-sans text-deep-teal"
+      id="hero"
+      className="relative flex min-h-dvh flex-col overflow-hidden font-sans text-pure-white"
       aria-label="Hero"
     >
-      <div className="sticky top-16 flex min-h-[calc(100dvh-4rem)] items-center bg-pure-white pb-8 pt-4">
-        <div className={layoutContainerClass}>
-          <div className="grid w-full items-center gap-6 sm:gap-8 lg:grid-cols-12">
-            <motion.div
-              className="flex flex-col gap-4 sm:gap-6 lg:col-span-6"
-              initial="hidden"
-              animate="visible"
-              variants={staggerContainer}
-            >
+      <video
+        src={LANDING_HERO_VIDEO}
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="auto"
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+      />
+
+      <div className="relative z-10 flex min-h-dvh flex-col">
+        <Navbar heroGlass />
+
+        <div className="mx-auto flex w-full max-w-[1440px] flex-1 items-center px-4 pb-10 pt-2 sm:px-6 sm:pb-14 sm:pt-4 lg:px-10">
+          <motion.div
+            className={`relative z-[1] w-full ${glassPanelClass} px-6 py-8 sm:px-9 sm:py-10 lg:px-12 lg:py-12`}
+            initial="hidden"
+            animate="visible"
+            variants={staggerContainer}
+          >
+            <div className="relative z-[1] grid items-center gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-10 xl:gap-14">
+              <div className="flex flex-col justify-center">
+                <motion.div variants={fadeInUp} transition={transition}>
+                  <h1 className="type-display max-w-2xl text-balance text-pure-white">
+                    {LANDING_HERO.headline}
+                  </h1>
+                </motion.div>
+
+                <motion.p
+                  className="mt-5 max-w-xl type-body-l text-pure-white/82 sm:mt-6 sm:text-lg"
+                  variants={fadeInUp}
+                  transition={transition}
+                >
+                  {LANDING_HERO.subhead}
+                </motion.p>
+
+                <motion.div
+                  className="mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4"
+                  variants={fadeInUp}
+                  transition={transition}
+                >
+                  <Link href={LANDING_CTA.onboard.href} className={`w-fit ${glassCtaOnMediaClass}`}>
+                    <span>{LANDING_CTA.onboard.label}</span>
+                    <PortalCtaMark />
+                  </Link>
+                  <Link href={LANDING_CTA.browseCatalog.href} className={`w-fit ${glassCtaGhostOnMediaClass}`}>
+                    {LANDING_CTA.browseCatalog.label}
+                  </Link>
+                </motion.div>
+              </div>
+
               <motion.div
-                className={`bg-pacific-teal p-6 shadow-xl sm:p-10 lg:p-12 ${shapeHeroCards[0]}`}
+                className="flex items-center justify-center lg:justify-end"
                 variants={fadeInUp}
                 transition={transition}
               >
-                <h1 className={`${typeDisplayTitle} text-pure-white`}>
-                  The molecule arrives verified.
-                  <br />
-                  Or it doesn&apos;t arrive.
-                </h1>
-
-                <p className="mt-5 max-w-2xl type-body-l text-pure-white/90 sm:mt-6 sm:text-lg">
-                  For pharmacies and practitioners who need unconditional trust,
-                  Frontier Biomed verifies purity at every bond, domestic by
-                  design.
-                </p>
-              </motion.div>
-
-              <motion.div variants={fadeInUp} transition={transition}>
-                <Link
-                  href="/login"
-                  className={`group flex w-full items-center justify-between bg-deep-teal px-6 py-5 text-pure-white shadow-lg transition-[background-color,opacity] duration-300 ease-out hover:bg-pacific-teal sm:px-10 sm:py-7 ${shapeHeroCards[1]}`}
-                >
-                  <span className="text-lg font-light sm:text-xl">Partner Portal</span>
-                  <ArrowRightIcon className="h-6 w-6 transition-transform duration-300 ease-out group-hover:translate-x-1.5 sm:h-7 sm:w-7" />
-                </Link>
-              </motion.div>
-            </motion.div>
-
-            <motion.div
-              className="relative flex w-full justify-center lg:col-span-6 lg:justify-end"
-              initial="hidden"
-              animate="visible"
-              variants={scaleIn}
-              transition={{ ...transition, delay: 0.2 }}
-            >
-              <div className="relative aspect-[2/3] w-full max-w-[420px] lg:aspect-auto lg:h-[min(680px,72vh)] lg:min-h-[320px] lg:max-w-none">
-                <HeroScrollSequence
-                  sectionRef={sectionRef}
-                  className="h-full w-full"
-                  style={{
-                    WebkitMaskImage:
-                      "linear-gradient(to right, transparent 0%, #000 18%, #000 82%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%)",
-                    maskImage:
-                      "linear-gradient(to right, transparent 0%, #000 18%, #000 82%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%)",
-                    WebkitMaskComposite: "source-in",
-                    maskComposite: "intersect",
-                  }}
+                <Image
+                  src={LANDING_HERO_CAPSULE_IMAGE}
+                  alt="Pharmaceutical capsule"
+                  width={480}
+                  height={640}
+                  priority
+                  className="h-auto w-full max-h-[200px] max-w-[220px] object-contain sm:max-h-[260px] sm:max-w-[280px] lg:max-h-[380px] lg:max-w-[340px] xl:max-h-[420px] xl:max-w-[380px]"
                 />
-              </div>
-            </motion.div>
-          </div>
+              </motion.div>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>

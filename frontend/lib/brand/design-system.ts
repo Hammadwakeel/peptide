@@ -36,6 +36,37 @@ export const btnGhostClass =
 export const btnOutlineClass =
   "inline-flex items-center justify-center gap-2 rounded-full border border-deep-teal/15 bg-pure-white px-4 py-2 text-sm font-light text-deep-teal transition-[background-color,color,border-color] duration-300 ease-out hover:border-transparent hover:bg-pacific-teal/12 hover:text-pacific-teal disabled:opacity-50";
 
+/** iOS glass — panels over photo/video (see globals.css .glass-ios) */
+export const glassPanelClass = "glass-ios glass-ios-panel";
+
+/** @deprecated Prefer single glass-ios panel; kept for legacy nested usage */
+export const glassPanelInnerClass = "glass-ios glass-ios-panel !bg-pure-white/[0.04]";
+
+/** Floating navbar shell over hero video */
+export const glassNavShellClass = "glass-ios glass-ios-nav";
+
+/** Partner Portal pill inside glass navbar */
+export const glassNavCtaClass =
+  "glass-ios-button group relative z-[1] inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-light text-pure-white";
+
+/** Glass CTA on dark/video backgrounds — white label */
+export const glassCtaOnMediaClass =
+  "glass-ios-button group relative z-[1] inline-flex items-center justify-center gap-2.5 rounded-full px-6 py-3.5 text-sm font-light text-pure-white sm:gap-3 sm:px-8 sm:py-4 sm:text-base";
+
+/** Ghost glass CTA — secondary actions on video/dark backgrounds */
+export const glassCtaGhostOnMediaClass =
+  "group relative z-[1] inline-flex items-center justify-center rounded-full border border-pure-white/22 bg-pure-white/[0.06] px-6 py-3.5 text-sm font-light text-pure-white/90 backdrop-blur-[16px] transition-[transform,background-color,border-color] duration-400 ease-[cubic-bezier(0.34,1.45,0.64,1)] hover:border-pure-white/32 hover:bg-pure-white/12 hover:text-pure-white sm:px-8 sm:py-4 sm:text-base";
+
+/** Glass CTA — on light frosted panels */
+export const glassCtaClass =
+  "glass-ios-button inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-light text-deep-teal sm:px-8 sm:py-4 sm:text-base";
+
+/** Navbar after scrolling past the hero */
+export const navSolidShellClass = "glass-ios-solid glass-ios-nav";
+
+/** Glass dropdown for mobile nav */
+export const glassNavMenuClass = "glass-ios glass-ios-menu";
+
 /** Editorial container shapes — asymmetric radii inspired by pharma editorial layouts */
 export const shapePortraitShowcase =
   "rounded-tl-[4.5rem] rounded-tr-2xl rounded-br-[3.25rem] rounded-bl-xl sm:rounded-tl-[6.5rem] sm:rounded-tr-3xl sm:rounded-br-[4.75rem] sm:rounded-bl-2xl";
@@ -66,11 +97,12 @@ export const shapeStandardsCards = [
   "rounded-tl-2xl rounded-tr-2xl rounded-br-[4rem] rounded-bl-xl sm:rounded-br-[5rem] sm:rounded-bl-2xl",
 ] as const;
 
-/** Verification process step cards — three unique editorial shapes */
+/** Platform feature cards — four editorial shapes */
 export const shapeProcessCards = [
   "rounded-tl-[3.5rem] rounded-tr-2xl rounded-br-xl rounded-bl-[2.75rem] sm:rounded-tl-[4.25rem] sm:rounded-bl-[3.25rem]",
   "rounded-tl-2xl rounded-tr-[3.5rem] rounded-br-[2.75rem] rounded-bl-xl sm:rounded-tr-[4.25rem] sm:rounded-br-[3.25rem]",
   "rounded-tl-xl rounded-tr-xl rounded-br-[3.5rem] rounded-bl-[3.5rem] sm:rounded-br-[4.25rem] sm:rounded-bl-[4.25rem]",
+  "rounded-tl-[2.75rem] rounded-tr-xl rounded-br-2xl rounded-bl-[1.5rem] sm:rounded-tl-[3.25rem] sm:rounded-br-[2.5rem]",
 ] as const;
 
 /** Hero headline + CTA cards — two distinct editorial shapes */

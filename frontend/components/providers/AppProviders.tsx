@@ -52,7 +52,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     <AuthProvider>
       <PersistStoreHydration />
       {routerReady ? <AppProvidersShell>{children}</AppProvidersShell> : children}
-      <Toaster position="top-center" richColors closeButton toastOptions={toastOptions} />
+      <Toaster position="top-center" closeButton toastOptions={toastOptions} />
     </AuthProvider>
   );
 }

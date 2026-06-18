@@ -101,7 +101,7 @@ export function ProviderChatPage() {
             }}
           />
         ) : (
-          <div className="flex flex-1 flex-col items-center justify-center bg-[#efeae2]/25 px-6 text-center">
+          <div className="flex flex-1 flex-col items-center justify-center bg-coral-blush/25 px-6 text-center">
             <span className="flex size-16 items-center justify-center rounded-full bg-deep-teal/8 text-deep-teal/40">
               <MessageSquare className="size-8" strokeWidth={1.5} />
             </span>

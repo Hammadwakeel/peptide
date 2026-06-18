@@ -107,7 +107,7 @@ export function ChatMessageList({
 
   if (messages.length === 0) {
     return (
-      <div className="flex h-full flex-col items-center justify-center bg-[#efeae2]/40 px-6 text-center">
+      <div className="flex h-full flex-col items-center justify-center bg-coral-blush/40 px-6 text-center">
         <p className="rounded-xl bg-pure-white/80 px-4 py-2 text-sm text-deep-teal/55 shadow-sm">
           No messages yet. Start the conversation.
         </p>
@@ -119,7 +119,7 @@ export function ChatMessageList({
     <div
       ref={scrollRef}
       onScroll={handleScroll}
-      className="flex h-full flex-col overflow-y-auto bg-[#efeae2]/40 px-3 py-3 sm:px-4"
+      className="flex h-full flex-col overflow-y-auto bg-coral-blush/40 px-3 py-3 sm:px-4"
     >
       <div className="mt-auto flex flex-col gap-1">
         {loadingMore ? (

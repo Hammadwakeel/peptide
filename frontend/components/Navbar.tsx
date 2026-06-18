@@ -4,26 +4,36 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
+import { PortalCtaMark } from "@/components/landing/PortalCtaMark";
 import { Tooltip } from "@/components/ui/Tippy";
 import { FrontierLogo } from "@/components/FrontierLogo";
 import { fadeIn, motion, transition } from "@/components/motion";
+import {
+  glassNavCtaClass,
+  glassNavMenuClass,
+  glassNavShellClass,
+  navSolidShellClass,
+} from "@/lib/brand/design-system";
+import { LANDING_CTA, LANDING_NAV_LINKS } from "@/lib/landing/content";
 
-const navLinks = [
-  { href: "#verification", label: "Process", sectionId: "verification" },
-  { href: "#standards", label: "Standards", sectionId: "standards" },
-  { href: "#integrations", label: "Integrations", sectionId: "integrations" },
-  { href: "#commitment", label: "Commitment", sectionId: "commitment" },
-] as const;
+const navLinks = LANDING_NAV_LINKS;
 
 function homeHref(hash: string) {
   return hash.startsWith("#") ? `/${hash}` : hash;
 }
 
-export function Navbar() {
+type NavbarProps = {
+  /** Glass nav over hero video; solidifies when the hero leaves the viewport. */
+  heroGlass?: boolean;
+};
+
+export function Navbar({ heroGlass = false }: NavbarProps) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeHref, setActiveHref] = useState<string>(navLinks[0].href);
+  const [heroSolid, setHeroSolid] = useState(false);
   const onLanding = pathname === "/";
+  const glassMode = heroGlass && !heroSolid;
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
@@ -31,6 +41,21 @@ export function Navbar() {
       document.body.style.overflow = "";
     };
   }, [menuOpen]);
+
+  useEffect(() => {
+    if (!heroGlass) return;
+
+    const hero = document.getElementById("hero");
+    if (!hero) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setHeroSolid(!entry.isIntersecting),
+      { threshold: 0, rootMargin: "-72px 0px 0px 0px" },
+    );
+
+    observer.observe(hero);
+    return () => observer.disconnect();
+  }, [heroGlass]);
 
   useEffect(() => {
     if (!onLanding) return;
@@ -85,21 +110,29 @@ export function Navbar() {
     return pathname === href;
   }
 
+  const shellClass = glassMode ? glassNavShellClass : navSolidShellClass;
+
   return (
     <motion.header
-      className="sticky top-0 z-50 flex w-full justify-center px-4 pt-4 sm:px-6"
+      className="sticky top-0 z-50 flex w-full flex-col items-center px-4 pt-4 sm:px-6"
       initial="hidden"
       animate="visible"
       variants={fadeIn}
       transition={{ ...transition, duration: 0.5 }}
     >
-      <div className="relative mx-auto grid w-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center rounded-full border border-white/20 bg-pacific-teal px-6 py-2.5 shadow-[0_8px_32px_rgba(1,26,36,0.12)] sm:px-10 sm:py-3 lg:px-12">
-        <Link href="/" aria-label="Frontier Biomed" onClick={closeMenu} className="justify-self-start">
-          <FrontierLogo variant="dark" priority />
+      <div
+        className={`relative z-[1] mx-auto grid w-full max-w-4xl grid-cols-[1fr_auto_1fr] items-center px-4 py-2.5 transition-[background-color,border-color,box-shadow] duration-300 sm:px-6 sm:py-3 lg:px-7 ${shellClass}`}
+      >
+        <Link href="/" aria-label="FrontierBioMed" onClick={closeMenu} className="justify-self-start">
+          <FrontierLogo
+            variant={glassMode ? "white" : "black"}
+            priority
+            className="!h-8 w-auto sm:!h-9"
+          />
         </Link>
 
         <nav
-          className="hidden items-center gap-5 justify-self-center md:flex lg:gap-8"
+          className="hidden items-center gap-1 justify-self-center md:flex lg:gap-1.5"
           aria-label="Main"
         >
           {navLinks.map(({ href, label }) => {
@@ -111,14 +144,22 @@ export function Navbar() {
                 key={label}
                 href={linkHref}
                 onClick={() => handleNavClick(href)}
-                className={`relative whitespace-nowrap rounded-full px-3 py-2 text-sm font-light transition-colors duration-300 lg:px-4 ${
-                  active ? "text-deep-teal" : "text-pure-white/70 hover:text-pure-white"
+                className={`relative whitespace-nowrap rounded-full px-3 py-2 text-sm font-light transition-colors duration-300 ${
+                  glassMode
+                    ? active
+                      ? "text-pure-white"
+                      : "text-pure-white/72 hover:text-pure-white"
+                    : active
+                      ? "text-deep-teal"
+                      : "text-deep-teal/60 hover:text-deep-teal"
                 }`}
               >
                 {active ? (
                   <motion.span
                     layoutId="navbar-active-pill"
-                    className="absolute inset-0 rounded-full bg-pure-white shadow-sm"
+                    className={`absolute inset-0 rounded-full ${
+                      glassMode ? "glass-ios-pill-active" : "bg-pacific-teal/10"
+                    }`}
                     transition={{ type: "spring", stiffness: 380, damping: 32 }}
                   />
                 ) : null}
@@ -128,25 +169,39 @@ export function Navbar() {
           })}
         </nav>
 
-        <div className="flex items-center justify-self-end gap-2 sm:gap-3">
+        <div className="flex items-center justify-self-end gap-2 sm:gap-2.5">
           <Link
-            href="/login"
-            className="hidden rounded-full bg-pure-white px-5 py-2.5 text-sm font-light text-deep-teal shadow-sm transition-all duration-300 hover:bg-coral-blush md:inline-flex"
+            href={LANDING_CTA.onboard.href}
+            className={`hidden md:inline-flex ${
+              glassMode
+                ? glassNavCtaClass
+                : "rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white transition-[transform,background-color] duration-300 hover:scale-[1.02] hover:bg-pacific-teal active:scale-[0.98]"
+            }`}
           >
-            Partner Portal
+            <span>{LANDING_CTA.onboard.label}</span>
+            {glassMode ? <PortalCtaMark className="size-4" /> : null}
           </Link>
 
           <Link
-            href="/login"
-            className="inline-flex rounded-full bg-pure-white px-4 py-2.5 text-xs font-light text-deep-teal shadow-sm transition-all duration-300 hover:bg-coral-blush md:hidden"
+            href={LANDING_CTA.onboard.href}
+            className={`inline-flex md:hidden ${
+              glassMode
+                ? `${glassNavCtaClass} px-3.5 py-2 text-xs`
+                : "rounded-full bg-deep-teal px-3.5 py-2 text-xs font-light text-pure-white transition-[transform,background-color] duration-300 hover:scale-[1.02] hover:bg-pacific-teal active:scale-[0.98]"
+            }`}
           >
-            Portal
+            <span>{LANDING_CTA.onboardShort.label}</span>
+            {glassMode ? <PortalCtaMark className="size-3.5" /> : null}
           </Link>
 
           <Tooltip content={menuOpen ? "Close menu" : "Open menu"}>
             <button
               type="button"
-              className="inline-flex size-10 items-center justify-center rounded-full border border-white/25 bg-white/10 text-pure-white md:hidden"
+              className={`relative z-[1] inline-flex size-9 items-center justify-center rounded-full md:hidden ${
+                glassMode
+                  ? "glass-ios-button text-pure-white"
+                  : "border border-deep-teal/10 bg-pure-white text-deep-teal transition-transform duration-300 hover:scale-105 active:scale-95"
+              }`}
               aria-expanded={menuOpen}
               aria-controls="mobile-nav"
               aria-label={menuOpen ? "Close menu" : "Open menu"}
@@ -161,7 +216,11 @@ export function Navbar() {
       {menuOpen ? (
         <nav
           id="mobile-nav"
-          className="mx-auto mt-3 w-full max-w-5xl rounded-3xl border border-white/20 bg-pacific-teal p-2 shadow-lg md:hidden"
+          className={`relative z-[1] mx-auto mt-3 w-full max-w-4xl p-2 md:hidden ${
+            glassMode
+              ? glassNavMenuClass
+              : "glass-ios-solid glass-ios-menu"
+          }`}
         >
           <ul className="space-y-1">
             {navLinks.map(({ href, label }) => {
@@ -173,10 +232,14 @@ export function Navbar() {
                   <Link
                     href={linkHref}
                     onClick={() => handleNavClick(href)}
-                    className={`block rounded-2xl px-4 py-3 text-base font-light transition-colors duration-300 ${
-                      active
-                        ? "bg-pure-white text-deep-teal shadow-sm"
-                        : "text-pure-white/70 hover:bg-white/10 hover:text-pure-white"
+                    className={`block rounded-xl px-4 py-3 text-sm font-light transition-colors duration-300 ${
+                      glassMode
+                        ? active
+                          ? "glass-ios-pill-active text-pure-white"
+                          : "text-pure-white/75 hover:bg-pure-white/10 hover:text-pure-white"
+                        : active
+                          ? "bg-pacific-teal/10 text-deep-teal"
+                          : "text-deep-teal/70 hover:bg-deep-teal/5 hover:text-deep-teal"
                     }`}
                   >
                     {label}

@@ -1,16 +1,10 @@
-import dynamic from "next/dynamic";
-import { LandingPageSkeleton } from "@/components/skeletons/LandingPageSkeleton";
-
-const LandingPageContent = dynamic(
-  () =>
-    import("@/components/landing/LandingPageContent").then(
-      (mod) => mod.LandingPageContent,
-    ),
-  {
-    loading: () => <LandingPageSkeleton />,
-  },
-);
+import { LandingPageGate } from "@/components/landing/LandingPageGate";
+import { LandingPageContent } from "@/components/landing/LandingPageContent";
 
 export default function LandingPage() {
-  return <LandingPageContent />;
+  return (
+    <LandingPageGate>
+      <LandingPageContent />
+    </LandingPageGate>
+  );
 }

@@ -3,6 +3,7 @@
 import { ArrowLeft, Home } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { BRAND_COLORS } from "@/lib/brand/colors";
 
 const STICK_ASSETS = {
   stick0: "/assets/404/sticks/stick0.svg",
@@ -67,7 +68,7 @@ const STICK_FIGURES: StickFigure[] = [
 
 export default function NotFoundPage() {
   return (
-    <div className="relative flex h-screen w-full items-center justify-center overflow-x-hidden bg-black">
+    <div className="relative flex h-screen w-full items-center justify-center overflow-x-hidden bg-deep-teal">
       <CircleAnimation />
       <CharactersAnimation />
       <MessageDisplay />
@@ -91,9 +92,9 @@ function MessageDisplay() {
           isVisible ? "opacity-100" : "opacity-0"
         }`}
       >
-        <div className="m-[1%] text-[35px] font-light text-black">Page Not Found</div>
-        <div className="m-[1%] text-[80px] font-light text-black">404</div>
-        <div className="m-[1%] w-1/2 min-w-[40%] text-center text-[15px] text-black">
+        <div className="m-[1%] text-[35px] font-light text-pure-white">Page Not Found</div>
+        <div className="m-[1%] text-[80px] font-light text-pure-white">404</div>
+        <div className="m-[1%] w-1/2 min-w-[40%] text-center text-[15px] text-pure-white/80">
           The page you are looking for might have been removed, had its name changed, or is
           temporarily unavailable.
         </div>
@@ -101,7 +102,7 @@ function MessageDisplay() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="group flex h-auto items-center gap-2 border-2 border-black px-6 py-2 text-base font-light text-black transition-all duration-300 ease-in-out hover:scale-105 hover:bg-black hover:text-white"
+            className="group flex h-auto items-center gap-2 border-2 border-pure-white px-6 py-2 text-base font-light text-pure-white transition-all duration-300 ease-in-out hover:scale-105 hover:bg-pure-white hover:text-deep-teal"
           >
             <ArrowLeft className="size-5 transition-transform group-hover:-translate-x-0.5" />
             Go Back
@@ -109,7 +110,7 @@ function MessageDisplay() {
           <button
             type="button"
             onClick={() => router.push("/")}
-            className="group flex h-auto items-center gap-2 bg-black px-6 py-2 text-base font-light text-white transition-all duration-300 ease-in-out hover:scale-105 hover:bg-gray-900"
+            className="group flex h-auto items-center gap-2 bg-pacific-teal px-6 py-2 text-base font-light text-pure-white transition-all duration-300 ease-in-out hover:scale-105 hover:bg-coral-blush hover:text-deep-teal"
           >
             <Home className="size-5 transition-transform group-hover:translate-x-0.5" />
             Go Home
@@ -224,7 +225,7 @@ function CircleAnimation() {
       const distanceX = canvas.width / 80;
       const growthRate = canvas.width / 1000;
 
-      context.fillStyle = "white";
+      context.fillStyle = BRAND_COLORS.pureWhite;
       context.clearRect(0, 0, canvas.width, canvas.height);
 
       circlesRef.current.forEach((circle) => {

@@ -1,53 +1,65 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { ScrollFocusHeading } from "@/components/landing/ScrollFocusText";
+import { PortalCtaMark } from "@/components/landing/PortalCtaMark";
 import { layoutContainerClass } from "@/components/landing/LandingSectionHeader";
-import { fadeInUp, motion, transition, viewport } from "@/components/motion";
-import { layoutSectionYClass, shapeCtaBanner, typeSectionLabel } from "@/lib/brand/design-system";
+import {
+  fadeInUp,
+  motion,
+  staggerContainer,
+  transition,
+  viewport,
+} from "@/components/motion";
+import { glassCtaOnMediaClass, glassPanelClass, layoutSectionYClass } from "@/lib/brand/design-system";
+import { LANDING_CTA, LANDING_FINAL_CTA } from "@/lib/landing/content";
+import { LANDING_PARTNER_ACCESS_VIDEO } from "@/lib/landing/preload-assets";
 
 export function FinalCTA() {
   return (
-    <section className={`bg-pure-white ${layoutSectionYClass}`}>
-      <div className={layoutContainerClass}>
+    <section
+      id="final-cta"
+      className={`relative overflow-hidden bg-deep-teal font-sans text-pure-white ${layoutSectionYClass}`}
+      aria-labelledby="final-cta-heading"
+    >
+      <video
+        src={LANDING_PARTNER_ACCESS_VIDEO}
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="auto"
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+      />
+
+      <div className={`relative z-10 flex items-center ${layoutContainerClass}`}>
         <motion.div
-          className={`overflow-hidden bg-deep-teal px-6 py-14 text-center ring-1 ring-pure-white/10 sm:px-10 sm:py-16 lg:px-16 lg:py-20 ${shapeCtaBanner}`}
+          className={`relative z-[1] w-full ${glassPanelClass} px-6 py-8 sm:px-9 sm:py-10 lg:px-12 lg:py-12`}
           initial="hidden"
           whileInView="visible"
           viewport={viewport}
-          variants={fadeInUp}
-          transition={transition}
+          variants={staggerContainer}
         >
-          <p className={`${typeSectionLabel} text-pure-white/55`}>Partner Access</p>
-
-          <ScrollFocusHeading
-            as="h2"
-            className="type-editorial-primary mx-auto mt-4 max-w-3xl sm:mt-5"
-            tone="dark"
-          >
-            Ready to verify
-            <br />
-            the future?
-          </ScrollFocusHeading>
-
-          <p className="mx-auto mt-5 max-w-2xl type-body-l text-pure-white/65 sm:mt-6 sm:text-lg">
-            Join the network of practitioners, pharmacies, and clinical teams who refuse to compromise
-            on molecular certainty.
-          </p>
-
-          <div className="mt-8 flex justify-center sm:mt-10">
-            <Link
-              href="/login"
-              className="group inline-flex items-center justify-center gap-2.5 rounded-full bg-coral-blush px-7 py-3.5 text-sm font-light text-deep-teal transition-[background-color,transform] duration-300 ease-out hover:bg-coral-blush/90 hover:scale-[1.02] sm:gap-3 sm:px-8 sm:py-4 sm:text-base"
+          <div className="relative z-[1] flex flex-col items-center text-center">
+            <motion.h2
+              id="final-cta-heading"
+              className="type-display max-w-4xl text-balance text-pure-white"
+              variants={fadeInUp}
+              transition={transition}
             >
-              Partner Portal
-              <ArrowRight
-                className="size-5 transition-transform duration-300 group-hover:translate-x-0.5"
-                aria-hidden="true"
-              />
-              <span className="sr-only">Open Partner Portal</span>
-            </Link>
+              {LANDING_FINAL_CTA.headline}
+            </motion.h2>
+
+            <motion.div
+              className="mt-7 flex justify-center sm:mt-8"
+              variants={fadeInUp}
+              transition={transition}
+            >
+              <Link href={LANDING_CTA.onboard.href} className={`w-fit ${glassCtaOnMediaClass}`}>
+                <span>{LANDING_CTA.onboard.label}</span>
+                <PortalCtaMark />
+              </Link>
+            </motion.div>
           </div>
         </motion.div>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ScrollFocusHeading } from "@/components/landing/ScrollFocusText";
+import { ScrollFocusHeading, type ScrollFocusTone } from "@/components/landing/ScrollFocusText";
 import {
   layoutContainerClass,
   typeDisplayTitle,
@@ -13,6 +13,7 @@ type LandingSectionHeaderProps = {
   title: React.ReactNode;
   align?: "left" | "center";
   className?: string;
+  tone?: ScrollFocusTone;
 };
 
 export function LandingSectionHeader({
@@ -20,6 +21,7 @@ export function LandingSectionHeader({
   title,
   align = "center",
   className = "",
+  tone = "light",
 }: LandingSectionHeaderProps) {
   return (
     <motion.div
@@ -30,8 +32,20 @@ export function LandingSectionHeader({
       variants={fadeInUp}
       transition={transition}
     >
-      <p className={typeSectionLabel}>{label}</p>
-      <ScrollFocusHeading as="h2" className={`mt-3 ${typeDisplayTitle}`} tone="light">
+      <p
+        className={
+          tone === "dark"
+            ? "font-sans text-xs font-light uppercase tracking-[0.04em] text-pure-white/55"
+            : typeSectionLabel
+        }
+      >
+        {label}
+      </p>
+      <ScrollFocusHeading
+        as="h2"
+        className={`mt-3 ${tone === "dark" ? "type-display text-pure-white" : typeDisplayTitle}`}
+        tone={tone}
+      >
         {title}
       </ScrollFocusHeading>
     </motion.div>

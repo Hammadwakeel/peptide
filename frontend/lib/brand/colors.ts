@@ -1,9 +1,18 @@
-/** Frontier Biomed brand palette — use these tokens across UI and charts. */
+/**
+ * Frontier Biomed brand palette — the only base colors used across the site.
+ *
+ * | Name         | HEX     |
+ * |--------------|---------|
+ * | Deep Teal    | #011A24 |
+ * | Pacific Teal | #0D717B |
+ * | Pure White   | #FFFFFF |
+ * | Coral Blush  | #F7E1D9 |
+ */
 export const BRAND_COLORS = {
-  pacificTeal: "#0d717b",
-  deepTeal: "#011a24",
-  coralBlush: "#f7e1d9",
-  pureWhite: "#ffffff",
+  deepTeal: "#011A24",
+  pacificTeal: "#0D717B",
+  pureWhite: "#FFFFFF",
+  coralBlush: "#F7E1D9",
 } as const;
 
 export const BRAND_RGB = {

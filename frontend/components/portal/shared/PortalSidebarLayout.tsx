@@ -233,7 +233,7 @@ export const PortalSidebarLayout = memo(function PortalSidebarLayout({
               aria-label="Frontier Biomed"
               className="min-w-0 flex-1 overflow-hidden"
             >
-              <FrontierLogo variant="light" />
+              <FrontierLogo variant="primary" />
             </Link>
           ) : (
             <>
@@ -242,7 +242,7 @@ export const PortalSidebarLayout = memo(function PortalSidebarLayout({
                 aria-label="Frontier Biomed"
                 className="min-w-0 lg:hidden"
               >
-                <FrontierLogo variant="light" />
+                <FrontierLogo variant="primary" />
               </Link>
               <button
                 type="button"
@@ -250,7 +250,7 @@ export const PortalSidebarLayout = memo(function PortalSidebarLayout({
                 aria-label="Expand sidebar"
                 className="hidden min-w-0 cursor-pointer lg:flex lg:justify-center"
               >
-                <FrontierLogo variant="light" compact />
+                <FrontierLogo variant="primary" compact />
               </button>
             </>
           )}

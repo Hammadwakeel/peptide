@@ -13,7 +13,7 @@ const STATIC_PREFIXES = [
   "/_next",
   "/fonts",
   "/brand",
-  "/hero-frames",
+  "/assets",
   "/favicon.ico",
   "/icon.png",
 ];

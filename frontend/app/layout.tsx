@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Fraunces, JetBrains_Mono } from "next/font/google";
 import { AppProviders } from "@/components/providers/AppProviders";
+import { BRAND_COLORS } from "@/lib/brand/colors";
 
 /** Editorial — testimonials, quotes, taglines only */
 const fraunces = Fraunces({
@@ -25,6 +26,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 5,
   viewportFit: "cover",
+  themeColor: BRAND_COLORS.deepTeal,
 };
 
 export default function RootLayout({

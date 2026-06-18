@@ -1,5 +1,5 @@
-import { LandingPageSkeleton } from "@/components/skeletons/LandingPageSkeleton";
+import { SiteLoader } from "@/components/SiteLoader";
 
 export default function Loading() {
-  return <LandingPageSkeleton />;
+  return <SiteLoader />;
 }
