@@ -4,6 +4,11 @@
  * Golden-ratio type steps from 12px base: 12 → 20 → 32 → 48 (rounded integers).
  */
 
+/** Shared horizontal rhythm — logo, hero card, and nav align to this grid */
+export const landingTopShellClass = "w-full px-4 sm:px-6";
+
+export const landingTopRailClass = "mx-auto w-full max-w-[1440px]";
+
 /** Shared horizontal rhythm — logo, hero copy, and CTAs align to this grid */
 export const layoutContainerClass =
   "mx-auto w-full max-w-[1400px] px-4 sm:px-8 md:px-12 lg:px-20";
@@ -39,30 +44,53 @@ export const btnOutlineClass =
 /** iOS glass — panels over photo/video (see globals.css .glass-ios) */
 export const glassPanelClass = "glass-ios glass-ios-panel";
 
+/** Frosted glass panel on light section backgrounds */
+export const glassPanelOnLightClass =
+  "glass-ios glass-ios-panel !border-deep-teal/12 !bg-white/40";
+
 /** @deprecated Prefer single glass-ios panel; kept for legacy nested usage */
 export const glassPanelInnerClass = "glass-ios glass-ios-panel !bg-pure-white/[0.04]";
 
+/** Universal landing pill height */
+export const landingPillHeightClass = "h-10";
+
+/** Center nav glass cart */
+export const landingNavShellClass = "inline-flex items-center gap-0.5 p-1 lg:gap-1 lg:p-1.5";
+
+/** Nav link inside center glass cart */
+export const landingNavLinkClass =
+  "relative inline-flex items-center whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-light leading-none transition-colors duration-300";
+
+/** Center nav links pill over hero video */
+export const glassNavLinksClass = "glass-ios glass-ios-nav !rounded-full";
+
 /** Floating navbar shell over hero video */
-export const glassNavShellClass = "glass-ios glass-ios-nav";
+export const glassNavShellClass = glassNavLinksClass;
 
-/** Partner Portal pill inside glass navbar */
-export const glassNavCtaClass =
-  "glass-ios-button group relative z-[1] inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-light text-pure-white";
+/** Onboard CTA — universal pill size (navbar + hero) */
+export const glassOnboardCtaClass =
+  `glass-ios-button group relative z-[1] inline-flex ${landingPillHeightClass} items-center gap-2 rounded-full pl-4 pr-1 text-sm font-light leading-none text-pure-white lg:pl-5 lg:pr-1`;
 
-/** Glass CTA on dark/video backgrounds — white label */
-export const glassCtaOnMediaClass =
-  "glass-ios-button group relative z-[1] inline-flex items-center justify-center gap-2.5 rounded-full px-6 py-3.5 text-sm font-light text-pure-white sm:gap-3 sm:px-8 sm:py-4 sm:text-base";
-
-/** Ghost glass CTA — secondary actions on video/dark backgrounds */
+/** Ghost glass CTA — same height as onboard */
 export const glassCtaGhostOnMediaClass =
-  "group relative z-[1] inline-flex items-center justify-center rounded-full border border-pure-white/22 bg-pure-white/[0.06] px-6 py-3.5 text-sm font-light text-pure-white/90 backdrop-blur-[16px] transition-[transform,background-color,border-color] duration-400 ease-[cubic-bezier(0.34,1.45,0.64,1)] hover:border-pure-white/32 hover:bg-pure-white/12 hover:text-pure-white sm:px-8 sm:py-4 sm:text-base";
+  `group relative z-[1] inline-flex ${landingPillHeightClass} items-center justify-center rounded-full border border-pure-white/22 bg-pure-white/[0.06] px-4 text-sm font-light leading-none text-pure-white/90 backdrop-blur-[16px] transition-[background-color,border-color] duration-300 hover:border-pure-white/32 hover:bg-pure-white/12 hover:text-pure-white lg:px-5`;
+
+/** Onboard CTA on light backgrounds */
+export const glassOnboardCtaOnLightClass =
+  `group inline-flex ${landingPillHeightClass} items-center gap-2 rounded-full bg-pure-white pl-4 pr-1 text-sm font-light leading-none text-deep-teal transition-[background-color,box-shadow] duration-300 hover:bg-coral-blush hover:shadow-[0_16px_40px_rgba(1,26,36,0.2)] lg:gap-2.5 lg:pl-5 lg:pr-1`;
+
+/** @deprecated Use glassOnboardCtaClass */
+export const glassNavCtaClass = glassOnboardCtaClass;
+
+/** @deprecated Use glassOnboardCtaClass */
+export const glassCtaOnMediaClass = glassOnboardCtaClass;
 
 /** Glass CTA — on light frosted panels */
 export const glassCtaClass =
   "glass-ios-button inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-light text-deep-teal sm:px-8 sm:py-4 sm:text-base";
 
 /** Navbar after scrolling past the hero */
-export const navSolidShellClass = "glass-ios-solid glass-ios-nav";
+export const navSolidShellClass = "glass-ios-solid glass-ios-nav !rounded-full";
 
 /** Glass dropdown for mobile nav */
 export const glassNavMenuClass = "glass-ios glass-ios-menu";

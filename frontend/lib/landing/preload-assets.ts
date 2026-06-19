@@ -1,9 +1,6 @@
 import { LOGO_ASSETS } from "@/lib/brand/logos";
 
-export const LANDING_HERO_VIDEO =
-  "/assets/herosection/hf_20260617_133306_b3662c80-5071-43d4-acdb-cbb844603872.mp4";
-
-export const LANDING_HERO_CAPSULE_IMAGE = "/assets/herosection/hero-capsule.png";
+export const LANDING_HERO_VIDEO = "/assets/herosection/herosection.webm";
 
 export const LANDING_PARTNER_ACCESS_VIDEO =
   "/assets/partneraccess/Make_a_video_with_the_exact_de.mp4";
@@ -12,7 +9,6 @@ export const LANDING_PARTNER_ACCESS_VIDEO =
 export const LANDING_PRELOAD_IMAGES = [
   LOGO_ASSETS.black,
   LOGO_ASSETS.white,
-  LANDING_HERO_CAPSULE_IMAGE,
   "/brand/campaign-supply-layer-banner.png",
   "/brand/product-vial-2x-blend-hero.png",
   "/brand/merch-tote-built-for-whats-next.png",

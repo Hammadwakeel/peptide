@@ -1,5 +1,5 @@
 import { Hero } from "@/components/landing/hero";
-import { TheProblem } from "@/components/landing/TheProblem";
+import { PartnerNetwork } from "@/components/landing/PartnerNetwork";
 import { PlatformOverview } from "@/components/landing/PlatformOverview";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { VerifiedSafety } from "@/components/landing/VerifiedSafety";
@@ -14,7 +14,7 @@ export function LandingPageContent() {
   return (
     <main className="bg-pure-white font-sans text-deep-teal">
       <Hero />
-      <TheProblem />
+      <PartnerNetwork />
       <PlatformOverview />
       <HowItWorks />
       <VerifiedSafety />

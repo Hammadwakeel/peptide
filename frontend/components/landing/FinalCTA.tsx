@@ -10,7 +10,7 @@ import {
   transition,
   viewport,
 } from "@/components/motion";
-import { glassCtaOnMediaClass, glassPanelClass, layoutSectionYClass } from "@/lib/brand/design-system";
+import { glassOnboardCtaClass, glassPanelClass, layoutSectionYClass } from "@/lib/brand/design-system";
 import { LANDING_CTA, LANDING_FINAL_CTA } from "@/lib/landing/content";
 import { LANDING_PARTNER_ACCESS_VIDEO } from "@/lib/landing/preload-assets";
 
@@ -55,7 +55,7 @@ export function FinalCTA() {
               variants={fadeInUp}
               transition={transition}
             >
-              <Link href={LANDING_CTA.onboard.href} className={`w-fit ${glassCtaOnMediaClass}`}>
+              <Link href={LANDING_CTA.onboard.href} className={`w-fit ${glassOnboardCtaClass}`}>
                 <span>{LANDING_CTA.onboard.label}</span>
                 <PortalCtaMark />
               </Link>

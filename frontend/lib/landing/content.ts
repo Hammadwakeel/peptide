@@ -23,22 +23,9 @@ export const LANDING_PROBLEM = {
   label: "The Problem",
   titleLine1: "You prescribe it.",
   titleLine2: "Someone else profits.",
+  image: "/brand/facility-glass-entrance.png",
   body:
     "Right now you're juggling a separate login, invoice, and vendor for peptides, compounds, and labs. And the moment a patient leaves, the refill happens somewhere else, you keep the liability, they keep the revenue.",
-  painPoints: [
-    {
-      title: "Fragmented vendors",
-      description: "Separate logins, invoices, and suppliers across peptides, compounds, and labs.",
-    },
-    {
-      title: "Leaking refills",
-      description: "When a patient leaves, the next fill happens outside your clinic.",
-    },
-    {
-      title: "Split outcomes",
-      description: "You carry the clinical risk while someone else captures the economics.",
-    },
-  ],
 } as const;
 
 export const LANDING_PLATFORM = {

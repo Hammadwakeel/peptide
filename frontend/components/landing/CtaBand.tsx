@@ -12,7 +12,7 @@ import {
   transition,
   viewport,
 } from "@/components/motion";
-import { layoutSectionYClass, shapeCtaBanner } from "@/lib/brand/design-system";
+import { glassOnboardCtaOnLightClass, layoutSectionYClass, shapeCtaBanner } from "@/lib/brand/design-system";
 import { LANDING_CTA, LANDING_CTA_BAND } from "@/lib/landing/content";
 
 export function CtaBand() {
@@ -75,10 +75,10 @@ export function CtaBand() {
           >
             <Link
               href={LANDING_CTA.onboard.href}
-              className="group inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-pure-white px-8 py-4 text-sm font-light text-deep-teal transition-[background-color,transform,box-shadow] duration-300 hover:bg-coral-blush hover:shadow-[0_16px_40px_rgba(1,26,36,0.2)] sm:w-auto sm:text-base"
+              className={`w-full sm:w-auto ${glassOnboardCtaOnLightClass}`}
             >
               <span>{LANDING_CTA.onboard.label}</span>
-              <PortalCtaMark className="size-5 text-deep-teal sm:size-[1.35rem]" />
+              <PortalCtaMark variant="on-light" />
             </Link>
           </motion.div>
         </motion.div>

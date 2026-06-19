@@ -9,9 +9,14 @@ import { Tooltip } from "@/components/ui/Tippy";
 import { FrontierLogo } from "@/components/FrontierLogo";
 import { fadeIn, motion, transition } from "@/components/motion";
 import {
-  glassNavCtaClass,
+  glassNavLinksClass,
   glassNavMenuClass,
-  glassNavShellClass,
+  glassOnboardCtaClass,
+  landingNavLinkClass,
+  landingNavShellClass,
+  landingPillHeightClass,
+  landingTopRailClass,
+  landingTopShellClass,
   navSolidShellClass,
 } from "@/lib/brand/design-system";
 import { LANDING_CTA, LANDING_NAV_LINKS } from "@/lib/landing/content";
@@ -110,29 +115,27 @@ export function Navbar({ heroGlass = false }: NavbarProps) {
     return pathname === href;
   }
 
-  const shellClass = glassMode ? glassNavShellClass : navSolidShellClass;
+  const linksShellClass = glassMode ? glassNavLinksClass : navSolidShellClass;
 
   return (
     <motion.header
-      className="sticky top-0 z-50 flex w-full flex-col items-center px-4 pt-4 sm:px-6"
+      className={`sticky top-0 z-50 pt-4 ${landingTopShellClass}`}
       initial="hidden"
       animate="visible"
       variants={fadeIn}
       transition={{ ...transition, duration: 0.5 }}
     >
-      <div
-        className={`relative z-[1] mx-auto grid w-full max-w-4xl grid-cols-[1fr_auto_1fr] items-center px-4 py-2.5 transition-[background-color,border-color,box-shadow] duration-300 sm:px-6 sm:py-3 lg:px-7 ${shellClass}`}
-      >
-        <Link href="/" aria-label="FrontierBioMed" onClick={closeMenu} className="justify-self-start">
+      <div className={`${landingTopRailClass} grid grid-cols-[auto_1fr_auto] items-center gap-3 lg:gap-6`}>
+        <Link href="/" aria-label="FrontierBioMed" onClick={closeMenu} className="shrink-0 justify-self-start">
           <FrontierLogo
             variant={glassMode ? "white" : "black"}
             priority
-            className="!h-8 w-auto sm:!h-9"
+            className="!h-7 w-auto object-contain object-left sm:!h-8"
           />
         </Link>
 
         <nav
-          className="hidden items-center gap-1 justify-self-center md:flex lg:gap-1.5"
+          className={`hidden w-fit shrink-0 justify-self-center transition-[background-color,border-color,box-shadow] duration-300 md:inline-flex ${landingNavShellClass} ${linksShellClass}`}
           aria-label="Main"
         >
           {navLinks.map(({ href, label }) => {
@@ -144,7 +147,7 @@ export function Navbar({ heroGlass = false }: NavbarProps) {
                 key={label}
                 href={linkHref}
                 onClick={() => handleNavClick(href)}
-                className={`relative whitespace-nowrap rounded-full px-3 py-2 text-sm font-light transition-colors duration-300 ${
+                className={`${landingNavLinkClass} ${
                   glassMode
                     ? active
                       ? "text-pure-white"
@@ -169,29 +172,29 @@ export function Navbar({ heroGlass = false }: NavbarProps) {
           })}
         </nav>
 
-        <div className="flex items-center justify-self-end gap-2 sm:gap-2.5">
+        <div className="flex shrink-0 items-center justify-self-end gap-2 sm:gap-2.5">
           <Link
             href={LANDING_CTA.onboard.href}
             className={`hidden md:inline-flex ${
               glassMode
-                ? glassNavCtaClass
-                : "rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white transition-[transform,background-color] duration-300 hover:scale-[1.02] hover:bg-pacific-teal active:scale-[0.98]"
+                ? glassOnboardCtaClass
+                : `inline-flex ${landingPillHeightClass} items-center rounded-full bg-deep-teal pl-4 pr-1 text-sm font-light leading-none text-pure-white transition-[background-color] duration-300 hover:bg-pacific-teal lg:pl-5`
             }`}
           >
             <span>{LANDING_CTA.onboard.label}</span>
-            {glassMode ? <PortalCtaMark className="size-4" /> : null}
+            {glassMode ? <PortalCtaMark /> : null}
           </Link>
 
           <Link
             href={LANDING_CTA.onboard.href}
             className={`inline-flex md:hidden ${
               glassMode
-                ? `${glassNavCtaClass} px-3.5 py-2 text-xs`
-                : "rounded-full bg-deep-teal px-3.5 py-2 text-xs font-light text-pure-white transition-[transform,background-color] duration-300 hover:scale-[1.02] hover:bg-pacific-teal active:scale-[0.98]"
+                ? `${glassOnboardCtaClass} pl-3.5 pr-1 text-xs`
+                : `inline-flex ${landingPillHeightClass} items-center rounded-full bg-deep-teal px-3.5 text-xs font-light leading-none text-pure-white transition-[background-color] duration-300 hover:bg-pacific-teal`
             }`}
           >
             <span>{LANDING_CTA.onboardShort.label}</span>
-            {glassMode ? <PortalCtaMark className="size-3.5" /> : null}
+            {glassMode ? <PortalCtaMark /> : null}
           </Link>
 
           <Tooltip content={menuOpen ? "Close menu" : "Open menu"}>
@@ -216,7 +219,7 @@ export function Navbar({ heroGlass = false }: NavbarProps) {
       {menuOpen ? (
         <nav
           id="mobile-nav"
-          className={`relative z-[1] mx-auto mt-3 w-full max-w-4xl p-2 md:hidden ${
+          className={`relative z-[1] mx-auto mt-3 p-2 md:hidden ${landingTopRailClass} ${
             glassMode
               ? glassNavMenuClass
               : "glass-ios-solid glass-ios-menu"

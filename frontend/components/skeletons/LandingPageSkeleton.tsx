@@ -1,16 +1,18 @@
 import { Skeleton } from "@/components/ui/Skeleton";
 
+import { landingPillHeightClass, landingTopRailClass, landingTopShellClass } from "@/lib/brand/design-system";
+
 function NavbarSkeleton() {
   return (
-    <div className="flex w-full justify-center px-4 pt-4 sm:px-6">
-      <div className="mx-auto grid w-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center rounded-full border border-pure-white/55 bg-pure-white/22 px-6 py-3 backdrop-blur-[20px] sm:px-10">
-        <Skeleton className="h-9 w-28 rounded-full bg-deep-teal/10" />
-        <div className="hidden items-center gap-6 md:flex">
+    <div className={`${landingTopShellClass} pt-4`}>
+      <div className={`${landingTopRailClass} grid grid-cols-[auto_1fr_auto] items-center gap-3`}>
+        <Skeleton className="h-7 w-24 rounded-md bg-pure-white/20 sm:h-8" />
+        <div className={`hidden w-fit shrink-0 justify-self-center items-center gap-3 rounded-full border border-pure-white/55 bg-pure-white/22 p-1.5 backdrop-blur-[20px] md:inline-flex`}>
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-4 w-16 rounded-full bg-deep-teal/10" />
+            <Skeleton key={i} className="h-4 w-16 rounded-full bg-pure-white/30" />
           ))}
         </div>
-        <Skeleton className="ml-auto h-10 w-32 rounded-full bg-pure-white/40" />
+        <Skeleton className={`${landingPillHeightClass} w-36 justify-self-end rounded-full border border-pure-white/55 bg-pure-white/22 backdrop-blur-[20px]`} />
       </div>
     </div>
   );
@@ -18,14 +20,14 @@ function NavbarSkeleton() {
 
 function HeroSkeleton() {
   return (
-    <section className="relative flex min-h-dvh flex-col overflow-hidden bg-pacific-teal/20">
+    <section className="relative flex min-h-dvh flex-col overflow-hidden bg-deep-teal">
       <NavbarSkeleton />
-      <div className="flex flex-1 items-center px-4 pb-10 pt-4 md:px-6 lg:px-8">
-        <div className="w-full rounded-[2.5rem] border border-pure-white/50 bg-pure-white/18 p-6 backdrop-blur-[24px] sm:p-8">
-          <div className="grid gap-5 lg:grid-cols-2 lg:gap-8">
-            <Skeleton className="min-h-[200px] rounded-[1.5rem] border border-pure-white/55 bg-pure-white/30 sm:min-h-[240px]" />
-            <div className="space-y-6 px-2 sm:px-4">
-              <Skeleton className="h-20 w-full max-w-md bg-deep-teal/10" />
+      <div className={`${landingTopShellClass} flex flex-1 items-center pb-10 pt-4`}>
+        <div className={`${landingTopRailClass} w-full`}>
+          <div className="w-full rounded-[2.5rem] border border-pure-white/50 bg-pure-white/18 p-8 backdrop-blur-[24px] sm:p-12">
+            <div className="mx-auto flex max-w-xl flex-col items-center space-y-6 text-center">
+              <Skeleton className="h-20 w-full bg-deep-teal/10" />
+              <Skeleton className="h-12 w-full bg-deep-teal/10" />
               <Skeleton className="h-12 w-40 rounded-full border border-deep-teal/15 bg-pure-white/20" />
             </div>
           </div>
