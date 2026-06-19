@@ -49,6 +49,15 @@ def list_clinics(
     return admin_service.list_clinics(pagination)
 
 
+@router.get("/patients/by-clinic")
+def patients_by_clinic(
+    limit_per_clinic: int = Query(100, ge=1, le=500, description="Max patients returned per clinic"),
+    _: dict = Depends(admin_user),
+) -> dict:
+    """Admin bulk fetch — all clinic patients in one request (avoids N+1 per clinic)."""
+    return admin_service.list_all_clinic_patients_bulk(limit_per_clinic)
+
+
 @router.get("/clinics/{clinic_id}/patients")
 def clinic_patients(
     clinic_id: str,

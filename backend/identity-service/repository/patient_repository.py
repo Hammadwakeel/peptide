@@ -118,6 +118,34 @@ def list_patients_by_clinic_admin(
     return list_patients_by_clinic(cursor, clinic_id, limit, offset)
 
 
+def list_patients_grouped_by_clinic(
+    cursor, limit_per_clinic: int = 100,
+) -> dict[str, list[dict[str, Any]]]:
+    cursor.execute(
+        """
+        WITH ranked AS (
+            SELECT p.id, p.clinic_id, p.first_name, p.last_name, p.email, p.phone,
+                   p.status::text AS status, p.user_id,
+                   ROW_NUMBER() OVER (
+                       PARTITION BY p.clinic_id
+                       ORDER BY p.last_name, p.first_name
+                   ) AS rn
+            FROM patients p
+        )
+        SELECT id, clinic_id, first_name, last_name, email, phone, status, user_id
+        FROM ranked
+        WHERE rn <= %s
+        ORDER BY clinic_id, last_name, first_name
+        """,
+        (limit_per_clinic,),
+    )
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for row in _rows_to_dicts(cursor, cursor.fetchall()):
+        clinic_id = str(row.pop("clinic_id"))
+        grouped.setdefault(clinic_id, []).append(row)
+    return grouped
+
+
 def get_patient_by_id(cursor, patient_id: str) -> dict[str, Any] | None:
     cursor.execute(
         """

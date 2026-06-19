@@ -277,19 +277,32 @@ def get_order_for_clinic(cursor, order_id: str, clinic_id: str) -> dict[str, Any
 
 
 def list_order_items(cursor, order_id: str) -> list[dict[str, Any]]:
+    grouped = list_order_items_for_orders(cursor, [order_id])
+    return grouped.get(order_id, [])
+
+
+def list_order_items_for_orders(
+    cursor, order_ids: list[str],
+) -> dict[str, list[dict[str, Any]]]:
+    if not order_ids:
+        return {}
     cursor.execute(
         """
-        SELECT oi.id, oi.product_id, oi.variant_id, oi.qty,
+        SELECT oi.order_id, oi.id, oi.product_id, oi.variant_id, oi.qty,
                oi.unit_price, oi.unit_cost, oi.total,
                p.product_name, p.product_type::text AS product_type, p.sku
         FROM order_items oi
         JOIN products p ON p.id = oi.product_id
-        WHERE oi.order_id = %s
-        ORDER BY p.product_name
+        WHERE oi.order_id = ANY(%s::uuid[])
+        ORDER BY oi.order_id, p.product_name
         """,
-        (order_id,),
+        (order_ids,),
     )
-    return _rows(cursor, cursor.fetchall())
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for row in _rows(cursor, cursor.fetchall()):
+        order_id = str(row.pop("order_id"))
+        grouped.setdefault(order_id, []).append(row)
+    return grouped
 
 
 def list_order_tracking(cursor, order_id: str) -> list[dict[str, Any]]:

@@ -23,6 +23,7 @@ class ConversationResponse(BaseModel):
 class ConversationListResponse(BaseModel):
     status: bool = True
     conversations: list[ConversationResponse]
+    pagination: dict | None = None
 
 
 class MarkReadRequest(BaseModel):

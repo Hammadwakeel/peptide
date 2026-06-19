@@ -5,8 +5,8 @@ import {
   getPlatformSettings,
   listAffiliates,
   listApplications,
-  listClinicPatients,
   listClinics,
+  listPatientsByClinicBulk,
 } from "@/lib/admin/api";
 import { listCategories, listProducts } from "@/lib/admin/inventory/api";
 import type { InventoryCategory, InventoryProduct } from "@/lib/admin/inventory/types";
@@ -24,17 +24,14 @@ import { showError } from "@/lib/toast";
 export type PatientsByClinicId = Record<string, AdminClinicPatient[]>;
 
 async function fetchUserManagementData() {
-  const clinicsResponse = await listClinics({ page: 1, limit: 100 });
-  const patientEntries = await Promise.all(
-    clinicsResponse.clinics.map(async (clinic) => {
-      const response = await listClinicPatients(clinic.id, { page: 1, limit: 100 });
-      return [clinic.id, response.patients] as const;
-    }),
-  );
+  const [clinicsResponse, patientsResponse] = await Promise.all([
+    listClinics({ page: 1, limit: 100 }),
+    listPatientsByClinicBulk(100),
+  ]);
 
   return {
     clinics: clinicsResponse.clinics,
-    patientsByClinicId: Object.fromEntries(patientEntries) as PatientsByClinicId,
+    patientsByClinicId: patientsResponse.patients_by_clinic as PatientsByClinicId,
   };
 }
 

@@ -15,6 +15,9 @@ import type {
   PlacePatientOrderPayload,
 } from "@/lib/patient-portal/types";
 
+const PATIENT_ORDERS_PAGE_SIZE = 50;
+const PATIENT_STORE_PAGE_SIZE = 50;
+
 type ListPatientStoreParams = {
   page?: number;
   limit?: number;
@@ -81,8 +84,10 @@ export async function listPatientOrders(
 
 export async function listPatientPendingOrders(
   doctorName: string,
+  options: { fetchAll?: boolean } = {},
 ): Promise<PatientPendingOrder[]> {
-  const limit = 500;
+  const { fetchAll = false } = options;
+  const limit = PATIENT_ORDERS_PAGE_SIZE;
   let page = 1;
   const pending: PatientPendingOrder[] = [];
 
@@ -97,29 +102,59 @@ export async function listPatientPendingOrders(
     pending.push(
       ...response.orders.map((order) => mapCommerceOrderToPending(order, doctorName)),
     );
-    if (!response.pagination.has_next) break;
+    if (!fetchAll || !response.pagination.has_next) break;
     page += 1;
   }
 
   return pending;
 }
 
-export async function fetchAllPatientHistoryOrders(): Promise<PatientHistoryOrder[]> {
-  const limit = 500;
+export async function fetchAllPatientHistoryOrders(
+  options: { fetchAll?: boolean } = {},
+): Promise<PatientHistoryOrder[]> {
+  const { fetchAll = false } = options;
+  const limit = PATIENT_ORDERS_PAGE_SIZE;
   let page = 1;
   const orders: PatientHistoryOrder[] = [];
 
   while (true) {
     const response = await listPatientOrders(page, limit, "approved");
     orders.push(...response.orders);
-    if (!response.pagination.has_next) break;
+    if (!fetchAll || !response.pagination.has_next) break;
     page += 1;
   }
 
   const rejected = await listPatientOrders(1, limit, "rejected");
   orders.push(...rejected.orders);
 
+  if (fetchAll) {
+    let rejectedPage = 2;
+    while (true) {
+      const response = await listPatientOrders(rejectedPage, limit, "rejected");
+      orders.push(...response.orders);
+      if (!response.pagination.has_next) break;
+      rejectedPage += 1;
+    }
+  }
+
   return orders.sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export async function fetchRemainingPatientStoreProducts(
+  startPage: number,
+): Promise<PaginatedPatientStoreResponse["products"]> {
+  const limit = PATIENT_STORE_PAGE_SIZE;
+  let page = startPage;
+  const products: PaginatedPatientStoreResponse["products"] = [];
+
+  while (true) {
+    const response = await listPatientStoreProducts({ page, limit });
+    products.push(...response.products);
+    if (!response.pagination.has_next) break;
+    page += 1;
+  }
+
+  return products;
 }
 
 export async function getPatientOrder(orderId: string) {

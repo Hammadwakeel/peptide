@@ -13,6 +13,7 @@ from repository.orders import (
     insert_order_item,
     insert_patient_address,
     list_order_items,
+    list_order_items_for_orders,
     list_order_tracking,
     list_patient_orders,
 )
@@ -117,10 +118,12 @@ def list_orders_for_patient(
         rows = list_patient_orders(
             cursor, patient_id, pagination.limit, offset, review_status,
         )
-        orders = []
-        for row in rows:
-            items = list_order_items(cursor, str(row["id"]))
-            orders.append(fmt_patient_order(row, items=items))
+        order_ids = [str(row["id"]) for row in rows]
+        items_by_order = list_order_items_for_orders(cursor, order_ids)
+        orders = [
+            fmt_patient_order(row, items=items_by_order.get(str(row["id"]), []))
+            for row in rows
+        ]
         return paginated_response(orders, total, pagination.page, pagination.limit, key="orders")
     finally:
         cursor.close()

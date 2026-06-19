@@ -57,9 +57,17 @@ def get_conversation_by_id(cursor, conversation_id: str) -> dict[str, Any] | Non
     return _row_to_dict(cursor, row) if row else None
 
 
-def list_conversations_by_doctor(cursor, doctor_id: str) -> list[dict[str, Any]]:
+def list_conversations_by_doctor(
+    cursor, doctor_id: str, limit: int | None = None, offset: int = 0,
+) -> list[dict[str, Any]]:
+    limit_clause = ""
+    params: list[Any] = [doctor_id]
+    if limit is not None:
+        limit_clause = "LIMIT %s OFFSET %s"
+        params.extend([limit, offset])
+
     cursor.execute(
-        """
+        f"""
         SELECT c.id, c.doctor_id, c.clinic_id, c.patient_id, c.status, c.last_message_at,
                c.created_at, c.updated_at,
                p.first_name AS patient_first_name, p.last_name AS patient_last_name,
@@ -68,10 +76,19 @@ def list_conversations_by_doctor(cursor, doctor_id: str) -> list[dict[str, Any]]
         JOIN patients p ON p.id = c.patient_id
         WHERE c.doctor_id = %s
         ORDER BY COALESCE(c.last_message_at, c.updated_at) DESC
+        {limit_clause}
         """,
-        (doctor_id,),
+        params,
     )
     return _rows_to_dicts(cursor, cursor.fetchall())
+
+
+def count_conversations_by_doctor(cursor, doctor_id: str) -> int:
+    cursor.execute(
+        "SELECT COUNT(*) FROM conversations WHERE doctor_id = %s",
+        (doctor_id,),
+    )
+    return cursor.fetchone()[0]
 
 
 def list_conversations_by_patient(cursor, patient_id: str) -> list[dict[str, Any]]:

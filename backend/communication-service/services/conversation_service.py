@@ -7,6 +7,7 @@ from fastapi import HTTPException
 
 from db import connect
 from repository.conversation_repository import (
+    count_conversations_by_doctor,
     get_conversation_by_id,
     get_or_create_conversation,
     list_conversations_by_doctor,
@@ -22,6 +23,7 @@ from repository.patient_lookup import (
     patient_belongs_to_clinic,
 )
 from schemas.conversation import ConversationResponse
+from schemas.pagination import PaginationQuery, paginated_response
 from services import mongo as mongo_service
 from services import redis_bus
 
@@ -216,7 +218,9 @@ async def create_conversation_for_doctor(user: dict, patient_id: str) -> Convers
         conn.close()
 
 
-async def list_doctor_conversations(user: dict) -> list[ConversationResponse]:
+async def list_doctor_conversations(
+    user: dict, pagination: PaginationQuery | None = None,
+) -> dict:
     conn = connect()
     cursor = conn.cursor()
     try:
@@ -224,16 +228,28 @@ async def list_doctor_conversations(user: dict) -> list[ConversationResponse]:
         if not clinic:
             raise HTTPException(status_code=403, detail="No clinic linked to this doctor account")
 
-        rows = list_conversations_by_doctor(cursor, user["sub"])
+        if pagination is None:
+            rows = list_conversations_by_doctor(cursor, user["sub"])
+            total = len(rows)
+            page, limit = 1, total or 1
+        else:
+            offset = (pagination.page - 1) * pagination.limit
+            total = count_conversations_by_doctor(cursor, user["sub"])
+            rows = list_conversations_by_doctor(
+                cursor, user["sub"], pagination.limit, offset,
+            )
+            page, limit = pagination.page, pagination.limit
+
         doctor_profile = get_doctor_profile(cursor, user["sub"])
         doctor_name = _doctor_display_name(doctor_profile, user.get("email"))
         db = await mongo_service.connect_mongo()
-        return await _enrich_conversations_batch(
+        conversations = await _enrich_conversations_batch(
             rows,
             doctor_name=doctor_name,
             doctor_email=user.get("email"),
             db=db,
         )
+        return paginated_response(conversations, total, page, limit, key="conversations")
     finally:
         cursor.close()
         conn.close()

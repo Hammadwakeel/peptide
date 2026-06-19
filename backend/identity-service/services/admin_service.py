@@ -36,7 +36,7 @@ from repository.clinic_repository import (
     count_all_clinics,
     count_applications,
     get_clinic_by_id,
-    get_clinic_documents,
+    list_clinic_documents_for_clinics,
     link_clinic_owner,
     list_all_clinics,
     list_applications,
@@ -47,6 +47,7 @@ from repository.patient_repository import (
     count_patients_by_clinic,
     get_patient_by_id,
     list_patients_by_clinic_admin,
+    list_patients_grouped_by_clinic,
 )
 from repository.user_repository import (
     create_password_setup_token,
@@ -158,9 +159,10 @@ def list_applications_queue(
         offset = (pagination.page - 1) * pagination.limit
         total = count_applications(cursor, status_filter)
         clinics = list_applications(cursor, pagination.limit, offset, status_filter)
+        clinic_ids = [str(clinic["id"]) for clinic in clinics]
+        docs_by_clinic = list_clinic_documents_for_clinics(cursor, clinic_ids)
         items = []
         for clinic in clinics:
-            docs = get_clinic_documents(cursor, str(clinic["id"]))
             formatted_docs = [
                 {
                     "id": str(d["id"]),
@@ -169,7 +171,7 @@ def list_applications_queue(
                     "status": d["status"],
                     "uploaded_at": str(d["uploaded_at"]),
                 }
-                for d in docs
+                for d in docs_by_clinic.get(str(clinic["id"]), [])
             ]
             items.append(_format_application(clinic, formatted_docs))
         return paginated_response(items, total, pagination.page, pagination.limit, key="applications")
@@ -329,6 +331,40 @@ def list_clinic_patients(clinic_id: str, pagination: PaginationQuery) -> dict:
         return response
     except HTTPException:
         raise
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def list_all_clinic_patients_bulk(limit_per_clinic: int = 100) -> dict:
+    conn = connect()
+    cursor = conn.cursor()
+    try:
+        grouped = list_patients_grouped_by_clinic(cursor, limit_per_clinic)
+        patients_by_clinic = {
+            clinic_id: [
+                {
+                    "id": str(p["id"]),
+                    "first_name": p["first_name"],
+                    "last_name": p["last_name"],
+                    "email": p["email"],
+                    "phone": p.get("phone"),
+                    "status": p["status"],
+                    "has_account": p["user_id"] is not None,
+                    "user_id": str(p["user_id"]) if p.get("user_id") else None,
+                }
+                for p in patients
+            ]
+            for clinic_id, patients in grouped.items()
+        }
+        total_patients = sum(len(patients) for patients in patients_by_clinic.values())
+        return {
+            "status": True,
+            "patients_by_clinic": patients_by_clinic,
+            "clinic_count": len(patients_by_clinic),
+            "total_patients": total_patients,
+            "limit_per_clinic": limit_per_clinic,
+        }
     finally:
         cursor.close()
         conn.close()

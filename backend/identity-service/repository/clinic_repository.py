@@ -123,16 +123,29 @@ def update_application_status(
 
 
 def get_clinic_documents(cursor, clinic_id: str) -> list[dict[str, Any]]:
+    grouped = list_clinic_documents_for_clinics(cursor, [clinic_id])
+    return grouped.get(clinic_id, [])
+
+
+def list_clinic_documents_for_clinics(
+    cursor, clinic_ids: list[str],
+) -> dict[str, list[dict[str, Any]]]:
+    if not clinic_ids:
+        return {}
     cursor.execute(
         """
-        SELECT id, document_type, file_url, status::text AS status, uploaded_at
+        SELECT clinic_id, id, document_type, file_url, status::text AS status, uploaded_at
         FROM clinic_documents
-        WHERE clinic_id = %s
-        ORDER BY uploaded_at ASC
+        WHERE clinic_id = ANY(%s::uuid[])
+        ORDER BY clinic_id, uploaded_at ASC
         """,
-        (clinic_id,),
+        (clinic_ids,),
     )
-    return _rows_to_dicts(cursor, cursor.fetchall())
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for row in _rows_to_dicts(cursor, cursor.fetchall()):
+        clinic_id = str(row.pop("clinic_id"))
+        grouped.setdefault(clinic_id, []).append(row)
+    return grouped
 
 
 def get_clinic_banking_summary(cursor, clinic_id: str) -> dict[str, Any] | None:

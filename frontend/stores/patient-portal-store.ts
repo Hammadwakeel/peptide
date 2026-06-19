@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import {
   fetchAllPatientHistoryOrders,
+  fetchRemainingPatientStoreProducts,
   getPatientOrder,
   listPatientPendingOrders,
   listPatientStoreProducts,
@@ -101,7 +102,7 @@ export const usePatientPortalStore = create<PatientPortalState>((set, get) => ({
         const [pending, history, storeRes] = await Promise.all([
           listPatientPendingOrders(doctorName),
           fetchAllPatientHistoryOrders(),
-          listPatientStoreProducts({ page: 1, limit: 500 }),
+          listPatientStoreProducts({ page: 1, limit: 50 }),
         ]);
 
         const products = storeRes.products.map(mapPatientStoreProduct);
@@ -114,6 +115,18 @@ export const usePatientPortalStore = create<PatientPortalState>((set, get) => ({
           productsError: null,
           isHydrated: true,
         }));
+
+        if (storeRes.pagination.has_next) {
+          void fetchRemainingPatientStoreProducts(2).then((remaining) => {
+            if (remaining.length === 0) return;
+            set((state) => ({
+              products: patchIfChanged(
+                state.products,
+                [...state.products, ...remaining.map(mapPatientStoreProduct)],
+              ),
+            }));
+          });
+        }
       } catch (error) {
         set({
           products: [],
@@ -134,8 +147,8 @@ export const usePatientPortalStore = create<PatientPortalState>((set, get) => ({
     try {
       const doctorName = clinicName ?? "Your physician";
       const [pending, history] = await Promise.all([
-        listPatientPendingOrders(doctorName),
-        fetchAllPatientHistoryOrders(),
+        listPatientPendingOrders(doctorName, { fetchAll: true }),
+        fetchAllPatientHistoryOrders({ fetchAll: true }),
       ]);
       set((state) => ({
         pendingOrders: patchIfChanged(state.pendingOrders, pending),

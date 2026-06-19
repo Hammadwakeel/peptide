@@ -75,6 +75,18 @@ export async function listClinicPatients(
   );
 }
 
+export async function listPatientsByClinicBulk(limitPerClinic = 100): Promise<{
+  status: boolean;
+  patients_by_clinic: Record<string, AdminClinicPatient[]>;
+  clinic_count: number;
+  total_patients: number;
+  limit_per_clinic: number;
+}> {
+  return adminFetch(
+    `${ADMIN_ENDPOINTS.patientsByClinic}${buildQuery({ limit_per_clinic: limitPerClinic })}`,
+  );
+}
+
 export async function listAffiliates(
   params: ListParams = {},
 ): Promise<PaginatedAffiliatesResponse> {

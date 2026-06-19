@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 class PaginationQuery(BaseModel):
     page: int = Field(1, ge=1)
-    limit: int = Field(20, ge=1, le=100)
+    limit: int = Field(50, ge=1, le=100)
 
 
 def paginated_response(items: list, total: int, page: int, limit: int, key: str = "data") -> dict:

@@ -5,6 +5,7 @@ export const ADMIN_ENDPOINTS = {
   applicationReview: (applicationId: string) =>
     `${IDENTITY_API_URL}/admin/applications/${applicationId}`,
   clinics: `${IDENTITY_API_URL}/admin/clinics`,
+  patientsByClinic: `${IDENTITY_API_URL}/admin/patients/by-clinic`,
   clinicPatients: (clinicId: string) =>
     `${IDENTITY_API_URL}/admin/clinics/${clinicId}/patients`,
   affiliates: `${IDENTITY_API_URL}/admin/affiliates`,

@@ -71,8 +71,21 @@ export async function createConversation(patientId: string): Promise<ApiConversa
 }
 
 export async function listConversations(): Promise<ApiConversation[]> {
-  const data = await chatFetch<{ conversations: ApiConversation[] }>(CHAT_ENDPOINTS.conversations);
-  return data.conversations ?? [];
+  const limit = 50;
+  let page = 1;
+  const conversations: ApiConversation[] = [];
+
+  while (true) {
+    const data = await chatFetch<{
+      conversations: ApiConversation[];
+      pagination?: { has_next?: boolean };
+    }>(`${CHAT_ENDPOINTS.conversations}?page=${page}&limit=${limit}`);
+    conversations.push(...(data.conversations ?? []));
+    if (!data.pagination?.has_next) break;
+    page += 1;
+  }
+
+  return conversations;
 }
 
 export async function getMyConversation(): Promise<ApiConversation> {

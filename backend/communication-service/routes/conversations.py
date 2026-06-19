@@ -7,6 +7,7 @@ from schemas.conversation import (
     CreateConversationRequest,
     MarkReadRequest,
 )
+from schemas.pagination import PaginationQuery
 from services import conversation_service
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
@@ -21,10 +22,16 @@ async def create_conversation(
 
 
 @router.get("", response_model=ConversationListResponse)
-async def list_conversations(user: dict = Depends(get_current_user)) -> ConversationListResponse:
+async def list_conversations(
+    user: dict = Depends(get_current_user),
+    pagination: PaginationQuery = Depends(),
+) -> ConversationListResponse:
     if is_doctor(user):
-        conversations = await conversation_service.list_doctor_conversations(user)
-        return ConversationListResponse(conversations=conversations)
+        result = await conversation_service.list_doctor_conversations(user, pagination)
+        return ConversationListResponse(
+            conversations=result["conversations"],
+            pagination=result["pagination"],
+        )
     if is_patient(user):
         conversation = await conversation_service.get_patient_conversation(user)
         return ConversationListResponse(conversations=[conversation])

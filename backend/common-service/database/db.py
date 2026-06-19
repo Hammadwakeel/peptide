@@ -1,3 +1,4 @@
+import os
 from collections.abc import Generator
 from typing import Any
 
@@ -6,7 +7,18 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from .config import DATABASE_URL, SQL_ECHO
 
-engine = create_engine(DATABASE_URL, echo=SQL_ECHO, pool_pre_ping=True)
+POOL_SIZE = int(os.getenv("DB_POOL_SIZE", "10"))
+MAX_OVERFLOW = int(os.getenv("DB_MAX_OVERFLOW", "20"))
+POOL_RECYCLE = int(os.getenv("DB_POOL_RECYCLE", "3600"))
+
+engine = create_engine(
+    DATABASE_URL,
+    echo=SQL_ECHO,
+    pool_pre_ping=True,
+    pool_size=POOL_SIZE,
+    max_overflow=MAX_OVERFLOW,
+    pool_recycle=POOL_RECYCLE,
+)
 
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
