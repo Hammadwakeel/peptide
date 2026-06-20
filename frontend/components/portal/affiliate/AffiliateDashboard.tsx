@@ -1,16 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback } from "react";
+import { FrontierRefreshCwIcon, ICON_SIZE_SM } from "@/components/icons/frontier";
 import {
-  Copy,
-  LayoutGrid,
-  RefreshCw,
-  UserPlus,
-  Users,
-  UsersRound,
-} from "lucide-react";
+  frontierBrandIcons,
+} from "@/components/icons/frontier/frontier-brand-icons";
+import { frontierSidebarIcons } from "@/components/icons/frontier/frontier-sidebar-icons";
 import { RoleOnboardingChecklist } from "@/components/onboarding/RoleOnboardingChecklist";
+import {
+  FloatingToolbarAction,
+  FloatingToolbarActions,
+} from "@/components/portal/shared/FloatingIconAction";
 import { useAffiliatePortal } from "@/context/AffiliatePortalProvider";
 import { toast } from "@/lib/toast";
 
@@ -57,13 +57,13 @@ export function AffiliateDashboard() {
     {
       href: "/portal/affiliate/clinics/invite",
       label: "Invite clinic",
-      icon: UserPlus,
+      icon: frontierSidebarIcons.userPlus,
       primary: true,
     },
     {
       href: "/portal/affiliate/referrals",
       label: "Referrals",
-      icon: Users,
+      icon: frontierSidebarIcons.users,
       primary: false,
     },
     ...(isMain
@@ -71,7 +71,7 @@ export function AffiliateDashboard() {
           {
             href: "/portal/affiliate/sub-affiliates",
             label: "Sub-affiliates",
-            icon: UsersRound,
+            icon: frontierSidebarIcons.usersRound,
             primary: false,
           },
         ]
@@ -88,53 +88,42 @@ export function AffiliateDashboard() {
       <div className="flex items-center gap-4 rounded-2xl border border-deep-teal/20 bg-pure-white px-4 py-2.5 shadow-[0_2px_12px_rgba(1,26,36,0.08)] sm:px-5">
         <h1 className="shrink-0 font-sans text-xl font-light text-deep-teal sm:text-2xl">Dashboard</h1>
         <div className="min-w-4 flex-1" aria-hidden="true" />
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          {toolbarActions.map(({ href, label, icon: Icon, primary }) => (
-            <Link
+        <FloatingToolbarActions>
+          {toolbarActions.map(({ href, label, icon, primary }) => (
+            <FloatingToolbarAction
               key={href}
               href={href}
-              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-light transition-colors ${
-                primary
-                  ? "bg-deep-teal text-pure-white hover:opacity-90"
-                  : "border border-deep-teal/25 text-deep-teal hover:bg-deep-teal/5"
-              }`}
-            >
-              <Icon className="size-4" aria-hidden="true" />
-              <span className="hidden sm:inline">{label}</span>
-            </Link>
+              label={label}
+              icon={icon}
+              primary={primary}
+            />
           ))}
-          <button
-            type="button"
+          <FloatingToolbarAction
+            label="Copy link"
+            icon={frontierBrandIcons.cards}
             onClick={() => void copyReferralLink()}
-            className="inline-flex items-center gap-2 rounded-full border border-deep-teal/25 px-4 py-2 text-sm font-light text-deep-teal transition-colors hover:bg-deep-teal/5"
-          >
-            <Copy className="size-4" aria-hidden="true" />
-            <span className="hidden sm:inline">Copy link</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => void refreshProfile({ force: true })}
+          />
+          <FloatingToolbarAction
+            label="Refresh dashboard"
+            icon={FrontierRefreshCwIcon}
             disabled={isLoading}
-            className="inline-flex items-center gap-2 rounded-full border border-deep-teal/25 px-4 py-2 text-sm font-light text-deep-teal transition-colors hover:bg-deep-teal/5 disabled:opacity-50"
-            aria-label="Refresh dashboard"
-          >
-            <RefreshCw className="size-4" aria-hidden="true" />
-          </button>
-        </div>
+            onClick={() => void refreshProfile({ force: true })}
+          />
+        </FloatingToolbarActions>
       </div>
 
       <section className="overflow-hidden rounded-2xl border border-deep-teal/25 bg-pure-white shadow-[0_4px_24px_rgba(1,26,36,0.12)]">
-        <div className="bg-deep-teal px-5 py-4 text-pure-white">
+        <div className="border-b border-deep-teal/10 px-5 py-4">
           <div className="flex items-center gap-3">
             <div
-              className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-pure-white/15"
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-deep-teal/15 bg-deep-teal/5 text-deep-teal"
               aria-hidden="true"
             >
-              <LayoutGrid className="size-4" />
+              <frontierBrandIcons.grid size={ICON_SIZE_SM} />
             </div>
             <div>
-              <h2 className="font-sans text-lg font-light">Account</h2>
-              <p className="text-xs text-pure-white/75">{profile.email}</p>
+              <h2 className="font-sans text-lg font-semibold text-deep-teal">Account</h2>
+              <p className="text-xs text-deep-teal/60">{profile.email}</p>
             </div>
           </div>
         </div>
@@ -173,7 +162,7 @@ export function AffiliateDashboard() {
                 onClick={() => void copyReferralLink()}
                 className="inline-flex items-center gap-1.5 rounded-full border border-deep-teal/15 px-3 py-1 text-xs font-light text-deep-teal hover:bg-pacific-teal/12"
               >
-                <Copy className="size-3" aria-hidden="true" />
+                <frontierBrandIcons.cards size={12} aria-hidden="true" />
                 Copy
               </button>
             </div>
@@ -183,17 +172,17 @@ export function AffiliateDashboard() {
       </section>
 
       <section className="overflow-hidden rounded-2xl border border-deep-teal/25 bg-pure-white shadow-[0_4px_24px_rgba(1,26,36,0.12)]">
-        <div className="bg-deep-teal px-5 py-4 text-pure-white">
+        <div className="border-b border-deep-teal/10 px-5 py-4">
           <div className="flex items-center gap-3">
             <div
-              className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-pure-white/15"
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-deep-teal/15 bg-deep-teal/5 text-deep-teal"
               aria-hidden="true"
             >
-              <Users className="size-4" />
+              <frontierBrandIcons.notification size={ICON_SIZE_SM} />
             </div>
             <div>
-              <h2 className="font-sans text-lg font-light">Referral stats</h2>
-              <p className="text-xs text-pure-white/75">Your network at a glance</p>
+              <h2 className="font-sans text-lg font-semibold text-deep-teal">Referral stats</h2>
+              <p className="text-xs text-deep-teal/60">Your network at a glance</p>
             </div>
           </div>
         </div>

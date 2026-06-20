@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { LayoutGrid } from "lucide-react";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
+import { frontierSidebarIcons } from "@/components/icons/frontier/frontier-sidebar-icons";
 import { PatientProductCard } from "@/components/portal/patient/PatientProductCard";
 import { ProductDetailModal } from "@/components/portal/patient/ProductDetailModal";
 import { PlaceOrderModal } from "@/components/portal/patient/PlaceOrderModal";
@@ -48,7 +49,7 @@ export function BrowseProductsTab() {
       </PortalPageToolbar>
 
       <PortalPageSection
-        icon={LayoutGrid}
+        icon={frontierSidebarIcons.layoutGrid}
         title="Clinic store"
         subtitle={
           productsLoading

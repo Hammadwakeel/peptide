@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { BarChart3 } from "lucide-react";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
 import { ProviderPerformanceChart } from "@/components/portal/provider/ProviderPerformanceChart";
 import { ProviderPageSection } from "@/components/portal/provider/shared/ProviderPageSection";
 import { useOrders } from "@/context/OrdersProvider";
@@ -18,7 +18,7 @@ export function ProviderMetricsBar() {
   );
 
   return (
-    <ProviderPageSection icon={BarChart3} title="Performance" noPadding>
+    <ProviderPageSection icon={frontierBrandIcons.pieChart} title="Performance" noPadding>
       <div className="p-5 sm:p-6">
         <ProviderPerformanceChart data={trendData} />
       </div>

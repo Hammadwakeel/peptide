@@ -1,7 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Download, LayoutGrid, RefreshCw } from "lucide-react";
+import {
+  FrontierDownloadIcon,
+  FrontierRefreshCwIcon,
+  ICON_SIZE_SM,
+} from "@/components/icons/frontier";
+import { frontierSidebarIcons } from "@/components/icons/frontier/frontier-sidebar-icons";
 import { ProductGridCard } from "@/components/portal/provider/inventory/ProductGridCard";
 import { ProviderPageSection } from "@/components/portal/provider/shared/ProviderPageSection";
 import {
@@ -121,7 +126,7 @@ export function ProviderInventoryBrowser() {
           ))}
         </select>
         <button type="button" onClick={handleExport} className={toolbarBtnClass}>
-          <Download className="size-4" aria-hidden="true" />
+          <FrontierDownloadIcon size={ICON_SIZE_SM} aria-hidden="true" />
           <span className="hidden sm:inline">Export</span>
         </button>
         <button
@@ -131,12 +136,12 @@ export function ProviderInventoryBrowser() {
           className={toolbarBtnPrimaryClass}
           aria-label="Refresh catalog"
         >
-          <RefreshCw className={`size-4 ${isCatalogLoading ? "animate-spin" : ""}`} aria-hidden="true" />
+          <FrontierRefreshCwIcon size={ICON_SIZE_SM} className={isCatalogLoading ? "animate-spin" : ""} aria-hidden="true" />
         </button>
       </ProviderPageToolbar>
 
       <ProviderPageSection
-        icon={LayoutGrid}
+        icon={frontierSidebarIcons.layoutGrid}
         title="Product catalog"
         subtitle={
           isCatalogLoading && catalogProducts.length === 0

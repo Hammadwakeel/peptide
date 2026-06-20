@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { FolderTree, Plus, RefreshCw } from "lucide-react";
+import { FrontierRefreshCwIcon, ICON_SIZE_SM } from "@/components/icons/frontier";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
 import {
   authInputClassName,
   authLabelClassName,
@@ -72,17 +73,17 @@ export function AdminCategoriesPanel() {
 
   return (
     <section className="flex flex-col overflow-hidden rounded-2xl border border-deep-teal/25 bg-pure-white shadow-[0_4px_24px_rgba(1,26,36,0.12)]">
-      <div className="flex items-center justify-between gap-3 bg-deep-teal px-5 py-4 text-pure-white">
+      <div className="flex items-center justify-between gap-3 border-b border-deep-teal/10 px-5 py-4">
         <div className="flex items-center gap-3">
           <div
-            className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-pure-white/15"
+            className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-deep-teal/15 bg-deep-teal/5 text-deep-teal"
             aria-hidden="true"
           >
-            <FolderTree className="size-4" />
+            <frontierBrandIcons.folder size={ICON_SIZE_SM} />
           </div>
           <div>
-            <h2 className="font-sans text-lg font-light">Categories</h2>
-            <p className="text-xs text-pure-white/75">
+            <h2 className="font-sans text-lg font-semibold text-deep-teal">Categories</h2>
+            <p className="text-xs text-deep-teal/60">
               {isLoading ? "Loading…" : `${categories.length} in catalog`}
             </p>
           </div>
@@ -91,18 +92,18 @@ export function AdminCategoriesPanel() {
           <button
             type="button"
             onClick={() => setShowForm((current) => !current)}
-            className="inline-flex items-center gap-1.5 rounded-full bg-pure-white/15 px-3 py-1.5 text-xs font-light hover:bg-pure-white/25"
+            className="inline-flex items-center gap-1.5 rounded-full border border-deep-teal/20 px-3 py-1.5 text-xs font-light text-deep-teal hover:bg-deep-teal/5"
           >
-            <Plus className="size-3.5" aria-hidden="true" />
+            <frontierBrandIcons.add size={14} aria-hidden="true" />
             {showForm ? "Cancel" : "New"}
           </button>
           <button
             type="button"
             onClick={() => void loadCategories()}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 rounded-full bg-pure-white/15 px-3 py-1.5 text-xs font-light hover:bg-pure-white/25 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-full border border-deep-teal/20 px-3 py-1.5 text-xs font-light text-deep-teal hover:bg-deep-teal/5 disabled:opacity-50"
           >
-            <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} aria-hidden="true" />
+            <FrontierRefreshCwIcon size={14} className={isLoading ? "animate-spin" : ""} aria-hidden="true" />
           </button>
         </div>
       </div>

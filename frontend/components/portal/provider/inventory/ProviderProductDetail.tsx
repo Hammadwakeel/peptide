@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowLeft, LayoutGrid } from "lucide-react";
+import { FrontierArrowLeftIcon, ICON_SIZE_SM } from "@/components/icons/frontier";
+import { frontierSidebarIcons } from "@/components/icons/frontier/frontier-sidebar-icons";
 import { authInputClassName, authLabelClassName } from "@/components/auth/AuthShell";
 import { ProviderPageSection } from "@/components/portal/provider/shared/ProviderPageSection";
 import {
@@ -126,7 +127,7 @@ export function ProviderProductDetail({ productId }: ProviderProductDetailProps)
       <div className="space-y-5">
         <ProviderPageToolbar title="Product not found">
           <Link href="/portal/doctor/inventory" className={toolbarBtnClass}>
-            <ArrowLeft className="size-4" aria-hidden="true" />
+            <FrontierArrowLeftIcon size={ICON_SIZE_SM} aria-hidden="true" />
             <span className="hidden sm:inline">Back</span>
           </Link>
         </ProviderPageToolbar>
@@ -141,7 +142,7 @@ export function ProviderProductDetail({ productId }: ProviderProductDetailProps)
     <div className="space-y-5">
       <ProviderPageToolbar title={product.name}>
         <Link href="/portal/doctor/inventory" className={toolbarBtnClass}>
-          <ArrowLeft className="size-4" aria-hidden="true" />
+          <FrontierArrowLeftIcon size={ICON_SIZE_SM} aria-hidden="true" />
           <span className="hidden sm:inline">Back</span>
         </Link>
         <button
@@ -155,7 +156,7 @@ export function ProviderProductDetail({ productId }: ProviderProductDetailProps)
       </ProviderPageToolbar>
 
       <ProviderPageSection
-        icon={LayoutGrid}
+        icon={frontierSidebarIcons.layoutGrid}
         title="Product details"
         subtitle={product.category.name ?? "Uncategorized"}
       >

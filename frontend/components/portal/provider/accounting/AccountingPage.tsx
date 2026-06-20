@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BarChart3, Download, DollarSign, Wallet } from "lucide-react";
+import { FrontierDownloadIcon, ICON_SIZE_SM } from "@/components/icons/frontier";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
 import { RevenueProfitChart } from "@/components/portal/provider/accounting/RevenueProfitChart";
 import { TopProductsChart } from "@/components/portal/provider/accounting/TopProductsChart";
 import { ProviderPageSection } from "@/components/portal/provider/shared/ProviderPageSection";
@@ -123,7 +124,7 @@ export function AccountingPage() {
           ))}
         </select>
         <button type="button" onClick={handleExport} className={toolbarBtnClass}>
-          <Download className="size-4" aria-hidden="true" />
+          <FrontierDownloadIcon size={ICON_SIZE_SM} aria-hidden="true" />
           <span className="hidden sm:inline">Export</span>
         </button>
       </ProviderPageToolbar>
@@ -152,16 +153,16 @@ export function AccountingPage() {
       ) : null}
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <ProviderPageSection icon={BarChart3} title="Revenue & profit trends">
+        <ProviderPageSection icon={frontierBrandIcons.pieChart} title="Revenue & profit trends">
           <RevenueProfitChart data={trendData} />
         </ProviderPageSection>
-        <ProviderPageSection icon={DollarSign} title="Top products by profit">
+        <ProviderPageSection icon={frontierBrandIcons.dollarSign} title="Top products by profit">
           <TopProductsChart data={topProducts} />
         </ProviderPageSection>
       </div>
 
       <ProviderPageSection
-        icon={DollarSign}
+        icon={frontierBrandIcons.dollarSign}
         title="Paid orders"
         subtitle={`${paidOrders.length} order${paidOrders.length === 1 ? "" : "s"}`}
         noPadding
@@ -215,7 +216,7 @@ export function AccountingPage() {
       </ProviderPageSection>
 
       <ProviderPageSection
-        icon={Wallet}
+        icon={frontierBrandIcons.wallet}
         title="Provider payouts"
         subtitle={`${payouts.length} payout${payouts.length === 1 ? "" : "s"}`}
         noPadding

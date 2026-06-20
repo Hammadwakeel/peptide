@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { RefreshCw, Settings } from "lucide-react";
+import { FrontierRefreshCwIcon, ICON_SIZE_SM } from "@/components/icons/frontier";
+import { frontierSidebarIcons } from "@/components/icons/frontier/frontier-sidebar-icons";
 import {
   authInputClassName,
   authLabelClassName,
@@ -247,7 +248,7 @@ export function ProviderSettings() {
           className={toolbarBtnClass}
           aria-label="Refresh settings"
         >
-          <RefreshCw className="size-4" aria-hidden="true" />
+          <FrontierRefreshCwIcon size={ICON_SIZE_SM} aria-hidden="true" />
         </button>
         {canSaveCurrentTab ? (
           <button
@@ -262,7 +263,7 @@ export function ProviderSettings() {
       </ProviderPageToolbar>
 
       <ProviderPageSection
-        icon={Settings}
+        icon={frontierSidebarIcons.settings}
         title={profile.clinic.clinic_name}
         subtitle={`${profile.clinic.email} · ${profile.membership.access_level.replace("_", " ")}`}
       >

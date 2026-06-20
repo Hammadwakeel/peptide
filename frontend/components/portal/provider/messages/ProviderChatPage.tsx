@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useEffect, useState } from "react";
-import { MessageSquare } from "lucide-react";
+import { frontierSidebarIcons } from "@/components/icons/frontier/frontier-sidebar-icons";
 import { ChatThreadList } from "@/components/chat/ChatThreadList";
 import { ProviderChatPageSkeleton } from "@/components/chat/ChatSkeletons";
 import { ProviderActiveThread } from "@/components/portal/provider/messages/ProviderActiveThread";
@@ -103,7 +103,7 @@ export function ProviderChatPage() {
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center bg-coral-blush/25 px-6 text-center">
             <span className="flex size-16 items-center justify-center rounded-full bg-deep-teal/8 text-deep-teal/40">
-              <MessageSquare className="size-8" strokeWidth={1.5} />
+              <frontierSidebarIcons.messageSquare size={32} aria-hidden="true" />
             </span>
             <p className="mt-4 max-w-xs text-sm text-deep-teal/55">
               Select a conversation to view messages with your patients.

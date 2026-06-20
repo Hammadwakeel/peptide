@@ -1,10 +1,10 @@
 "use client";
 
-import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import type { FrontierIconComponent } from "@/lib/icons/types";
 
 type PortalPageSectionProps = {
-  icon: LucideIcon;
+  icon: FrontierIconComponent;
   title: string;
   subtitle?: string;
   children: ReactNode;
@@ -27,20 +27,20 @@ export function PortalPageSection({
       className={`overflow-hidden rounded-2xl border border-deep-teal/25 bg-pure-white shadow-[0_4px_24px_rgba(1,26,36,0.12)] ${className}`}
     >
       <div
-        className={`bg-deep-teal text-pure-white ${compact ? "px-4 py-2.5" : "px-5 py-4"}`}
+        className={`border-b border-deep-teal/10 ${compact ? "px-4 py-2.5" : "px-5 py-4"}`}
       >
         <div className={`flex items-center ${compact ? "gap-2.5" : "gap-3"}`}>
           <div
-            className={`flex shrink-0 items-center justify-center rounded-lg bg-pure-white/15 ${
+            className={`flex shrink-0 items-center justify-center rounded-lg border border-deep-teal/15 bg-deep-teal/5 ${
               compact ? "size-8" : "size-9"
             }`}
             aria-hidden="true"
           >
-            <Icon className={`text-pure-white ${compact ? "size-3.5" : "size-4"}`} />
+            <Icon size={compact ? 14 : 16} />
           </div>
           <div className="min-w-0">
             <h2
-              className={`font-sans font-semibold tracking-[-0.01em] text-pure-white ${
+              className={`font-sans font-semibold tracking-[-0.01em] text-deep-teal ${
                 compact ? "truncate text-base leading-tight" : "text-lg"
               }`}
             >
@@ -48,7 +48,7 @@ export function PortalPageSection({
             </h2>
             {subtitle ? (
               <p
-                className={`truncate text-pure-white/75 ${
+                className={`truncate text-deep-teal/60 ${
                   compact ? "text-[11px] leading-snug" : "text-xs"
                 }`}
               >

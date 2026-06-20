@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none">
+  <defs>
+    <filter id="frost-wallet" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="BackgroundImage" stdDeviation="2.8" result="blurred"/>
+      <feFlood flood-color="#0D717B" flood-opacity="0.35" result="tint"/>
+      <feComposite in="tint" in2="blurred" operator="in" result="tintedBlur"/>
+      <feComposite in="SourceGraphic" in2="tintedBlur" operator="over"/>
+    </filter>
+  </defs>
+  <path fill="#1C6384" d="M4.5 15a3.5 3.5 0 117 0 3.5 3.5 0 01-7 0z"/>
+  <path fill="#0D717B" fill-opacity="0.3" d="M5 8h14.5a1.25 1.25 0 011.25 1.25v9A1.25 1.25 0 0119.5 19.5H5A1.25 1.25 0 013.75 18.25v-9A1.25 1.25 0 015 8zm13.25 5.5h3.25v2.25H18.25v-2.25z" filter="url(#frost-wallet)"/>
+</svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none">
+  <defs>
+    <filter id="frost-layout-grid" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="BackgroundImage" stdDeviation="2.8" result="blurred"/>
+      <feFlood flood-color="#0D717B" flood-opacity="0.35" result="tint"/>
+      <feComposite in="tint" in2="blurred" operator="in" result="tintedBlur"/>
+      <feComposite in="SourceGraphic" in2="tintedBlur" operator="over"/>
+    </filter>
+  </defs>
+  <path fill="#1C6384" d="M5.5 15.5a4 4 0 118 0 4 4 0 01-8 0z"/>
+  <path fill="#0D717B" fill-opacity="0.3" d="M9.5 4.5h4.5v4.5H9.5V4.5zm6 0H20v4.5h-4.5V4.5zM9.5 11h4.5v8.5H9.5V11zm6 0H20v8.5h-4.5V11z" filter="url(#frost-layout-grid)"/>
+</svg>

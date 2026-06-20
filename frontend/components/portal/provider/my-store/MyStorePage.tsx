@@ -1,7 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus, RefreshCw, Store, Trash2 } from "lucide-react";
+import {
+  FrontierRefreshCwIcon,
+  FrontierTrash2Icon,
+  ICON_SIZE_SM,
+} from "@/components/icons/frontier";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
 import { AddItemsModal } from "@/components/portal/provider/my-store/AddItemsModal";
 import { MyStoreProductCard } from "@/components/portal/provider/my-store/MyStoreProductCard";
 import { ProviderPageSection } from "@/components/portal/provider/shared/ProviderPageSection";
@@ -106,7 +111,7 @@ export function MyStorePage() {
           className={toolbarBtnClass}
           aria-label="Refresh store"
         >
-          <RefreshCw className={`size-4 ${isStoreLoading ? "animate-spin" : ""}`} aria-hidden="true" />
+          <FrontierRefreshCwIcon size={ICON_SIZE_SM} className={isStoreLoading ? "animate-spin" : ""} aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -114,7 +119,7 @@ export function MyStorePage() {
           disabled={myStore.length === 0 || isStoreLoading}
           className={toolbarBtnClass}
         >
-          <Trash2 className="size-4" aria-hidden="true" />
+          <FrontierTrash2Icon size={ICON_SIZE_SM} aria-hidden="true" />
           <span className="hidden sm:inline">Remove all</span>
         </button>
         <button
@@ -122,13 +127,13 @@ export function MyStorePage() {
           onClick={() => setModalOpen(true)}
           className={toolbarBtnPrimaryClass}
         >
-          <Plus className="size-4" aria-hidden="true" />
+          <frontierBrandIcons.add size={ICON_SIZE_SM} aria-hidden="true" />
           <span className="hidden sm:inline">Add items</span>
         </button>
       </ProviderPageToolbar>
 
       <ProviderPageSection
-        icon={Store}
+        icon={frontierBrandIcons.home}
         title="Storefront products"
         subtitle={
           isStoreLoading

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Package, Stethoscope } from "lucide-react";
+import { FrontierStethoscopeIcon } from "@/components/icons/frontier";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
 import { RoleOnboardingChecklist } from "@/components/onboarding/RoleOnboardingChecklist";
 import { ProviderMetricsBar } from "@/components/portal/provider/ProviderMetricsBar";
 import { ProviderPageSection } from "@/components/portal/provider/shared/ProviderPageSection";
@@ -95,7 +96,7 @@ export function ProviderDashboard() {
 
       <div className="grid gap-5 lg:grid-cols-2">
         <ProviderPageSection
-          icon={Stethoscope}
+          icon={FrontierStethoscopeIcon}
           title={branding.clinicName}
           subtitle={session?.email ?? "—"}
           compact
@@ -109,7 +110,7 @@ export function ProviderDashboard() {
         </ProviderPageSection>
 
         <ProviderPageSection
-          icon={Package}
+          icon={frontierBrandIcons.package}
           title="Operations"
           subtitle="Orders and patients at a glance"
           compact

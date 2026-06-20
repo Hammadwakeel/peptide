@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none">
+  <defs>
+    <filter id="frost-user-plus" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="BackgroundImage" stdDeviation="2.8" result="blurred"/>
+      <feFlood flood-color="#0D717B" flood-opacity="0.35" result="tint"/>
+      <feComposite in="tint" in2="blurred" operator="in" result="tintedBlur"/>
+      <feComposite in="SourceGraphic" in2="tintedBlur" operator="over"/>
+    </filter>
+  </defs>
+  <path fill="#1C6384" d="M4.5 15a3.5 3.5 0 117 0 3.5 3.5 0 01-7 0z"/>
+  <path fill="#0D717B" fill-opacity="0.3" d="M9 4.5a3.25 3.25 0 110 6.5 3.25 3.25 0 010-6.5zM4 20c0-2.5 2.25-4.5 5-4.5s5 2 5 4.5v1H4v-1zM17 8h2v2h2v1.75h-2v2h-1.75v-2H15V10h2V8z" filter="url(#frost-user-plus)"/>
+</svg>

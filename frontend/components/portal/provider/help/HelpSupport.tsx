@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BookOpen, Headphones, Send } from "lucide-react";
+import { FrontierBookOpenIcon } from "@/components/icons/frontier";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
 import {
   authInputClassName,
   authLabelClassName,
@@ -43,7 +44,7 @@ export function HelpSupport() {
       <ProviderPageToolbar title="Help / Support" />
 
       <ProviderPageSection
-        icon={BookOpen}
+        icon={FrontierBookOpenIcon}
         title="Knowledge base"
         subtitle={`${filteredArticles.length} article${filteredArticles.length === 1 ? "" : "s"}`}
       >
@@ -67,7 +68,7 @@ export function HelpSupport() {
         </ul>
       </ProviderPageSection>
 
-      <ProviderPageSection icon={Send} title="Submit a ticket">
+      <ProviderPageSection icon={frontierBrandIcons.forward} title="Submit a ticket">
         <form onSubmit={handleTicketSubmit} className="space-y-4">
           <div>
             <label htmlFor="ticket-subject" className={authLabelClassName}>Subject</label>
@@ -113,7 +114,7 @@ export function HelpSupport() {
         </form>
       </ProviderPageSection>
 
-      <ProviderPageSection icon={Headphones} title="Contact us">
+      <ProviderPageSection icon={frontierBrandIcons.headset} title="Contact us">
         <ul className="space-y-3 text-sm text-deep-teal/70">
           <li>
             <span className="font-light text-deep-teal">Email:</span>{" "}

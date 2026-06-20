@@ -1,7 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Building2, MoreHorizontal, RefreshCw, Search, Users } from "lucide-react";
+import {
+  FrontierBuilding2Icon,
+  FrontierMoreHorizontalIcon,
+  FrontierRefreshCwIcon,
+  ICON_SIZE_SM,
+} from "@/components/icons/frontier";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
+import { frontierSidebarIcons } from "@/components/icons/frontier/frontier-sidebar-icons";
 import {
   authInputClassName,
   authLabelClassName,
@@ -220,24 +227,24 @@ export function AdminUserManagement() {
           disabled={isLoading}
           className="inline-flex items-center gap-2 rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white transition-opacity hover:opacity-90 disabled:opacity-50"
         >
-          <RefreshCw className={`size-4 ${isLoading ? "animate-spin" : ""}`} aria-hidden="true" />
+          <FrontierRefreshCwIcon size={ICON_SIZE_SM} className={isLoading ? "animate-spin" : ""} aria-hidden="true" />
           Refresh
         </button>
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
         <section className="flex flex-col overflow-hidden rounded-2xl border border-deep-teal/25 bg-pure-white shadow-[0_4px_24px_rgba(1,26,36,0.12)]">
-          <div className="bg-deep-teal px-5 py-4 text-pure-white">
+          <div className="border-b border-deep-teal/10 px-5 py-4">
             <div className="flex items-center gap-3">
               <div
-                className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-pure-white/15"
+                className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-deep-teal/15 bg-deep-teal/5 text-deep-teal"
                 aria-hidden="true"
               >
-                <Building2 className="size-4" />
+                <FrontierBuilding2Icon size={ICON_SIZE_SM} />
               </div>
               <div>
-                <h2 className="font-sans text-lg font-light">Clinics</h2>
-                <p className="text-xs text-pure-white/75">
+                <h2 className="font-sans text-lg font-semibold text-deep-teal">Clinics</h2>
+                <p className="text-xs text-deep-teal/60">
                   {isLoading ? "Loading…" : `${filteredClinics.length} shown`}
                 </p>
               </div>
@@ -246,8 +253,9 @@ export function AdminUserManagement() {
 
           <div className="border-b border-deep-teal/10 bg-surface-muted/50 px-5 py-4">
             <div className="relative">
-              <Search
-                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-deep-teal/35"
+              <frontierBrandIcons.search
+                size={ICON_SIZE_SM}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-deep-teal/35"
                 aria-hidden="true"
               />
               <input
@@ -319,19 +327,19 @@ export function AdminUserManagement() {
         </section>
 
         <section className="overflow-hidden rounded-2xl border border-deep-teal/25 bg-pure-white shadow-[0_4px_24px_rgba(1,26,36,0.12)]">
-          <div className="bg-deep-teal px-5 py-4 text-pure-white">
+          <div className="border-b border-deep-teal/10 px-5 py-4">
             <div className="flex items-center gap-3">
               <div
-                className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-pure-white/15"
+                className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-deep-teal/15 bg-deep-teal/5 text-deep-teal"
                 aria-hidden="true"
               >
-                <Users className="size-4" />
+                <frontierSidebarIcons.users size={ICON_SIZE_SM} />
               </div>
               <div className="min-w-0">
-                <h2 className="truncate font-sans text-lg font-light">
+                <h2 className="truncate font-sans text-lg font-semibold text-deep-teal">
                   {selectedClinic ? `${selectedClinic.clinic_name} — Patients` : "Patients"}
                 </h2>
-                <p className="text-xs text-pure-white/75">
+                <p className="text-xs text-deep-teal/60">
                   {isLoading
                     ? "Loading…"
                     : selectedClinicId
@@ -344,8 +352,9 @@ export function AdminUserManagement() {
 
           <div className="border-b border-deep-teal/10 bg-surface-muted/50 px-5 py-4">
             <div className="relative">
-              <Search
-                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-deep-teal/35"
+              <frontierBrandIcons.search
+                size={ICON_SIZE_SM}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-deep-teal/35"
                 aria-hidden="true"
               />
               <input
@@ -431,7 +440,7 @@ export function AdminUserManagement() {
                           className="inline-flex size-8 items-center justify-center rounded-lg text-deep-teal/50 transition-colors hover:bg-deep-teal/10 hover:text-deep-teal"
                           aria-label={`Actions for ${patient.first_name} ${patient.last_name}`}
                         >
-                          <MoreHorizontal className="size-4" />
+                          <FrontierMoreHorizontalIcon size={ICON_SIZE_SM} />
                         </button>
                         {openMenuId === patient.id ? (
                           <>

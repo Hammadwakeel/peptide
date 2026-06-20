@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CreditCard } from "lucide-react";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
 import { PortalPageSection } from "@/components/portal/shared/PortalPageSection";
 import {
   PortalPageToolbar,
@@ -20,7 +20,7 @@ export function PatientPayNowScreen() {
     return (
       <div className="space-y-5">
         <PortalPageToolbar title="Pay Now" />
-        <PortalPageSection icon={CreditCard} title="No payment due">
+        <PortalPageSection icon={frontierBrandIcons.wallet} title="No payment due">
           <p className="text-sm text-deep-teal/65">
             You don&apos;t have any orders awaiting payment right now.
           </p>
@@ -46,7 +46,7 @@ export function PatientPayNowScreen() {
       </PortalPageToolbar>
 
       <PortalPageSection
-        icon={CreditCard}
+        icon={frontierBrandIcons.wallet}
         title="Payment pending approval"
         subtitle={`Order ${order.orderId}`}
       >

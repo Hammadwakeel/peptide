@@ -3,14 +3,16 @@
 import { RoleOnboardingChecklist } from "@/components/onboarding/RoleOnboardingChecklist";
 import { useCallback, useState } from "react";
 import {
-  Building2,
-  FileText,
-  Landmark,
-  Mail,
-  MapPin,
-  RefreshCw,
-  UserRound,
-} from "lucide-react";
+  FrontierBuilding2Icon,
+  FrontierFileTextIcon,
+  FrontierLandmarkIcon,
+  FrontierMapPinIcon,
+  FrontierRefreshCwIcon,
+  FrontierUserRoundIcon,
+  ICON_SIZE_SM,
+} from "@/components/icons/frontier";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
+import type { FrontierIconComponent } from "@/lib/icons/types";
 import { reviewApplication } from "@/lib/admin/api";
 import { useShallow } from "@/lib/hooks/zustand";
 import { useAdminPortalStore } from "@/stores/admin-portal-store";
@@ -47,7 +49,7 @@ function DetailPanel({
   children,
   className = "",
 }: {
-  icon: typeof Building2;
+  icon: FrontierIconComponent;
   label: string;
   children: React.ReactNode;
   className?: string;
@@ -57,7 +59,7 @@ function DetailPanel({
       className={`h-full rounded-lg border border-deep-teal/10 bg-pure-white p-3 ${className}`}
     >
       <div className="flex items-center gap-1.5 border-b border-deep-teal/8 pb-2">
-        <Icon className="size-3 shrink-0 text-deep-teal" aria-hidden="true" />
+        <Icon size={12} className="shrink-0 text-deep-teal" aria-hidden="true" />
         <p className="font-sans text-[10px] font-light text-deep-teal">{label}</p>
       </div>
       <div className="mt-2 flex flex-col gap-1.5 text-sm leading-snug text-deep-teal">{children}</div>
@@ -128,20 +130,20 @@ function ApplicationCard({
 
   return (
     <article className="overflow-hidden rounded-2xl border border-deep-teal/25 bg-pure-white shadow-[0_4px_24px_rgba(1,26,36,0.12)]">
-      <div className="bg-deep-teal px-4 py-3 text-pure-white">
+      <div className="border-b border-deep-teal/10 px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-3">
             <div
-              className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-pure-white/15 text-sm font-light"
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-deep-teal/15 bg-deep-teal/5 text-sm font-light text-deep-teal"
               aria-hidden="true"
             >
               {application.clinic_name.slice(0, 1).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <h2 className="font-sans text-lg font-light leading-tight sm:text-xl">
+              <h2 className="font-sans text-lg font-semibold leading-tight text-deep-teal sm:text-xl">
                 {application.clinic_name}
               </h2>
-              <p className="text-xs text-pure-white/75">
+              <p className="text-xs text-deep-teal/60">
                 Submitted {formatSubmittedAt(application.created_at)}
               </p>
             </div>
@@ -156,26 +158,26 @@ function ApplicationCard({
 
       <div className="space-y-2 bg-surface-muted/50 p-3 sm:p-4">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          <DetailPanel icon={Building2} label="Licenses">
+          <DetailPanel icon={FrontierBuilding2Icon} label="Licenses">
             <DetailRow label="NPI" value={application.npi_number ?? "—"} mono stacked />
             <DetailRow label="DEA" value={application.dea_number ?? "—"} mono stacked />
           </DetailPanel>
 
-          <DetailPanel icon={UserRound} label="Contact">
+          <DetailPanel icon={FrontierUserRoundIcon} label="Contact">
             <DetailRow label="Applicant" value={applicantName} stacked />
             <DetailRow label="Email" value={application.email} stacked />
           </DetailPanel>
 
-          <DetailPanel icon={MapPin} label="Location">
+          <DetailPanel icon={FrontierMapPinIcon} label="Location">
             <DetailRow label="Practice address" value={addressLine || "—"} stacked />
           </DetailPanel>
 
-          <DetailPanel icon={Mail} label="Attribution">
+          <DetailPanel icon={frontierBrandIcons.mail} label="Attribution">
             <DetailRow label="Affiliate code" value={affiliateLabel} mono stacked />
           </DetailPanel>
 
           {application.banking ? (
-            <DetailPanel icon={Landmark} label="Banking">
+            <DetailPanel icon={FrontierLandmarkIcon} label="Banking">
               <DetailRow
                 label="Account"
                 value={`${application.banking.bank_name} · ${application.banking.account_type}`}
@@ -189,12 +191,12 @@ function ApplicationCard({
               />
             </DetailPanel>
           ) : (
-            <DetailPanel icon={Landmark} label="Banking">
+            <DetailPanel icon={FrontierLandmarkIcon} label="Banking">
               <p className="text-xs text-deep-teal/50">No banking details on file.</p>
             </DetailPanel>
           )}
 
-          <DetailPanel icon={FileText} label="Documents">
+          <DetailPanel icon={FrontierFileTextIcon} label="Documents">
             {application.documents.length === 0 ? (
               <p className="text-sm text-deep-teal/50">No documents uploaded yet.</p>
             ) : (
@@ -397,7 +399,7 @@ export function AdminApprovalQueue() {
           disabled={isLoading}
           className="inline-flex items-center gap-2 rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white transition-opacity hover:opacity-90 disabled:opacity-50"
         >
-          <RefreshCw className={`size-4 ${isLoading ? "animate-spin" : ""}`} aria-hidden="true" />
+          <FrontierRefreshCwIcon size={ICON_SIZE_SM} className={isLoading ? "animate-spin" : ""} aria-hidden="true" />
           Refresh
         </button>
       </div>

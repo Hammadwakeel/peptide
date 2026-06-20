@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { RefreshCw, UserPlus, Users } from "lucide-react";
+import { FrontierRefreshCwIcon, ICON_SIZE_SM } from "@/components/icons/frontier";
+import { frontierSidebarIcons } from "@/components/icons/frontier/frontier-sidebar-icons";
 import { AddPatientModal } from "@/components/portal/provider/customers/AddPatientModal";
 import { ProviderPageSection } from "@/components/portal/provider/shared/ProviderPageSection";
 import {
@@ -111,7 +112,7 @@ export function CustomerManagement() {
           className={toolbarBtnClass}
           aria-label="Refresh patients"
         >
-          <RefreshCw className={`size-4 ${isLoading ? "animate-spin" : ""}`} aria-hidden="true" />
+          <FrontierRefreshCwIcon size={ICON_SIZE_SM} className={isLoading ? "animate-spin" : ""} aria-hidden="true" />
         </button>
         {canInvitePatients ? (
           <button
@@ -119,14 +120,14 @@ export function CustomerManagement() {
             onClick={() => setModalOpen(true)}
             className={toolbarBtnPrimaryClass}
           >
-            <UserPlus className="size-4" aria-hidden="true" />
+            <frontierSidebarIcons.userPlus size={ICON_SIZE_SM} aria-hidden="true" />
             <span className="hidden sm:inline">Invite patient</span>
           </button>
         ) : null}
       </ProviderPageToolbar>
 
       <ProviderPageSection
-        icon={Users}
+        icon={frontierSidebarIcons.users}
         title="Patients"
         subtitle={
           isLoading

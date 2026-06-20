@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Download, Package, RefreshCw } from "lucide-react";
+import { FrontierDownloadIcon, FrontierRefreshCwIcon, ICON_SIZE_SM } from "@/components/icons/frontier";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
 import {
   ProviderPageSection,
 } from "@/components/portal/provider/shared/ProviderPageSection";
@@ -105,7 +106,7 @@ export function OrderManagement() {
           onClick={handleExport}
           className={toolbarBtnClass}
         >
-          <Download className="size-4" aria-hidden="true" />
+          <FrontierDownloadIcon size={ICON_SIZE_SM} aria-hidden="true" />
           <span className="hidden sm:inline">Export</span>
         </button>
         <button
@@ -115,12 +116,12 @@ export function OrderManagement() {
           className={toolbarBtnPrimaryClass}
           aria-label="Refresh orders"
         >
-          <RefreshCw className={`size-4 ${isLoading ? "animate-spin" : ""}`} aria-hidden="true" />
+          <FrontierRefreshCwIcon size={ICON_SIZE_SM} className={isLoading ? "animate-spin" : ""} aria-hidden="true" />
         </button>
       </ProviderPageToolbar>
 
       <ProviderPageSection
-        icon={Package}
+        icon={frontierBrandIcons.package}
         title="Order list"
         subtitle={
           isLoading

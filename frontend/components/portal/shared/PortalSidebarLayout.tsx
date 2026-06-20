@@ -2,26 +2,26 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { LucideIcon } from "lucide-react";
+import { memo, useEffect, useState } from "react";
+import { FrontierLogomark } from "@/components/FrontierLogo";
+import { ICON_SIZE_MD } from "@/components/icons/frontier";
+import { frontierSidebarIcons } from "@/components/icons/frontier/frontier-sidebar-icons";
 import {
-  LogOut,
-  Menu,
-  PanelLeftClose,
-} from "lucide-react";
-import { memo, useCallback, useEffect, useState } from "react";
-import { FrontierLogo } from "@/components/FrontierLogo";
+  FloatingIconButton,
+  FloatingIconLink,
+} from "@/components/portal/shared/FloatingIconAction";
 import { PortalOnboardingHeaderStrip } from "@/components/portal/shared/PortalOnboardingHeaderStrip";
-import { Tooltip, TruncateTooltip } from "@/components/ui/Tippy";
+import { Tooltip } from "@/components/ui/Tippy";
 import { useAuth } from "@/context/AuthProvider";
-import { btnGhostClass } from "@/lib/brand/design-system";
 import { useRoleOnboarding } from "@/lib/hooks/use-role-onboarding";
 import { navTourId } from "@/lib/onboarding/tour-targets";
 import type { UserRole } from "@/lib/auth/types";
+import type { FrontierIconComponent } from "@/lib/icons/types";
 
 export type SidebarLink = {
   href: string;
   label: string;
-  icon: LucideIcon;
+  icon: FrontierIconComponent;
   exact?: boolean;
   badge?: number;
 };
@@ -32,8 +32,6 @@ type PortalSidebarLayoutProps = {
   onboardingRole?: UserRole;
   onboardingFilterStepIds?: string[];
 };
-
-const SIDEBAR_PIN_KEY = "frontier-sidebar-pinned";
 
 function isLinkActive(pathname: string, href: string, exact?: boolean) {
   if (href === "/portal/patient") {
@@ -60,46 +58,13 @@ export const PortalSidebarLayout = memo(function PortalSidebarLayout({
   onboardingFilterStepIds,
 }: PortalSidebarLayoutProps) {
   const pathname = usePathname();
-  const { session, logout, isLoading } = useAuth();
+  const { logout, isLoading } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [pinned, setPinned] = useState(false);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(SIDEBAR_PIN_KEY);
-      if (stored === "collapsed") setPinned(false);
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  const togglePinned = useCallback(() => {
-    setPinned((current) => {
-      const next = !current;
-      try {
-        localStorage.setItem(SIDEBAR_PIN_KEY, next ? "expanded" : "collapsed");
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
-  }, []);
-
-  const expandSidebar = useCallback(() => {
-    setPinned(true);
-    try {
-      localStorage.setItem(SIDEBAR_PIN_KEY, "expanded");
-    } catch {
-      /* ignore */
-    }
-  }, []);
 
   useEffect(() => {
     function openSidebarForTour() {
       if (window.matchMedia("(max-width: 1023px)").matches) {
         setMobileOpen(true);
-      } else {
-        setPinned(true);
       }
     }
 
@@ -124,88 +89,6 @@ export const PortalSidebarLayout = memo(function PortalSidebarLayout({
     Boolean(onboardingRole) && onboarding.isVisible && onboarding.progressSteps.length > 0;
   const hideDesktopHeader = hideHeaderTitle && !showOnboardingStrip;
 
-  const desktopExpanded = pinned;
-
-  function renderCollapsedHoverTile(
-    label: string,
-    Icon: LucideIcon,
-    active: boolean,
-    badge?: number,
-  ) {
-    return (
-      <span
-        aria-hidden="true"
-        className={`pointer-events-none absolute left-[calc(100%+0.625rem)] top-1/2 z-[100] flex -translate-y-1/2 items-center gap-2.5 whitespace-nowrap rounded-xl border px-3 py-2 text-sm font-light opacity-0 shadow-[0_8px_24px_rgba(1,26,36,0.12)] transition-opacity duration-150 group-hover/nav:opacity-100 lg:flex ${
-          active
-            ? "border-deep-teal/15 bg-deep-teal text-pure-white"
-            : "border-deep-teal/10 bg-pure-white text-deep-teal"
-        }`}
-      >
-        <Icon className="size-[1.125rem] shrink-0" strokeWidth={1.75} />
-        <span>{label}</span>
-        {badge && badge > 0 ? (
-          <span
-            className={`flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-light ${
-              active ? "bg-pure-white text-deep-teal" : "bg-pacific-teal text-pure-white"
-            }`}
-          >
-            {badge > 9 ? "9+" : badge}
-          </span>
-        ) : null}
-      </span>
-    );
-  }
-
-  function renderNavLink(link: SidebarLink, onNavigate?: () => void) {
-    const active = isLinkActive(pathname, link.href, link.exact);
-    const Icon = link.icon;
-
-    return (
-      <Link
-        key={link.href}
-        href={link.href}
-        data-tour={navTourId(link.href)}
-        onClick={onNavigate}
-        className={`group/nav relative flex items-center overflow-visible rounded-lg transition-all duration-200 max-lg:justify-between max-lg:rounded-xl max-lg:px-3 max-lg:py-2.5 lg:py-2 ${
-          desktopExpanded ? "lg:gap-3 lg:px-2.5" : "lg:justify-center lg:px-0"
-        } ${
-          active
-            ? "bg-deep-teal text-pure-white lg:shadow-sm"
-            : "text-deep-teal/70 hover:bg-deep-teal/5 hover:text-deep-teal"
-        }`}
-      >
-        <span className={`flex min-w-0 items-center max-lg:gap-3 ${desktopExpanded ? "lg:gap-3" : "lg:gap-0"}`}>
-          <span
-            className={`flex size-9 shrink-0 items-center justify-center rounded-md transition-colors ${
-              active ? "bg-pure-white/15 lg:bg-transparent" : "lg:group-hover/nav:bg-deep-teal/5"
-            }`}
-          >
-            <Icon className="size-[1.125rem]" strokeWidth={1.75} aria-hidden="true" />
-          </span>
-          <span
-            className={`truncate text-sm font-light max-lg:block ${
-              desktopExpanded ? "lg:block lg:max-w-[11rem]" : "lg:hidden"
-            }`}
-          >
-            {link.label}
-          </span>
-        </span>
-
-        {link.badge && link.badge > 0 ? (
-          <span
-            className={`flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-light ${
-              active ? "bg-pure-white text-deep-teal" : "bg-pacific-teal text-pure-white"
-            } max-lg:static ${desktopExpanded ? "lg:absolute lg:right-2 lg:top-1/2 lg:-translate-y-1/2" : "lg:hidden"}`}
-          >
-            {link.badge > 9 ? "9+" : link.badge}
-          </span>
-        ) : null}
-
-        {!desktopExpanded ? renderCollapsedHoverTile(link.label, Icon, active, link.badge) : null}
-      </Link>
-    );
-  }
-
   return (
     <div className="min-h-dvh bg-pure-white text-deep-teal lg:flex">
       {mobileOpen ? (
@@ -218,94 +101,37 @@ export const PortalSidebarLayout = memo(function PortalSidebarLayout({
       ) : null}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex h-dvh max-h-dvh flex-col overflow-visible border-r border-deep-teal/10 bg-pure-white transition-[width,transform] duration-300 ease-out max-lg:w-72 lg:sticky lg:top-0 lg:z-40 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-dvh max-h-dvh w-[4.25rem] flex-col overflow-visible bg-transparent transition-transform duration-300 ease-out lg:sticky lg:top-0 lg:z-40 lg:translate-x-0 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        } ${desktopExpanded ? "lg:w-60" : "lg:w-[4.25rem]"}`}
+        }`}
       >
-        <div
-          className={`flex items-center border-b border-deep-teal/10 py-4 ${
-            desktopExpanded ? "justify-between gap-2 px-3 lg:px-2.5" : "justify-center px-2 lg:px-2"
-          }`}
-        >
-          {desktopExpanded ? (
-            <Link
-              href={homeHref}
-              aria-label="Frontier Biomed"
-              className="min-w-0 flex-1 overflow-hidden"
-            >
-              <FrontierLogo variant="primary" />
-            </Link>
-          ) : (
-            <>
-              <Link
-                href={homeHref}
-                aria-label="Frontier Biomed"
-                className="min-w-0 lg:hidden"
-              >
-                <FrontierLogo variant="primary" />
-              </Link>
-              <button
-                type="button"
-                onClick={expandSidebar}
-                aria-label="Expand sidebar"
-                className="hidden min-w-0 cursor-pointer lg:flex lg:justify-center"
-              >
-                <FrontierLogo variant="primary" compact />
-              </button>
-            </>
-          )}
-
-          {desktopExpanded ? (
-            <Tooltip content="Collapse sidebar">
-              <button
-                type="button"
-                onClick={togglePinned}
-                className="hidden rounded-lg border border-deep-teal/10 p-2 text-deep-teal/70 transition-colors hover:bg-deep-teal/5 hover:text-deep-teal lg:inline-flex"
-                aria-label="Collapse sidebar"
-              >
-                <PanelLeftClose className="size-4" strokeWidth={1.75} />
-              </button>
-            </Tooltip>
-          ) : null}
+        <div className="flex justify-center px-2 pb-3 pt-4">
+          <Link href={homeHref} aria-label="Frontier Biomed">
+            <FrontierLogomark priority />
+          </Link>
         </div>
 
         <nav
-          className="flex-1 min-h-0 space-y-0.5 overflow-hidden px-2 py-3 max-lg:space-y-1 max-lg:overflow-y-auto max-lg:px-3 lg:overflow-visible lg:px-2 [scrollbar-width:none] max-lg:[&::-webkit-scrollbar]:hidden"
+          className="min-h-0 flex-1 space-y-2 overflow-y-auto overflow-x-visible px-2 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           aria-label="Portal navigation"
           data-tour="portal-nav"
         >
-          {links.map((link) => renderNavLink(link, () => setMobileOpen(false)))}
+          {links.map((link) => (
+            <FloatingIconLink
+              key={link.href}
+              href={link.href}
+              label={link.label}
+              icon={link.icon}
+              active={isLinkActive(pathname, link.href, link.exact)}
+              badge={link.badge}
+              onClick={() => setMobileOpen(false)}
+              data-tour={navTourId(link.href)}
+            />
+          ))}
         </nav>
 
-        <div className="border-t border-deep-teal/10 p-2 max-lg:p-4">
-          {session ? (
-            <TruncateTooltip content={session.email}>
-              <p
-                className={`mb-2 truncate px-2 text-xs text-deep-teal/50 transition-opacity duration-300 ${
-                  desktopExpanded ? "lg:opacity-100" : "lg:h-0 lg:overflow-hidden lg:opacity-0"
-                } max-lg:mb-3 max-lg:h-auto max-lg:opacity-100`}
-              >
-                {session.email}
-              </p>
-            </TruncateTooltip>
-          ) : null}
-          <button
-            type="button"
-            onClick={logout}
-            className={`group/nav relative flex w-full items-center justify-center gap-2 overflow-visible rounded-lg px-2.5 py-2.5 max-lg:rounded-xl ${btnGhostClass}`}
-          >
-            <LogOut className="size-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />
-            <span
-              className={`truncate transition-all duration-300 max-lg:inline lg:overflow-hidden lg:whitespace-nowrap ${
-                desktopExpanded ? "lg:max-w-[8rem] lg:opacity-100" : "lg:max-w-0 lg:opacity-0"
-              }`}
-            >
-              Sign out
-            </span>
-            {!desktopExpanded
-              ? renderCollapsedHoverTile("Sign out", LogOut, false)
-              : null}
-          </button>
+        <div className="px-2 pb-4 pt-2">
+          <FloatingIconButton label="Sign out" icon={frontierSidebarIcons.logOut} onClick={logout} />
         </div>
       </aside>
 
@@ -328,7 +154,7 @@ export const PortalSidebarLayout = memo(function PortalSidebarLayout({
                   className="rounded-lg border border-deep-teal/15 p-2 text-deep-teal lg:hidden"
                   aria-label="Open navigation"
                 >
-                  <Menu className="size-[1.125rem]" strokeWidth={1.75} />
+                  <frontierSidebarIcons.menu size={ICON_SIZE_MD} aria-hidden />
                 </button>
               </Tooltip>
               {!hideHeaderTitle ? (

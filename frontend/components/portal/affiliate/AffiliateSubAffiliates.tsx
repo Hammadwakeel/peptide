@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { RefreshCw, Send, UserPlus, UsersRound } from "lucide-react";
+import { FrontierRefreshCwIcon, ICON_SIZE_SM } from "@/components/icons/frontier";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
+import { frontierSidebarIcons } from "@/components/icons/frontier/frontier-sidebar-icons";
 import {
   authInputClassName,
   authLabelClassName,
@@ -77,22 +79,22 @@ function SubAffiliateContent() {
           className="inline-flex items-center gap-2 rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white transition-opacity hover:opacity-90 disabled:opacity-50"
           aria-label="Refresh sub-affiliates"
         >
-          <RefreshCw className={`size-4 ${isLoading ? "animate-spin" : ""}`} aria-hidden="true" />
+          <FrontierRefreshCwIcon size={ICON_SIZE_SM} className={isLoading ? "animate-spin" : ""} aria-hidden="true" />
         </button>
       </div>
 
       <section className="overflow-hidden rounded-2xl border border-deep-teal/25 bg-pure-white shadow-[0_4px_24px_rgba(1,26,36,0.12)]">
-        <div className="bg-deep-teal px-5 py-4 text-pure-white">
+        <div className="border-b border-deep-teal/10 px-5 py-4">
           <div className="flex items-center gap-3">
             <div
-              className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-pure-white/15"
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-deep-teal/15 bg-deep-teal/5 text-deep-teal"
               aria-hidden="true"
             >
-              <UserPlus className="size-4" />
+              <frontierSidebarIcons.userPlus size={ICON_SIZE_SM} />
             </div>
             <div>
-              <h2 className="font-sans text-lg font-light">Invite sub-affiliate</h2>
-              <p className="text-xs text-pure-white/75">A set-password email will be sent to the invitee</p>
+              <h2 className="font-sans text-lg font-semibold text-deep-teal">Invite sub-affiliate</h2>
+              <p className="text-xs text-deep-teal/60">A set-password email will be sent to the invitee</p>
             </div>
           </div>
         </div>
@@ -115,24 +117,24 @@ function SubAffiliateContent() {
             disabled={isInviting}
             className="inline-flex items-center gap-2 rounded-full bg-deep-teal px-5 py-2.5 text-sm font-light text-pure-white hover:opacity-90 disabled:opacity-60"
           >
-            <Send className="size-4" aria-hidden="true" />
+            <frontierBrandIcons.forward size={ICON_SIZE_SM} aria-hidden="true" />
             {isInviting ? "Inviting…" : "Send invite"}
           </button>
         </form>
       </section>
 
       <section className="overflow-hidden rounded-2xl border border-deep-teal/25 bg-pure-white shadow-[0_4px_24px_rgba(1,26,36,0.12)]">
-        <div className="bg-deep-teal px-5 py-4 text-pure-white">
+        <div className="border-b border-deep-teal/10 px-5 py-4">
           <div className="flex items-center gap-3">
             <div
-              className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-pure-white/15"
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-deep-teal/15 bg-deep-teal/5 text-deep-teal"
               aria-hidden="true"
             >
-              <UsersRound className="size-4" />
+              <frontierSidebarIcons.usersRound size={ICON_SIZE_SM} />
             </div>
             <div>
-              <h2 className="font-sans text-lg font-light">Network members</h2>
-              <p className="text-xs text-pure-white/75">
+              <h2 className="font-sans text-lg font-semibold text-deep-teal">Network members</h2>
+              <p className="text-xs text-deep-teal/60">
                 {isLoading ? "Loading…" : `${subAffiliates.length} sub-affiliate${subAffiliates.length === 1 ? "" : "s"}`}
               </p>
             </div>

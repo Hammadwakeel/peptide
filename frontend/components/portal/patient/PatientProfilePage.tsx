@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { CreditCard, LogOut, MapPin, User } from "lucide-react";
+import { ICON_SIZE_SM } from "@/components/icons/frontier";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
+import { frontierSidebarIcons } from "@/components/icons/frontier/frontier-sidebar-icons";
 import {
   authInputClassName,
   authLabelClassName,
@@ -221,12 +223,12 @@ export function PatientProfilePage() {
           Save profile
         </button>
         <button type="button" onClick={logout} className={toolbarBtnClass}>
-          <LogOut className="size-4" aria-hidden="true" />
+          <frontierSidebarIcons.logOut size={ICON_SIZE_SM} aria-hidden="true" />
           <span className="hidden sm:inline">Log out</span>
         </button>
       </PortalPageToolbar>
 
-      <PortalPageSection icon={User} title="Personal information" subtitle={profile.email}>
+      <PortalPageSection icon={frontierSidebarIcons.user} title="Personal information" subtitle={profile.email}>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className={authLabelClassName}>First name</label>
@@ -252,7 +254,7 @@ export function PatientProfilePage() {
       </PortalPageSection>
 
       <PortalPageSection
-        icon={MapPin}
+        icon={frontierBrandIcons.location}
         title="Shipping addresses"
         subtitle={`${addresses.length} saved address${addresses.length === 1 ? "" : "es"}`}
       >
@@ -327,7 +329,7 @@ export function PatientProfilePage() {
       </PortalPageSection>
 
       <PortalPageSection
-        icon={CreditCard}
+        icon={frontierBrandIcons.wallet}
         title="Payment methods"
         subtitle={`${paymentMethods.length} saved card${paymentMethods.length === 1 ? "" : "s"}`}
       >

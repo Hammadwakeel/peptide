@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowLeft, MessageSquare, User } from "lucide-react";
+import {
+  FrontierArrowLeftIcon,
+  ICON_SIZE_SM,
+} from "@/components/icons/frontier";
+import { frontierSidebarIcons } from "@/components/icons/frontier/frontier-sidebar-icons";
 import { ProviderPageSection } from "@/components/portal/provider/shared/ProviderPageSection";
 import {
   ProviderPageToolbar,
@@ -86,7 +90,7 @@ export function PatientProfile({ patientId }: PatientProfileProps) {
       <div className="space-y-5">
         <ProviderPageToolbar title="Patient not found">
           <Link href="/portal/doctor/customers" className={toolbarBtnClass}>
-            <ArrowLeft className="size-4" aria-hidden="true" />
+            <FrontierArrowLeftIcon size={ICON_SIZE_SM} aria-hidden="true" />
             <span className="hidden sm:inline">Back</span>
           </Link>
         </ProviderPageToolbar>
@@ -98,14 +102,14 @@ export function PatientProfile({ patientId }: PatientProfileProps) {
     <div className="space-y-5">
       <ProviderPageToolbar title={patient.name}>
         <Link href="/portal/doctor/customers" className={toolbarBtnClass}>
-          <ArrowLeft className="size-4" aria-hidden="true" />
+          <FrontierArrowLeftIcon size={ICON_SIZE_SM} aria-hidden="true" />
           <span className="hidden sm:inline">Back</span>
         </Link>
         <Link
           href={`/portal/doctor/messages?patient=${patient.id}`}
           className={toolbarBtnClass}
         >
-          <MessageSquare className="size-4" aria-hidden="true" />
+          <frontierSidebarIcons.messageSquare size={ICON_SIZE_SM} aria-hidden="true" />
           <span className="hidden sm:inline">Chat</span>
         </Link>
         <button
@@ -118,7 +122,7 @@ export function PatientProfile({ patientId }: PatientProfileProps) {
       </ProviderPageToolbar>
 
       <ProviderPageSection
-        icon={User}
+        icon={frontierSidebarIcons.user}
         title="Patient profile"
         subtitle={`${patient.totalOrders} order${patient.totalOrders === 1 ? "" : "s"} · ${PATIENT_STATUS_LABELS[patient.status]}`}
       >
@@ -156,7 +160,7 @@ export function PatientProfile({ patientId }: PatientProfileProps) {
         </div>
       </ProviderPageSection>
 
-      <ProviderPageSection icon={User} title="Records" noPadding>
+      <ProviderPageSection icon={frontierSidebarIcons.user} title="Records" noPadding>
         <div className="flex flex-wrap gap-2 border-b border-deep-teal/10 p-4 sm:px-5">
           {(Object.keys(PROFILE_TAB_LABELS) as PatientProfileTab[]).map((tab) => (
             <button

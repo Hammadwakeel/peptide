@@ -1,18 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import {
-  Calculator,
-  HelpCircle,
-  LayoutDashboard,
-  LayoutGrid,
-  MessageSquare,
-  Package,
-  Settings,
-  Store,
-  Users,
-  UsersRound,
-} from "lucide-react";
+import { frontierSidebarIcons } from "@/components/icons/frontier/frontier-sidebar-icons";
 import { RoleOnboardingJoyride } from "@/components/onboarding/RoleOnboardingJoyride";
 import { PortalSidebarLayout, type SidebarLink } from "@/components/portal/shared/PortalSidebarLayout";
 import { OrdersProvider } from "@/context/OrdersProvider";
@@ -22,16 +11,16 @@ import { PortalBootstrap } from "@/components/bootstrap/PortalBootstrap";
 import { ProviderPortalProvider } from "@/context/ProviderPortalProvider";
 
 const BASE_PROVIDER_LINKS: Omit<SidebarLink, "badge">[] = [
-  { href: "/portal/doctor", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/portal/doctor/inventory", label: "Inventory", icon: LayoutGrid, exact: false },
-  { href: "/portal/doctor/my-store", label: "My Store", icon: Store, exact: false },
-  { href: "/portal/doctor/customers", label: "Customers", icon: Users, exact: false },
-  { href: "/portal/doctor/orders", label: "Orders", icon: Package, exact: false },
-  { href: "/portal/doctor/accounting", label: "Accounting", icon: Calculator, exact: false },
-  { href: "/portal/doctor/messages", label: "Messages", icon: MessageSquare, exact: false },
-  { href: "/portal/doctor/users", label: "Organization Users", icon: UsersRound, exact: false },
-  { href: "/portal/doctor/settings", label: "Settings", icon: Settings, exact: false },
-  { href: "/portal/doctor/help", label: "Help / Support", icon: HelpCircle, exact: false },
+  { href: "/portal/doctor", label: "Dashboard", icon: frontierSidebarIcons.layoutDashboard, exact: true },
+  { href: "/portal/doctor/inventory", label: "Inventory", icon: frontierSidebarIcons.layoutGrid, exact: false },
+  { href: "/portal/doctor/my-store", label: "My Store", icon: frontierSidebarIcons.store, exact: false },
+  { href: "/portal/doctor/customers", label: "Customers", icon: frontierSidebarIcons.users, exact: false },
+  { href: "/portal/doctor/orders", label: "Orders", icon: frontierSidebarIcons.package, exact: false },
+  { href: "/portal/doctor/accounting", label: "Accounting", icon: frontierSidebarIcons.calculator, exact: false },
+  { href: "/portal/doctor/messages", label: "Messages", icon: frontierSidebarIcons.messageSquare, exact: false },
+  { href: "/portal/doctor/users", label: "Organization Users", icon: frontierSidebarIcons.usersRound, exact: false },
+  { href: "/portal/doctor/settings", label: "Settings", icon: frontierSidebarIcons.settings, exact: false },
+  { href: "/portal/doctor/help", label: "Help / Support", icon: frontierSidebarIcons.helpCircle, exact: false },
 ];
 
 function ProviderPortalShell({ children }: { children: React.ReactNode }) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Building2, RefreshCw } from "lucide-react";
+import { FrontierBuilding2Icon, FrontierRefreshCwIcon, ICON_SIZE_SM } from "@/components/icons/frontier";
 import { listClinicReferrals } from "@/lib/affiliate/api";
 import type { ClinicReferral, ReferralScope } from "@/lib/affiliate/types";
 import { useAffiliatePortal } from "@/context/AffiliatePortalProvider";
@@ -67,23 +67,23 @@ export function AffiliateReferrals() {
             className="inline-flex items-center gap-2 rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white transition-opacity hover:opacity-90 disabled:opacity-50"
             aria-label="Refresh referrals"
           >
-            <RefreshCw className={`size-4 ${isLoading ? "animate-spin" : ""}`} aria-hidden="true" />
+            <FrontierRefreshCwIcon size={ICON_SIZE_SM} className={isLoading ? "animate-spin" : ""} aria-hidden="true" />
           </button>
         </div>
       </div>
 
       <section className="overflow-hidden rounded-2xl border border-deep-teal/25 bg-pure-white shadow-[0_4px_24px_rgba(1,26,36,0.12)]">
-        <div className="bg-deep-teal px-5 py-4 text-pure-white">
+        <div className="border-b border-deep-teal/10 px-5 py-4">
           <div className="flex items-center gap-3">
             <div
-              className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-pure-white/15"
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-deep-teal/15 bg-deep-teal/5 text-deep-teal"
               aria-hidden="true"
             >
-              <Building2 className="size-4" />
+              <FrontierBuilding2Icon size={ICON_SIZE_SM} />
             </div>
             <div>
-              <h2 className="font-sans text-lg font-light">Referred clinics</h2>
-              <p className="text-xs text-pure-white/75">
+              <h2 className="font-sans text-lg font-semibold text-deep-teal">Referred clinics</h2>
+              <p className="text-xs text-deep-teal/60">
                 {isLoading ? "Loading…" : `${referrals.length} referral${referrals.length === 1 ? "" : "s"}`}
               </p>
             </div>

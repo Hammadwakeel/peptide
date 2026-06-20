@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Package, Truck } from "lucide-react";
+import {
+  FrontierArrowLeftIcon,
+  FrontierTruckIcon,
+  ICON_SIZE_SM,
+} from "@/components/icons/frontier";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
 import { PortalPageSection } from "@/components/portal/shared/PortalPageSection";
 import {
   PortalPageToolbar,
@@ -104,7 +109,7 @@ export function PatientOrderDetail({ orderId }: PatientOrderDetailProps) {
       <div className="space-y-5">
         <PortalPageToolbar title="Order not found">
           <Link href="/portal/patient/orders" className={toolbarBtnClass}>
-            <ArrowLeft className="size-4" aria-hidden="true" />
+            <FrontierArrowLeftIcon size={ICON_SIZE_SM} aria-hidden="true" />
             <span className="hidden sm:inline">Back</span>
           </Link>
         </PortalPageToolbar>
@@ -116,7 +121,7 @@ export function PatientOrderDetail({ orderId }: PatientOrderDetailProps) {
     <div className="space-y-5">
       <PortalPageToolbar title={order.orderId}>
         <Link href="/portal/patient/orders" className={toolbarBtnClass}>
-          <ArrowLeft className="size-4" aria-hidden="true" />
+          <FrontierArrowLeftIcon size={ICON_SIZE_SM} aria-hidden="true" />
           <span className="hidden sm:inline">Back</span>
         </Link>
         {order.tracking?.trackingUrl ? (
@@ -126,7 +131,7 @@ export function PatientOrderDetail({ orderId }: PatientOrderDetailProps) {
         ) : null}
       </PortalPageToolbar>
 
-      <PortalPageSection icon={Package} title="Order details" subtitle={`Placed ${formatDate(order.date)}`}>
+      <PortalPageSection icon={frontierBrandIcons.package} title="Order details" subtitle={`Placed ${formatDate(order.date)}`}>
         {order.reviewStatus === "rejected" && order.rejectionReason ? (
           <p className="mb-4 rounded-xl border border-coral-blush/40 bg-coral-blush/15 px-4 py-3 text-sm text-deep-teal/75">
             Rejected: {order.rejectionReason}
@@ -149,7 +154,7 @@ export function PatientOrderDetail({ orderId }: PatientOrderDetailProps) {
         </p>
       </PortalPageSection>
 
-      <PortalPageSection icon={Truck} title="Tracking">
+      <PortalPageSection icon={FrontierTruckIcon} title="Tracking">
         {order.tracking ? (
           <dl className="grid gap-3 sm:grid-cols-2">
             <div>

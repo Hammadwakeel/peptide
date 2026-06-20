@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { PackagePlus, Upload, Warehouse } from "lucide-react";
+import { ICON_SIZE_SM } from "@/components/icons/frontier";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
 import { AdminCategoriesPanel } from "@/components/portal/admin/catalog/AdminCategoriesPanel";
 import { AdminProductList } from "@/components/portal/admin/products/AdminProductList";
 
@@ -9,19 +10,19 @@ const CATALOG_ACTIONS = [
   {
     href: "/portal/admin/products/new",
     label: "Add Product",
-    icon: PackagePlus,
+    icon: frontierBrandIcons.packagePlus,
     primary: true,
   },
   {
     href: "/portal/admin/products/import",
     label: "Bulk Import",
-    icon: Upload,
+    icon: frontierBrandIcons.add,
     primary: false,
   },
   {
     href: "/portal/admin/catalog/stock",
     label: "Stock Management",
-    icon: Warehouse,
+    icon: frontierBrandIcons.warehouse,
     primary: false,
   },
 ] as const;
@@ -43,7 +44,7 @@ export function AdminCatalogPage() {
                   : "border border-deep-teal/25 text-deep-teal hover:bg-deep-teal/5"
               }`}
             >
-              <Icon className="size-4" aria-hidden="true" />
+              <Icon size={ICON_SIZE_SM} aria-hidden="true" />
               {label}
             </Link>
           ))}

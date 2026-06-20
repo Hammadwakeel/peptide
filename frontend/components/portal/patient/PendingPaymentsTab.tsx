@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { CreditCard, ShoppingBag } from "lucide-react";
+import { FrontierRefreshCwIcon, ICON_SIZE_SM } from "@/components/icons/frontier";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
+import { frontierSidebarIcons } from "@/components/icons/frontier/frontier-sidebar-icons";
 import { RoleOnboardingChecklist } from "@/components/onboarding/RoleOnboardingChecklist";
 import { PortalPageSection } from "@/components/portal/shared/PortalPageSection";
 import {
@@ -28,13 +30,13 @@ export function PendingPaymentsTab() {
 
       <PortalPageToolbar title={`Welcome, ${firstName}`}>
         <Link href="/portal/patient/products" className={toolbarBtnPrimaryClass}>
-          <ShoppingBag className="size-4" aria-hidden="true" />
+          <frontierSidebarIcons.shoppingBag size={ICON_SIZE_SM} aria-hidden="true" />
           <span className="hidden sm:inline">Browse products</span>
         </Link>
       </PortalPageToolbar>
 
       <PortalPageSection
-        icon={CreditCard}
+        icon={frontierBrandIcons.wallet}
         title="Pending review"
         subtitle={
           ordersLoading

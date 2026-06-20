@@ -3,7 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { MoreHorizontal, Package, RefreshCw, Search } from "lucide-react";
+import {
+  FrontierMoreHorizontalIcon,
+  FrontierRefreshCwIcon,
+  ICON_SIZE_SM,
+} from "@/components/icons/frontier";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
 import { AdminProductStockModal } from "@/components/portal/admin/products/AdminProductStockModal";
 import { deleteProduct, listCategories, listProducts } from "@/lib/admin/inventory/api";
 import {
@@ -97,18 +102,18 @@ export function AdminProductList() {
 
   return (
     <section className="overflow-hidden rounded-2xl border border-deep-teal/25 bg-pure-white shadow-[0_4px_24px_rgba(1,26,36,0.12)]">
-      <div className="bg-deep-teal px-5 py-4 text-pure-white">
+      <div className="border-b border-deep-teal/10 px-5 py-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div
-              className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-pure-white/15"
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-deep-teal/15 bg-deep-teal/5 text-deep-teal"
               aria-hidden="true"
             >
-              <Package className="size-4" />
+              <frontierBrandIcons.package size={ICON_SIZE_SM} />
             </div>
             <div>
-              <h2 className="font-sans text-lg font-light">Products</h2>
-              <p className="text-xs text-pure-white/75">
+              <h2 className="font-sans text-lg font-semibold text-deep-teal">Products</h2>
+              <p className="text-xs text-deep-teal/60">
                 {isLoading ? "Loading…" : `${sortedProducts.length} shown`}
               </p>
             </div>
@@ -117,9 +122,9 @@ export function AdminProductList() {
             type="button"
             onClick={() => void loadData()}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 rounded-full bg-pure-white/15 px-3 py-1.5 text-xs font-light hover:bg-pure-white/25 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-full border border-deep-teal/20 px-3 py-1.5 text-xs font-light text-deep-teal hover:bg-deep-teal/5 disabled:opacity-50"
           >
-            <RefreshCw className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} aria-hidden="true" />
+            <FrontierRefreshCwIcon size={14} className={isLoading ? "animate-spin" : ""} aria-hidden="true" />
             Refresh
           </button>
         </div>
@@ -128,8 +133,9 @@ export function AdminProductList() {
       <div className="border-b border-deep-teal/10 bg-surface-muted/50 px-5 py-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <div className="relative flex-1">
-            <Search
-              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-deep-teal/40"
+            <frontierBrandIcons.search
+              size={ICON_SIZE_SM}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-deep-teal/40"
               aria-hidden="true"
             />
             <input
@@ -270,7 +276,7 @@ export function AdminProductList() {
                       className="inline-flex size-8 items-center justify-center rounded-lg text-deep-teal/50 transition-colors hover:bg-deep-teal/10 hover:text-deep-teal"
                       aria-label={`Actions for ${product.name}`}
                     >
-                      <MoreHorizontal className="size-4" />
+                      <FrontierMoreHorizontalIcon size={ICON_SIZE_SM} />
                     </button>
                     {openMenuId === product.id ? (
                       <>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Copy, Link2, Mail, RefreshCw, Send } from "lucide-react";
+import { FrontierRefreshCwIcon, ICON_SIZE_SM } from "@/components/icons/frontier";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
 import {
   authInputClassName,
   authLabelClassName,
@@ -73,7 +74,7 @@ export function AffiliateClinicInvite() {
             disabled={!referralLink || isLoading}
             className="inline-flex items-center gap-2 rounded-full border border-deep-teal/25 px-4 py-2 text-sm font-light text-deep-teal transition-colors hover:bg-deep-teal/5 disabled:opacity-50"
           >
-            <Copy className="size-4" aria-hidden="true" />
+            <frontierBrandIcons.cards size={ICON_SIZE_SM} aria-hidden="true" />
             <span className="hidden sm:inline">Copy link</span>
           </button>
           <button
@@ -83,23 +84,23 @@ export function AffiliateClinicInvite() {
             className="inline-flex items-center gap-2 rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white transition-opacity hover:opacity-90 disabled:opacity-50"
             aria-label="Refresh invite link"
           >
-            <RefreshCw className={`size-4 ${isLoading ? "animate-spin" : ""}`} aria-hidden="true" />
+            <FrontierRefreshCwIcon size={ICON_SIZE_SM} className={isLoading ? "animate-spin" : ""} aria-hidden="true" />
           </button>
         </div>
       </div>
 
       <section className="overflow-hidden rounded-2xl border border-deep-teal/25 bg-pure-white shadow-[0_4px_24px_rgba(1,26,36,0.12)]">
-        <div className="bg-deep-teal px-5 py-4 text-pure-white">
+        <div className="border-b border-deep-teal/10 px-5 py-4">
           <div className="flex items-center gap-3">
             <div
-              className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-pure-white/15"
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-deep-teal/15 bg-deep-teal/5 text-deep-teal"
               aria-hidden="true"
             >
-              <Link2 className="size-4" />
+              <frontierBrandIcons.location size={ICON_SIZE_SM} />
             </div>
             <div>
-              <h2 className="font-sans text-lg font-light">Your clinic invite link</h2>
-              <p className="text-xs text-pure-white/75">Share this link with prospective clinics</p>
+              <h2 className="font-sans text-lg font-semibold text-deep-teal">Your clinic invite link</h2>
+              <p className="text-xs text-deep-teal/60">Share this link with prospective clinics</p>
             </div>
           </div>
         </div>
@@ -123,17 +124,17 @@ export function AffiliateClinicInvite() {
       </section>
 
       <section className="overflow-hidden rounded-2xl border border-deep-teal/25 bg-pure-white shadow-[0_4px_24px_rgba(1,26,36,0.12)]">
-        <div className="bg-deep-teal px-5 py-4 text-pure-white">
+        <div className="border-b border-deep-teal/10 px-5 py-4">
           <div className="flex items-center gap-3">
             <div
-              className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-pure-white/15"
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-deep-teal/15 bg-deep-teal/5 text-deep-teal"
               aria-hidden="true"
             >
-              <Mail className="size-4" />
+              <frontierBrandIcons.mail size={ICON_SIZE_SM} />
             </div>
             <div>
-              <h2 className="font-sans text-lg font-light">Email invitation</h2>
-              <p className="text-xs text-pure-white/75">Send the application link to a clinic inbox</p>
+              <h2 className="font-sans text-lg font-semibold text-deep-teal">Email invitation</h2>
+              <p className="text-xs text-deep-teal/60">Send the application link to a clinic inbox</p>
             </div>
           </div>
         </div>
@@ -157,7 +158,7 @@ export function AffiliateClinicInvite() {
             disabled={isSending}
             className="inline-flex items-center gap-2 rounded-full bg-deep-teal px-5 py-2.5 text-sm font-light text-pure-white hover:opacity-90 disabled:opacity-60"
           >
-            <Send className="size-4" aria-hidden="true" />
+            <frontierBrandIcons.forward size={ICON_SIZE_SM} aria-hidden="true" />
             {isSending ? "Sending…" : clinicEmail.trim() ? "Send invitation" : "Generate link"}
           </button>
         </form>

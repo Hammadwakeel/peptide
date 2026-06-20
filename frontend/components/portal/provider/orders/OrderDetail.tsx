@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Package } from "lucide-react";
+import { FrontierArrowLeftIcon, ICON_SIZE_SM } from "@/components/icons/frontier";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
 import { RejectOrderModal } from "@/components/portal/provider/orders/RejectOrderModal";
 import { ProviderPageSection } from "@/components/portal/provider/shared/ProviderPageSection";
 import {
@@ -105,7 +106,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
       <div className="space-y-5">
         <ProviderPageToolbar title="Order not found">
           <Link href="/portal/doctor/orders" className={toolbarBtnClass}>
-            <ArrowLeft className="size-4" aria-hidden="true" />
+            <FrontierArrowLeftIcon size={ICON_SIZE_SM} aria-hidden="true" />
             <span className="hidden sm:inline">Back</span>
           </Link>
         </ProviderPageToolbar>
@@ -119,7 +120,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
     <div className="space-y-5">
       <ProviderPageToolbar title={order.orderNumber ?? order.id}>
         <Link href="/portal/doctor/orders" className={toolbarBtnClass}>
-          <ArrowLeft className="size-4" aria-hidden="true" />
+          <FrontierArrowLeftIcon size={ICON_SIZE_SM} aria-hidden="true" />
           <span className="hidden sm:inline">Back</span>
         </Link>
         {isPending ? (
@@ -145,7 +146,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
       </ProviderPageToolbar>
 
       <ProviderPageSection
-        icon={Package}
+        icon={frontierBrandIcons.package}
         title="Order summary"
         subtitle={[
           order.reviewStatus ? REVIEW_STATUS_LABELS[order.reviewStatus] : null,
@@ -187,7 +188,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
       </ProviderPageSection>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <ProviderPageSection icon={Package} title="Line items">
+        <ProviderPageSection icon={frontierBrandIcons.package} title="Line items">
           <div className="mt-4 overflow-x-auto rounded-xl border border-deep-teal/10">
             <table className="min-w-full text-sm">
               <thead className="border-b border-deep-teal/10 bg-deep-teal/[0.02] text-xs uppercase text-deep-teal/45">
@@ -217,7 +218,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
         </ProviderPageSection>
 
         {order.customerName ? (
-          <ProviderPageSection icon={Package} title="Patient info">
+          <ProviderPageSection icon={frontierBrandIcons.package} title="Patient info">
             <div className="mt-4 flex items-center gap-3">
               <span className="flex size-12 items-center justify-center rounded-full bg-deep-teal/10 text-sm font-light text-deep-teal">
                 {getPatientInitials(order.customerName)}
@@ -244,7 +245,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
         ) : null}
       </div>
 
-      <ProviderPageSection icon={Package} title="Shipment tracking">
+      <ProviderPageSection icon={frontierBrandIcons.package} title="Shipment tracking">
         {order.tracking ? (
           <dl className="mt-4 grid gap-3 sm:grid-cols-3">
             <div>
@@ -276,7 +277,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
       </ProviderPageSection>
 
       {order.timeline.length > 0 ? (
-        <ProviderPageSection icon={Package} title="Status timeline">
+        <ProviderPageSection icon={frontierBrandIcons.package} title="Status timeline">
           <ol className="mt-4 space-y-4 border-l border-deep-teal/15 pl-4">
             {order.timeline.map((entry) => (
               <li key={entry.id} className="relative">

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Package, RefreshCw } from "lucide-react";
+import { FrontierRefreshCwIcon, ICON_SIZE_SM } from "@/components/icons/frontier";
+import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
 import { PortalPageSection } from "@/components/portal/shared/PortalPageSection";
 import {
   PortalPageToolbar,
@@ -46,12 +47,12 @@ export function OrderHistoryTab() {
           className={toolbarBtnPrimaryClass}
           aria-label="Refresh orders"
         >
-          <RefreshCw className={`size-4 ${ordersLoading ? "animate-spin" : ""}`} aria-hidden="true" />
+          <FrontierRefreshCwIcon size={ICON_SIZE_SM} className={ordersLoading ? "animate-spin" : ""} aria-hidden="true" />
         </button>
       </PortalPageToolbar>
 
       <PortalPageSection
-        icon={Package}
+        icon={frontierBrandIcons.package}
         title="Your orders"
         subtitle={
           ordersLoading

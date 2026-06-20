@@ -1,25 +1,20 @@
 "use client";
 
 import { useMemo } from "react";
-import {
-  LayoutDashboard,
-  UserPlus,
-  Users,
-  UsersRound,
-} from "lucide-react";
+import { frontierSidebarIcons } from "@/components/icons/frontier/frontier-sidebar-icons";
 import { RoleOnboardingJoyride } from "@/components/onboarding/RoleOnboardingJoyride";
 import { PortalSidebarLayout, type SidebarLink } from "@/components/portal/shared/PortalSidebarLayout";
 import { PortalBootstrap } from "@/components/bootstrap/PortalBootstrap";
 import { AffiliatePortalProvider, useAffiliatePortal } from "@/context/AffiliatePortalProvider";
 
 const BASE_AFFILIATE_LINKS: SidebarLink[] = [
-  { href: "/portal/affiliate", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/portal/affiliate/clinics/invite", label: "Invite Clinic", icon: UserPlus },
-  { href: "/portal/affiliate/referrals", label: "Clinic Referrals", icon: Users },
+  { href: "/portal/affiliate", label: "Dashboard", icon: frontierSidebarIcons.layoutDashboard, exact: true },
+  { href: "/portal/affiliate/clinics/invite", label: "Invite Clinic", icon: frontierSidebarIcons.userPlus },
+  { href: "/portal/affiliate/referrals", label: "Clinic Referrals", icon: frontierSidebarIcons.users },
 ];
 
 const MAIN_AFFILIATE_LINKS: SidebarLink[] = [
-  { href: "/portal/affiliate/sub-affiliates", label: "Sub-Affiliates", icon: UsersRound },
+  { href: "/portal/affiliate/sub-affiliates", label: "Sub-Affiliates", icon: frontierSidebarIcons.usersRound },
 ];
 
 export function MainAffiliateOnly({ children }: { children: React.ReactNode }) {
