@@ -15,7 +15,7 @@ import { Tooltip } from "@/components/ui/Tippy";
 import { useAuth } from "@/context/AuthProvider";
 import { useRoleOnboarding } from "@/lib/hooks/use-role-onboarding";
 import { navTourId } from "@/lib/onboarding/tour-targets";
-import type { UserRole } from "@/lib/auth/types";
+import type { OnboardingRole } from "@/lib/onboarding/types";
 import type { FrontierIconComponent } from "@/lib/icons/types";
 
 export type SidebarLink = {
@@ -29,7 +29,7 @@ export type SidebarLink = {
 type PortalSidebarLayoutProps = {
   links: readonly SidebarLink[];
   children: React.ReactNode;
-  onboardingRole?: UserRole;
+  onboardingRole?: OnboardingRole;
   onboardingFilterStepIds?: string[];
 };
 
@@ -49,6 +49,117 @@ function isLinkActive(pathname: string, href: string, exact?: boolean) {
     );
   }
   return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function PortalLayoutHeaderBase({
+  hideHeaderTitle,
+  activeLinkLabel,
+  onOpenMobileNav,
+  hideDesktopHeader,
+  onboardingStrip,
+}: {
+  hideHeaderTitle: boolean;
+  activeLinkLabel: string;
+  onOpenMobileNav: () => void;
+  hideDesktopHeader: boolean;
+  onboardingStrip?: React.ReactNode;
+}) {
+  return (
+    <header
+      className={`sticky top-0 z-30 border-b border-deep-teal/10 bg-pure-white/95 backdrop-blur-sm ${
+        hideDesktopHeader ? "lg:hidden" : hideHeaderTitle ? "lg:border-b-0" : ""
+      }`}
+    >
+      <div
+        className={`flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 ${
+          hideHeaderTitle ? "py-2.5 lg:hidden" : "py-3"
+        }`}
+      >
+        <div className="flex min-w-0 items-center gap-3">
+          <Tooltip content="Open navigation">
+            <button
+              type="button"
+              onClick={onOpenMobileNav}
+              className="rounded-lg border border-deep-teal/15 p-2 text-deep-teal lg:hidden"
+              aria-label="Open navigation"
+            >
+              <frontierSidebarIcons.menu size={ICON_SIZE_MD} aria-hidden />
+            </button>
+          </Tooltip>
+          {!hideHeaderTitle ? (
+            <h1 className="truncate font-sans text-xl font-extrabold tracking-[-0.01em] text-deep-teal sm:text-2xl">
+              {activeLinkLabel}
+            </h1>
+          ) : null}
+        </div>
+      </div>
+      {onboardingStrip}
+    </header>
+  );
+}
+
+function PortalLayoutHeaderWithOnboarding({
+  hideHeaderTitle,
+  activeLinkLabel,
+  onOpenMobileNav,
+  onboardingRole,
+  onboardingFilterStepIds,
+}: {
+  hideHeaderTitle: boolean;
+  activeLinkLabel: string;
+  onOpenMobileNav: () => void;
+  onboardingRole: OnboardingRole;
+  onboardingFilterStepIds?: string[];
+}) {
+  const onboarding = useRoleOnboarding(onboardingRole, onboardingFilterStepIds);
+  const showOnboardingStrip = onboarding.isVisible && onboarding.progressSteps.length > 0;
+
+  return (
+    <PortalLayoutHeaderBase
+      hideHeaderTitle={hideHeaderTitle}
+      activeLinkLabel={activeLinkLabel}
+      onOpenMobileNav={onOpenMobileNav}
+      hideDesktopHeader={hideHeaderTitle && !showOnboardingStrip}
+      onboardingStrip={
+        <PortalOnboardingHeaderStrip role={onboardingRole} filterStepIds={onboardingFilterStepIds} />
+      }
+    />
+  );
+}
+
+function PortalLayoutHeader({
+  hideHeaderTitle,
+  activeLinkLabel,
+  onOpenMobileNav,
+  onboardingRole,
+  onboardingFilterStepIds,
+}: {
+  hideHeaderTitle: boolean;
+  activeLinkLabel: string;
+  onOpenMobileNav: () => void;
+  onboardingRole?: OnboardingRole;
+  onboardingFilterStepIds?: string[];
+}) {
+  if (onboardingRole) {
+    return (
+      <PortalLayoutHeaderWithOnboarding
+        hideHeaderTitle={hideHeaderTitle}
+        activeLinkLabel={activeLinkLabel}
+        onOpenMobileNav={onOpenMobileNav}
+        onboardingRole={onboardingRole}
+        onboardingFilterStepIds={onboardingFilterStepIds}
+      />
+    );
+  }
+
+  return (
+    <PortalLayoutHeaderBase
+      hideHeaderTitle={hideHeaderTitle}
+      activeLinkLabel={activeLinkLabel}
+      onOpenMobileNav={onOpenMobileNav}
+      hideDesktopHeader={hideHeaderTitle}
+    />
+  );
 }
 
 export const PortalSidebarLayout = memo(function PortalSidebarLayout({
@@ -72,8 +183,6 @@ export const PortalSidebarLayout = memo(function PortalSidebarLayout({
     return () => window.removeEventListener("frontier:joyride-nav-step", openSidebarForTour);
   }, []);
 
-  const onboarding = useRoleOnboarding(onboardingRole ?? "admin", onboardingFilterStepIds);
-
   if (isLoading) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-pure-white text-deep-teal">
@@ -85,9 +194,6 @@ export const PortalSidebarLayout = memo(function PortalSidebarLayout({
   const activeLink = links.find((link) => isLinkActive(pathname, link.href, link.exact));
   const homeHref = links[0]?.href ?? "/";
   const hideHeaderTitle = pathname.startsWith("/portal/");
-  const showOnboardingStrip =
-    Boolean(onboardingRole) && onboarding.isVisible && onboarding.progressSteps.length > 0;
-  const hideDesktopHeader = hideHeaderTitle && !showOnboardingStrip;
 
   return (
     <div className="min-h-dvh bg-pure-white text-deep-teal lg:flex">
@@ -112,22 +218,24 @@ export const PortalSidebarLayout = memo(function PortalSidebarLayout({
         </div>
 
         <nav
-          className="min-h-0 flex-1 space-y-2 overflow-y-auto overflow-x-visible px-2 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-visible px-2 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           aria-label="Portal navigation"
           data-tour="portal-nav"
         >
-          {links.map((link) => (
-            <FloatingIconLink
-              key={link.href}
-              href={link.href}
-              label={link.label}
-              icon={link.icon}
-              active={isLinkActive(pathname, link.href, link.exact)}
-              badge={link.badge}
-              onClick={() => setMobileOpen(false)}
-              data-tour={navTourId(link.href)}
-            />
-          ))}
+          <div className="mx-auto w-full rounded-2xl border border-deep-teal/15 bg-pure-white py-1.5 shadow-[0_4px_24px_rgba(1,26,36,0.08)]">
+            {links.map((link) => (
+              <FloatingIconLink
+                key={link.href}
+                href={link.href}
+                label={link.label}
+                icon={link.icon}
+                active={isLinkActive(pathname, link.href, link.exact)}
+                badge={link.badge}
+                onClick={() => setMobileOpen(false)}
+                data-tour={navTourId(link.href)}
+              />
+            ))}
+          </div>
         </nav>
 
         <div className="px-2 pb-4 pt-2">
@@ -136,42 +244,13 @@ export const PortalSidebarLayout = memo(function PortalSidebarLayout({
       </aside>
 
       <div className="relative z-0 flex min-h-dvh min-w-0 flex-1 flex-col">
-        <header
-          className={`sticky top-0 z-30 border-b border-deep-teal/10 bg-pure-white/95 backdrop-blur-sm ${
-            hideDesktopHeader ? "lg:hidden" : hideHeaderTitle ? "lg:border-b-0" : ""
-          }`}
-        >
-          <div
-            className={`flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 ${
-              hideHeaderTitle ? "py-2.5 lg:hidden" : "py-3"
-            }`}
-          >
-            <div className="flex min-w-0 items-center gap-3">
-              <Tooltip content="Open navigation">
-                <button
-                  type="button"
-                  onClick={() => setMobileOpen(true)}
-                  className="rounded-lg border border-deep-teal/15 p-2 text-deep-teal lg:hidden"
-                  aria-label="Open navigation"
-                >
-                  <frontierSidebarIcons.menu size={ICON_SIZE_MD} aria-hidden />
-                </button>
-              </Tooltip>
-              {!hideHeaderTitle ? (
-                <h1 className="truncate font-sans text-xl font-extrabold tracking-[-0.01em] text-deep-teal sm:text-2xl">
-                  {activeLink?.label ?? "Dashboard"}
-                </h1>
-              ) : null}
-            </div>
-          </div>
-
-          {onboardingRole ? (
-            <PortalOnboardingHeaderStrip
-              role={onboardingRole}
-              filterStepIds={onboardingFilterStepIds}
-            />
-          ) : null}
-        </header>
+        <PortalLayoutHeader
+          hideHeaderTitle={hideHeaderTitle}
+          activeLinkLabel={activeLink?.label ?? "Dashboard"}
+          onOpenMobileNav={() => setMobileOpen(true)}
+          onboardingRole={onboardingRole}
+          onboardingFilterStepIds={onboardingFilterStepIds}
+        />
 
         <main
           className="flex-1 px-4 pb-5 pt-2 sm:px-6 lg:px-8 lg:pb-6 lg:pt-3"

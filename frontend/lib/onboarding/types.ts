@@ -1,4 +1,4 @@
-import type { UserRole } from "@/lib/auth/types";
+export type OnboardingRole = "doctor" | "patient";
 
 export type SetPasswordTokenStatus = "valid" | "invalid" | "expired" | "already_used";
 
@@ -58,7 +58,7 @@ export type OnboardingStep = {
 };
 
 export type RoleOnboardingConfig = {
-  role: UserRole;
+  role: OnboardingRole;
   title: string;
   subtitle: string;
   funnelTitle: string;

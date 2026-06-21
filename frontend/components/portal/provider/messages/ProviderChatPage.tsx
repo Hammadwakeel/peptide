@@ -65,6 +65,7 @@ export function ProviderChatPage() {
         className={`flex w-full flex-col border-deep-teal/10 bg-pure-white lg:w-[360px] lg:shrink-0 lg:border-r ${
           activeThread ? "hidden lg:flex" : "flex"
         }`}
+        data-tour="doctor-messages-thread-list"
       >
         <div className="border-b border-deep-teal/10 bg-surface-muted/40 px-4 py-3.5">
           <h1 className="font-sans text-lg font-light text-deep-teal">Chats</h1>
@@ -89,6 +90,7 @@ export function ProviderChatPage() {
         className={`min-w-0 flex-1 flex-col ${
           activeThread ? "flex" : "hidden lg:flex"
         }`}
+        data-tour="doctor-messages-compose"
       >
         {activeThread ? (
           <ProviderActiveThread

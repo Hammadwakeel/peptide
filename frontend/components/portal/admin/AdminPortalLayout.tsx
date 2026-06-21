@@ -1,7 +1,6 @@
 "use client";
 
 import { frontierSidebarIcons } from "@/components/icons/frontier/frontier-sidebar-icons";
-import { RoleOnboardingJoyride } from "@/components/onboarding/RoleOnboardingJoyride";
 import { PortalSidebarLayout, type SidebarLink } from "@/components/portal/shared/PortalSidebarLayout";
 import { PortalBootstrap } from "@/components/bootstrap/PortalBootstrap";
 import { AdminOrdersProvider } from "@/context/OrdersProvider";
@@ -23,8 +22,7 @@ export function AdminPortalLayout({ children }: { children: React.ReactNode }) {
   return (
     <AdminOrdersProvider>
       <PortalBootstrap role="admin" />
-      <PortalSidebarLayout links={ADMIN_LINKS} onboardingRole="admin">
-        <RoleOnboardingJoyride role="admin" />
+      <PortalSidebarLayout links={ADMIN_LINKS}>
         {children}
       </PortalSidebarLayout>
     </AdminOrdersProvider>

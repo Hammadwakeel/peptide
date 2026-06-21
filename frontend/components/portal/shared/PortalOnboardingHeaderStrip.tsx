@@ -2,10 +2,10 @@
 
 import { OnboardingProgressSteps } from "@/components/onboarding/OnboardingProgressSteps";
 import { useRoleOnboarding } from "@/lib/hooks/use-role-onboarding";
-import type { UserRole } from "@/lib/auth/types";
+import type { OnboardingRole } from "@/lib/onboarding/types";
 
 type PortalOnboardingHeaderStripProps = {
-  role: UserRole;
+  role: OnboardingRole;
   filterStepIds?: string[];
 };
 

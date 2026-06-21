@@ -76,7 +76,7 @@ export function FloatingIconLink({
         data-tour={dataTour}
         onClick={onClick}
         aria-label={label}
-        className={`flex justify-center py-1.5 ${className}`}
+        className={`flex justify-center py-0.5 ${className}`}
       >
         <IconCircle Icon={Icon} active={active} badge={badge} />
       </Link>
@@ -108,7 +108,7 @@ export function FloatingIconButton({
         onClick={onClick}
         disabled={disabled}
         aria-label={ariaLabel ?? label}
-        className={`flex justify-center py-1.5 disabled:opacity-50 ${className}`}
+        className={`flex justify-center py-0.5 disabled:opacity-50 ${className}`}
       >
         <IconCircle Icon={Icon} />
       </button>

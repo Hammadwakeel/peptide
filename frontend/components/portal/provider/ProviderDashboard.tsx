@@ -1,17 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { FrontierStethoscopeIcon } from "@/components/icons/frontier";
-import { frontierBrandIcons } from "@/components/icons/frontier/frontier-brand-icons";
-import { RoleOnboardingChecklist } from "@/components/onboarding/RoleOnboardingChecklist";
+import { useEffect } from "react";
+import { DoctorMissionPanel } from "@/components/onboarding/doctor/DoctorMissionPanel";
 import { ProviderMetricsBar } from "@/components/portal/provider/ProviderMetricsBar";
+import {
+  ProviderDashboardClinicCardSkeleton,
+  ProviderDashboardMetricsSkeleton,
+  ProviderDashboardOpsCardSkeleton,
+} from "@/components/portal/provider/ProviderDashboardSkeleton";
 import { ProviderPageSection } from "@/components/portal/provider/shared/ProviderPageSection";
 import { ProviderPageToolbar } from "@/components/portal/provider/shared/ProviderPageToolbar";
 import { useAuth } from "@/context/AuthProvider";
-import { useOrders } from "@/context/OrdersProvider";
-import { usePatients } from "@/context/PatientsProvider";
-import { useProviderPortal } from "@/context/ProviderPortalProvider";
-import { getClinicProfile } from "@/lib/doctor/api";
+import { useProviderDashboard } from "@/context/ProviderPortalProvider";
+import { DOCTOR_ONBOARDING_EVENTS } from "@/lib/onboarding/doctor/events";
 
 function DetailCell({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -33,98 +34,72 @@ function StatCell({ label, value }: { label: string; value: string | number }) {
 
 export function ProviderDashboard() {
   const { session } = useAuth();
-  const { orders, isLoading: ordersLoading } = useOrders();
-  const { patients, isLoading: patientsLoading } = usePatients();
-  const { branding, myStore, isStoreLoading } = useProviderPortal();
-  const [userName, setUserName] = useState<string | null>(null);
+  const {
+    branding,
+    providerDisplayName,
+    stats,
+    cardsReady,
+    isOrdersHydrated,
+    isPatientsHydrated,
+    isStoreHydrated,
+    isProfileHydrated,
+  } = useProviderDashboard();
 
-  const isLoading = ordersLoading || patientsLoading || isStoreLoading;
+  const displayName = providerDisplayName ?? session?.email ?? undefined;
 
   useEffect(() => {
-    let cancelled = false;
+    if (!cardsReady) return;
+    window.dispatchEvent(new CustomEvent(DOCTOR_ONBOARDING_EVENTS.dashboardReady));
+  }, [cardsReady]);
 
-    void getClinicProfile()
-      .then((profile) => {
-        if (cancelled) return;
-        const name = [profile.clinic.first_name, profile.clinic.last_name]
-          .filter(Boolean)
-          .join(" ")
-          .trim();
-        setUserName(name || null);
-      })
-      .catch(() => {
-        if (!cancelled) setUserName(null);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const displayName = userName ?? session?.email ?? undefined;
-
-  const pendingReviewCount = useMemo(
-    () => orders.filter((order) => order.reviewStatus === "pending_review").length,
-    [orders],
-  );
-
-  const activeShipments = useMemo(
-    () =>
-      orders.filter(
-        (order) =>
-          order.reviewStatus === "approved" &&
-          order.shipmentStatus !== "delivered" &&
-          order.shipmentStatus !== "cancelled",
-      ).length,
-    [orders],
-  );
-
-  const visibleStoreProducts = useMemo(
-    () => myStore.filter((product) => product.is_visible).length,
-    [myStore],
-  );
-
-  if (isLoading) {
-    return <p className="py-12 text-center text-sm text-deep-teal/50">Loading your clinic workspace…</p>;
-  }
+  const showClinicCard = isProfileHydrated && isStoreHydrated && isPatientsHydrated;
+  const showOpsCard = isOrdersHydrated && isPatientsHydrated && isStoreHydrated;
 
   return (
     <div className="space-y-5">
-      <RoleOnboardingChecklist role="doctor" />
+      <DoctorMissionPanel />
 
       <ProviderPageToolbar title="Dashboard" subtitle={displayName} />
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <ProviderPageSection
-          icon={FrontierStethoscopeIcon}
-          title={branding.clinicName}
-          subtitle={session?.email ?? "—"}
-          compact
-        >
-          <dl className="grid grid-cols-2 gap-2">
-            <DetailCell label="Clinic" value={branding.clinicName} />
-            <DetailCell label="Account email" value={session?.email ?? "—"} />
-            <DetailCell label="Store products" value={visibleStoreProducts} />
-            <DetailCell label="Patients" value={patients.length} />
-          </dl>
-        </ProviderPageSection>
+        {showClinicCard ? (
+          <ProviderPageSection
+            title={branding.clinicName}
+            subtitle={session?.email ?? "—"}
+            compact
+            data-tour="doctor-dashboard-clinic-card"
+          >
+            <dl className="grid grid-cols-2 gap-2">
+              <DetailCell label="Clinic" value={branding.clinicName} />
+              <DetailCell label="Account email" value={session?.email ?? "—"} />
+              <DetailCell label="Store products" value={stats.visibleStoreProducts} />
+              <DetailCell label="Patients" value={stats.patientCount} />
+            </dl>
+          </ProviderPageSection>
+        ) : (
+          <ProviderDashboardClinicCardSkeleton />
+        )}
 
-        <ProviderPageSection
-          icon={frontierBrandIcons.package}
-          title="Operations"
-          subtitle="Orders and patients at a glance"
-          compact
-        >
-          <div className="grid grid-cols-2 gap-2">
-            <StatCell label="Pending review" value={pendingReviewCount} />
-            <StatCell label="Active shipments" value={activeShipments} />
-            <StatCell label="Patients" value={patients.length} />
-            <StatCell label="Store products" value={visibleStoreProducts} />
-          </div>
-        </ProviderPageSection>
+        {showOpsCard ? (
+          <ProviderPageSection
+            title="Operations"
+            subtitle="Orders and patients at a glance"
+            compact
+            data-tour="doctor-dashboard-ops-card"
+          >
+            <div className="grid grid-cols-2 gap-2">
+              <StatCell label="Pending review" value={stats.pendingReviewCount} />
+              <StatCell label="Active shipments" value={stats.activeShipments} />
+              <StatCell label="Patients" value={stats.patientCount} />
+              <StatCell label="Store products" value={stats.visibleStoreProducts} />
+            </div>
+          </ProviderPageSection>
+        ) : (
+          <ProviderDashboardOpsCardSkeleton />
+        )}
       </div>
 
-      <ProviderMetricsBar />
+      {isOrdersHydrated ? <ProviderMetricsBar /> : <ProviderDashboardMetricsSkeleton />}
     </div>
   );
 }

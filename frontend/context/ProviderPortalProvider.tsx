@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, type ReactNode } from "react";
 import { useShallow } from "@/lib/hooks/zustand";
+import { computeProviderDashboardStats } from "@/lib/provider/dashboard-stats";
 import { useOrdersStore } from "@/stores/orders-store";
+import { usePatientsStore } from "@/stores/patients-store";
 import { useProviderPortalStore } from "@/stores/provider-portal-store";
 
 export function ProviderPortalProvider({ children }: { children: ReactNode }) {
@@ -80,8 +82,77 @@ export function useProviderPortal() {
       setStoreVisibility: state.setStoreVisibility,
       branding: state.branding,
       updateBranding: state.updateBranding,
+      clinicProfile: state.clinicProfile,
+      providerDisplayName: state.providerDisplayName,
+      isProfileHydrated: state.isProfileHydrated,
+      isProfileLoading: state.isProfileLoading,
+      refreshClinicProfile: state.refreshClinicProfile,
+      isStoreHydrated: state.isStoreHydrated,
     })),
   );
 
   return { metricsRange, metrics, ...portal };
+}
+
+export function useProviderDashboard() {
+  const ordersSlice = useOrdersStore(
+    useShallow((state) => ({
+      orders: state.orders,
+      isOrdersHydrated: state.isHydrated,
+      isOrdersLoading: state.isLoading,
+    })),
+  );
+  const patientsSlice = usePatientsStore(
+    useShallow((state) => ({
+      patients: state.patients,
+      isPatientsHydrated: state.isHydrated,
+      isPatientsLoading: state.isLoading,
+    })),
+  );
+  const portalSlice = useProviderPortalStore(
+    useShallow((state) => ({
+      branding: state.branding,
+      providerDisplayName: state.providerDisplayName,
+      myStore: state.myStore,
+      isStoreHydrated: state.isStoreHydrated,
+      isStoreLoading: state.isStoreLoading,
+      isProfileHydrated: state.isProfileHydrated,
+      isProfileLoading: state.isProfileLoading,
+    })),
+  );
+
+  const stats = useMemo(
+    () =>
+      computeProviderDashboardStats(
+        ordersSlice.orders,
+        patientsSlice.patients.length,
+        portalSlice.myStore,
+      ),
+    [ordersSlice.orders, patientsSlice.patients.length, portalSlice.myStore],
+  );
+
+  const cardsReady =
+    ordersSlice.isOrdersHydrated &&
+    patientsSlice.isPatientsHydrated &&
+    portalSlice.isStoreHydrated &&
+    portalSlice.isProfileHydrated;
+
+  const isAnyLoading =
+    ordersSlice.isOrdersLoading ||
+    patientsSlice.isPatientsLoading ||
+    portalSlice.isStoreLoading ||
+    portalSlice.isProfileLoading;
+
+  return {
+    ...portalSlice,
+    orders: ordersSlice.orders,
+    isOrdersHydrated: ordersSlice.isOrdersHydrated,
+    isOrdersLoading: ordersSlice.isOrdersLoading,
+    patients: patientsSlice.patients,
+    isPatientsHydrated: patientsSlice.isPatientsHydrated,
+    isPatientsLoading: patientsSlice.isPatientsLoading,
+    stats,
+    cardsReady,
+    isAnyLoading,
+  };
 }

@@ -76,15 +76,20 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
       try {
         const rows = await fetchAllClinicOrders();
         const next = rows.map(mapClinicOrderToUi);
-        set((state) => ({
-          orders: patchIfChanged(state.orders, next),
-          isHydrated: true,
-        }));
+        set((state) => {
+          const orders = patchIfChanged(state.orders, next);
+          if (orders === state.orders && state.isHydrated) return state;
+          return { orders, isHydrated: true };
+        });
       } catch (error) {
         showError(error, "Unable to load clinic orders.");
         if (force) set({ orders: [] });
       } finally {
-        set({ isLoading: false, refreshInFlight: null });
+        set((state) => {
+          const patch: Partial<OrdersState> = { refreshInFlight: null };
+          if (state.isLoading) patch.isLoading = false;
+          return patch;
+        });
       }
     })();
 

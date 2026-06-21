@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -117,8 +117,42 @@ function PerformanceTooltip({
   );
 }
 
+const CHART_HEIGHT = 320;
+
+function useChartContainerReady() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+
+    const measure = () => {
+      const { width, height } = node.getBoundingClientRect();
+      return width > 0 && height > 0;
+    };
+
+    if (measure()) {
+      setReady(true);
+      return;
+    }
+
+    const observer = new ResizeObserver(() => {
+      if (measure()) {
+        setReady(true);
+        observer.disconnect();
+      }
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  return { containerRef, ready };
+}
+
 export function ProviderPerformanceChart({ data }: ProviderPerformanceChartProps) {
   const [focusedSeries, setFocusedSeries] = useState<SeriesKey | null>(null);
+  const { containerRef, ready } = useChartContainerReady();
 
   const chartData = useMemo(() => buildChartPoints(data), [data]);
 
@@ -161,9 +195,10 @@ export function ProviderPerformanceChart({ data }: ProviderPerformanceChartProps
         })}
       </div>
 
-      <div className="h-80 w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 12, right: 8, left: 0, bottom: 4 }}>
+      <div ref={containerRef} className="h-80 w-full min-w-0">
+        {ready ? (
+          <ResponsiveContainer width="100%" height={CHART_HEIGHT} minWidth={0}>
+            <LineChart data={chartData} margin={{ top: 12, right: 8, left: 0, bottom: 4 }}>
             <CartesianGrid strokeDasharray="4 6" stroke={CHART_GRID_STROKE} vertical={false} />
             <XAxis
               dataKey="date"
@@ -215,7 +250,8 @@ export function ProviderPerformanceChart({ data }: ProviderPerformanceChartProps
               );
             })}
           </LineChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        ) : null}
       </div>
     </div>
   );

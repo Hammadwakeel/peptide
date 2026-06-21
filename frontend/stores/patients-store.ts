@@ -69,15 +69,20 @@ export const usePatientsStore = create<PatientsState>((set, get) => ({
         const rows = await fetchAllDoctorPatients();
         const mapped = rows.map(mapDoctorPatientToPatient);
         const next = clonePatients(usePatientRequestsStore.getState().mergeIntoPatients(mapped));
-        set((state) => ({
-          patients: patchIfChanged(state.patients, next),
-          isHydrated: true,
-        }));
+        set((state) => {
+          const patients = patchIfChanged(state.patients, next);
+          if (patients === state.patients && state.isHydrated) return state;
+          return { patients, isHydrated: true };
+        });
       } catch (error) {
         showError(error, "Unable to load patients.");
         if (force) set({ patients: [] });
       } finally {
-        set({ isLoading: false, refreshInFlight: null });
+        set((state) => {
+          const patch: Partial<PatientsState> = { refreshInFlight: null };
+          if (state.isLoading) patch.isLoading = false;
+          return patch;
+        });
       }
     })();
 

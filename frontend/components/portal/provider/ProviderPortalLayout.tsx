@@ -2,13 +2,13 @@
 
 import { useMemo } from "react";
 import { frontierSidebarIcons } from "@/components/icons/frontier/frontier-sidebar-icons";
-import { RoleOnboardingJoyride } from "@/components/onboarding/RoleOnboardingJoyride";
 import { PortalSidebarLayout, type SidebarLink } from "@/components/portal/shared/PortalSidebarLayout";
 import { OrdersProvider } from "@/context/OrdersProvider";
 import { ChatProvider, useProviderUnreadTotal } from "@/context/ChatProvider";
 import { PatientsProvider } from "@/context/PatientsProvider";
 import { PortalBootstrap } from "@/components/bootstrap/PortalBootstrap";
 import { ProviderPortalProvider } from "@/context/ProviderPortalProvider";
+import { DoctorOnboardingProvider } from "@/context/DoctorOnboardingProvider";
 
 const BASE_PROVIDER_LINKS: Omit<SidebarLink, "badge">[] = [
   { href: "/portal/doctor", label: "Dashboard", icon: frontierSidebarIcons.layoutDashboard, exact: true },
@@ -37,8 +37,7 @@ function ProviderPortalShell({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <PortalSidebarLayout links={links} onboardingRole="doctor">
-      <RoleOnboardingJoyride role="doctor" />
+    <PortalSidebarLayout links={links}>
       {children}
     </PortalSidebarLayout>
   );
@@ -51,7 +50,9 @@ export function ProviderPortalLayout({ children }: { children: React.ReactNode }
       <OrdersProvider>
         <PatientsProvider>
           <ChatProvider>
-            <ProviderPortalShell>{children}</ProviderPortalShell>
+            <DoctorOnboardingProvider>
+              <ProviderPortalShell>{children}</ProviderPortalShell>
+            </DoctorOnboardingProvider>
           </ChatProvider>
         </PatientsProvider>
       </OrdersProvider>

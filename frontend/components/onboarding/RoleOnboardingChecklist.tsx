@@ -1,10 +1,10 @@
 "use client";
 
 import { FunnelOnboarding } from "@/components/onboarding/FunnelOnboarding";
-import type { UserRole } from "@/lib/auth/types";
+import type { OnboardingRole } from "@/lib/onboarding/types";
 
 type RoleOnboardingChecklistProps = {
-  role: UserRole;
+  role: OnboardingRole;
   /** Hide sub-affiliate step for non-main affiliates */
   filterStepIds?: string[];
 };

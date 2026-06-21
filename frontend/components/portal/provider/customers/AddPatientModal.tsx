@@ -57,6 +57,7 @@ export function AddPatientModal({ open, onClose, onSubmit }: AddPatientModalProp
         aria-modal="true"
         aria-labelledby="add-patient-title"
         className="relative z-10 max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-[1.5rem] border border-deep-teal/10 bg-pure-white p-6 shadow-xl"
+        data-tour="doctor-patient-invite-form"
       >
         <h2 id="add-patient-title" className="font-sans text-xl font-light text-deep-teal">
           Invite patient
@@ -132,6 +133,7 @@ export function AddPatientModal({ open, onClose, onSubmit }: AddPatientModalProp
               type="submit"
               disabled={isSubmitting}
               className="rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white hover:bg-pacific-teal disabled:opacity-60"
+              data-tour="doctor-patient-invite-submit"
             >
               {isSubmitting ? "Sending…" : "Send invite"}
             </button>

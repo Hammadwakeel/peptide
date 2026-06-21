@@ -94,6 +94,7 @@ export function OrderManagement() {
           value={tab}
           onChange={(e) => setTab(e.target.value as OrderTab)}
           className="rounded-full border border-deep-teal/25 bg-pure-white px-4 py-2 text-sm text-deep-teal outline-none focus:border-deep-teal"
+          data-tour="doctor-orders-tabs"
         >
           {(Object.keys(ORDER_TAB_LABELS) as OrderTab[]).map((key) => (
             <option key={key} value={key}>
@@ -140,7 +141,7 @@ export function OrderManagement() {
           />
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
+          <table className="min-w-full text-left text-sm" data-tour="doctor-orders-table">
             <thead className="border-b border-deep-teal/10 bg-surface-muted/50 text-xs uppercase tracking-wide text-deep-teal/45">
               <tr>
                 <th className="px-4 py-3 font-light">Order</th>

@@ -26,6 +26,7 @@ import {
   type InvitableAccessLevel,
 } from "@/lib/doctor/clinic-types";
 import { showError, toast } from "@/lib/toast";
+import { DOCTOR_ONBOARDING_EVENTS, emitDoctorOnboardingEvent } from "@/lib/onboarding/doctor/events";
 
 type InviteUserModalProps = {
   open: boolean;
@@ -91,7 +92,7 @@ function InviteUserModal({ open, onClose, onInvite }: InviteUserModalProps) {
             <button type="button" onClick={onClose} className="rounded-full border border-deep-teal/15 px-4 py-2 text-sm text-deep-teal">
               Cancel
             </button>
-            <button type="submit" className="rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white hover:bg-pacific-teal">
+            <button type="submit" className="rounded-full bg-deep-teal px-4 py-2 text-sm font-light text-pure-white hover:bg-pacific-teal" data-tour="doctor-users-invite-submit">
               Send invite
             </button>
           </div>
@@ -151,6 +152,7 @@ export function OrganizationUsers() {
     try {
       const result = await inviteClinicMember({ email, access_level: accessLevel });
       toast.success(result.message);
+      emitDoctorOnboardingEvent(DOCTOR_ONBOARDING_EVENTS.memberInvited);
       await loadMembers();
     } catch (error) {
       showError(error, "Unable to send invitation.");
@@ -212,6 +214,7 @@ export function OrganizationUsers() {
               type="button"
               onClick={() => setInviteOpen(true)}
               className={toolbarBtnPrimaryClass}
+              data-tour="doctor-users-invite"
             >
               <frontierSidebarIcons.userPlus size={ICON_SIZE_SM} aria-hidden="true" />
               <span className="hidden sm:inline">Invite member</span>
@@ -225,7 +228,7 @@ export function OrganizationUsers() {
           subtitle={`${filtered.length} member${filtered.length === 1 ? "" : "s"}`}
           noPadding
         >
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" data-tour="doctor-users-table">
             <table className="min-w-full text-left text-sm">
               <thead className="border-b border-deep-teal/10 bg-surface-muted/50 text-xs uppercase tracking-wide text-deep-teal/45">
                 <tr>

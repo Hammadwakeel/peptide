@@ -27,6 +27,11 @@ export function FrontierJoyrideTooltip({
             {step.content}
           </p>
         ) : null}
+        {typeof step.data?.actionHint === "string" ? (
+          <p className="mt-3 rounded-lg border border-pacific-teal/20 bg-pacific-teal/8 px-3 py-2 text-xs font-light text-deep-teal">
+            {step.data.actionHint}
+          </p>
+        ) : null}
         {continuous && size > 1 ? (
           <p className="mt-3 font-sans text-[10px] font-light text-pacific-teal">
             Step {index + 1} of {size}

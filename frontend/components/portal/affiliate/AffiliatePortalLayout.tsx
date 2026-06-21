@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import { frontierSidebarIcons } from "@/components/icons/frontier/frontier-sidebar-icons";
-import { RoleOnboardingJoyride } from "@/components/onboarding/RoleOnboardingJoyride";
 import { PortalSidebarLayout, type SidebarLink } from "@/components/portal/shared/PortalSidebarLayout";
 import { PortalBootstrap } from "@/components/bootstrap/PortalBootstrap";
 import { AffiliatePortalProvider, useAffiliatePortal } from "@/context/AffiliatePortalProvider";
@@ -44,15 +43,7 @@ function AffiliatePortalShell({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <PortalSidebarLayout
-      links={links}
-      onboardingRole="affiliate"
-      onboardingFilterStepIds={isMain ? undefined : ["sub-affiliates"]}
-    >
-      <RoleOnboardingJoyride
-        role="affiliate"
-        filterStepIds={isMain ? undefined : ["sub-affiliates"]}
-      />
+    <PortalSidebarLayout links={links}>
       {children}
     </PortalSidebarLayout>
   );

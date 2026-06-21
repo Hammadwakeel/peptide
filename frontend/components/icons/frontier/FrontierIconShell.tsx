@@ -1,6 +1,6 @@
 "use client";
 
-import { ICON_ACTIVE, ICON_BASE, ICON_OVERLAY } from "@/lib/icons/colors";
+import { ICON_BASE, ICON_OVERLAY } from "@/lib/icons/colors";
 import type { FrontierIconPaths, FrontierIconProps } from "@/lib/icons/types";
 
 type FrontierIconShellProps = FrontierIconProps & {
@@ -30,8 +30,8 @@ export function FrontierIconShell({
     >
       {active ? (
         <>
-          <path fill={ICON_ACTIVE} d={paths.base} />
-          <path fill={ICON_ACTIVE} d={paths.overlay} />
+          <path fill={ICON_BASE} d={paths.base} />
+          <path fill={ICON_OVERLAY} d={paths.overlay} />
         </>
       ) : (
         <>
@@ -53,7 +53,7 @@ export function FrontierIconShell({
           <path fill={ICON_BASE} d={paths.base} />
           <path
             fill={ICON_OVERLAY}
-            fillOpacity={0.3}
+            fillOpacity={0.85}
             d={paths.overlay}
             filter={`url(#${filterId})`}
           />

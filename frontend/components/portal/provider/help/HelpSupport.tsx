@@ -54,6 +54,7 @@ export function HelpSupport() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search articles…"
           className={`${authInputClassName} mb-4`}
+          data-tour="doctor-help-search"
         />
         <ul className="space-y-2">
           {filteredArticles.map((article) => (
@@ -69,7 +70,7 @@ export function HelpSupport() {
       </ProviderPageSection>
 
       <ProviderPageSection icon={frontierBrandIcons.forward} title="Submit a ticket">
-        <form onSubmit={handleTicketSubmit} className="space-y-4">
+        <form onSubmit={handleTicketSubmit} className="space-y-4" data-tour="doctor-help-ticket-form">
           <div>
             <label htmlFor="ticket-subject" className={authLabelClassName}>Subject</label>
             <input

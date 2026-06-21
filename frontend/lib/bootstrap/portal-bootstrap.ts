@@ -7,17 +7,41 @@ import { usePatientPortalStore } from "@/stores/patient-portal-store";
 import { usePatientsStore } from "@/stores/patients-store";
 import { useProviderPortalStore } from "@/stores/provider-portal-store";
 
-const bootstrapPromises = new Map<UserRole, Promise<void>>();
+export type BootstrapTier = "critical" | "full";
 
-async function bootstrapDoctor(force = false) {
-  await useChatStore.getState().refreshThreads({ force });
+type BootstrapOptions = {
+  force?: boolean;
+  tier?: BootstrapTier;
+};
+
+const DOCTOR_CRITICAL_KEY = "doctor:critical";
+const bootstrapPromises = new Map<string, Promise<void>>();
+let doctorDeferredStarted = false;
+
+async function bootstrapDoctorCritical(force = false) {
   await Promise.all([
     useOrdersStore.getState().refreshOrders({ force }),
     usePatientsStore.getState().refreshPatients({ force }),
     useProviderPortalStore.getState().refreshMyStore({ force }),
+    useProviderPortalStore.getState().refreshClinicProfile({ force }),
+  ]);
+}
+
+function bootstrapDoctorDeferred(force = false) {
+  if (!force && doctorDeferredStarted) return;
+  doctorDeferredStarted = true;
+  void Promise.all([
+    useChatStore.getState().refreshThreads({ force }),
     useProviderPortalStore.getState().loadCatalog(force),
     useProviderPortalStore.getState().loadFullCatalog({ force }),
   ]);
+}
+
+async function bootstrapDoctor(force = false, tier: BootstrapTier = "full") {
+  if (tier === "full") {
+    bootstrapDoctorDeferred(force);
+  }
+  await bootstrapDoctorCritical(force);
 }
 
 async function bootstrapAdmin(force = false) {
@@ -38,8 +62,22 @@ async function bootstrapAffiliate(force = false) {
   await useAffiliatePortalStore.getState().refreshProfile({ force });
 }
 
-export async function bootstrapPortal(role: UserRole, options: { force?: boolean } = {}) {
-  const { force = false } = options;
+export async function bootstrapPortal(role: UserRole, options: BootstrapOptions = {}) {
+  const { force = false, tier = "full" } = options;
+
+  if (role === "doctor") {
+    if (!force) {
+      const inFlight = bootstrapPromises.get(DOCTOR_CRITICAL_KEY);
+      if (inFlight) return inFlight;
+    }
+
+    const promise = bootstrapDoctor(force, tier);
+    if (!force) {
+      bootstrapPromises.set(DOCTOR_CRITICAL_KEY, promise);
+      promise.finally(() => bootstrapPromises.delete(DOCTOR_CRITICAL_KEY));
+    }
+    return promise;
+  }
 
   if (!force) {
     const inFlight = bootstrapPromises.get(role);
@@ -48,9 +86,6 @@ export async function bootstrapPortal(role: UserRole, options: { force?: boolean
 
   const run = async () => {
     switch (role) {
-      case "doctor":
-        await bootstrapDoctor(force);
-        break;
       case "admin":
         await bootstrapAdmin(force);
         break;
@@ -75,6 +110,7 @@ export async function bootstrapPortal(role: UserRole, options: { force?: boolean
 
 export function resetPortalBootstrap() {
   bootstrapPromises.clear();
+  doctorDeferredStarted = false;
   useOrdersStore.getState().reset();
   useAdminOrdersStore.getState().reset();
   usePatientsStore.getState().reset();

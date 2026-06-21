@@ -21,6 +21,7 @@ import {
   defaultRetailPrice,
 } from "@/lib/products/catalog-types";
 import { showError, toast } from "@/lib/toast";
+import { DOCTOR_ONBOARDING_EVENTS, emitDoctorOnboardingEvent } from "@/lib/onboarding/doctor/events";
 
 type InventoryFilter = "all" | "category" | "favorites" | "stock";
 type InventoryView = "grid" | "list";
@@ -79,6 +80,7 @@ export function ProviderInventoryBrowser() {
       } else {
         await addToMyStore([{ productId, retailPrice: defaultRetailPrice(clinicCost) }]);
         toast.success(`${productName} added to My Store.`);
+        emitDoctorOnboardingEvent(DOCTOR_ONBOARDING_EVENTS.productAddedToStore);
       }
     } catch (error) {
       showError(error, "Unable to update My Store.");
@@ -150,12 +152,13 @@ export function ProviderInventoryBrowser() {
         }
         compact
       >
-        <div className="mb-4 flex flex-wrap gap-3">
+        <div className="mb-4 flex flex-wrap gap-3" data-tour="doctor-inventory-filters">
           <input
             type="search"
             value={catalogSearch}
             onChange={(e) => setCatalogSearch(e.target.value)}
             placeholder="Search inventory…"
+            data-tour="doctor-inventory-search"
             className="min-w-[200px] flex-1 rounded-full border border-deep-teal/15 px-4 py-2 text-sm outline-none focus:border-pacific-teal"
           />
           <select
@@ -204,11 +207,12 @@ export function ProviderInventoryBrowser() {
           <p className="py-12 text-center text-sm text-deep-teal/50">No products found.</p>
         ) : (
           <div className={view === "grid" ? "grid gap-4 sm:grid-cols-2 xl:grid-cols-3" : "space-y-3"}>
-            {filteredProducts.map((product) => (
+            {filteredProducts.map((product, index) => (
               <ProductGridCard
                 key={product.id}
                 product={product}
                 view={view}
+                storeTourId={index === 0 ? "doctor-inventory-first-add" : undefined}
                 isFavorite={favorites.has(product.id)}
                 inMyStore={product.in_my_store ?? isInMyStore(product.id)}
                 isStoreUpdating={updatingProductId === product.id}

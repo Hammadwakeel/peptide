@@ -16,7 +16,7 @@ import {
   readSession,
 } from "@/lib/auth/storage";
 import type { AuthSession, LoginCredentials } from "@/lib/auth/types";
-import { resetPortalBootstrap } from "@/lib/bootstrap/portal-bootstrap";
+import { bootstrapPortal, resetPortalBootstrap } from "@/lib/bootstrap/portal-bootstrap";
 import { toast } from "@/lib/toast";
 
 type AuthState = {
@@ -104,6 +104,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   establishSession: (nextSession, rememberMe = false) => {
     persistSession(nextSession, rememberMe);
     get().setSession(nextSession);
+    if (nextSession.role === "doctor") {
+      void bootstrapPortal("doctor", { tier: "critical" });
+    }
     window.location.assign(getPortalPath(nextSession.role));
   },
 

@@ -4,11 +4,18 @@ import { useCallback, useEffect, useRef, type ReactNode } from "react";
 import { ChatWebSocketClient, type ChatWsEvent } from "@/lib/chat/ws";
 import { setChatSubscribeHandler } from "@/lib/chat/ws-bridge";
 import { useShallow } from "@/lib/hooks/zustand";
+import { useAuthStore } from "@/stores/auth-store";
 import { useChatStore } from "@/stores/chat-store";
 import type { ChatSender } from "@/lib/chat/types";
 
 export function ChatProvider({ children }: { children: ReactNode }) {
   const wsRef = useRef<ChatWebSocketClient | null>(null);
+  const { session, isLoading } = useAuthStore(
+    useShallow((state) => ({
+      session: state.session,
+      isLoading: state.isLoading,
+    })),
+  );
 
   const subscribeConversation = useCallback((conversationId: string) => {
     if (!conversationId) return;
@@ -35,6 +42,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, [subscribeAllThreads]);
 
   useEffect(() => {
+    if (isLoading || !session) return;
+
     const client = new ChatWebSocketClient();
     wsRef.current = client;
     const applyWsEvent = (event: ChatWsEvent) => useChatStore.getState().applyWsEvent(event);
@@ -43,6 +52,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       onEvent: applyWsEvent,
       onOpen: () => subscribeAllThreads(),
       onReady: () => subscribeAllThreads(),
+    }).catch(() => {
+      // Auth may have expired between render and connect; guard will redirect.
     });
 
     void useChatStore.getState().loadMessageTemplates();
@@ -51,7 +62,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       client.disconnect();
       wsRef.current = null;
     };
-  }, [subscribeAllThreads]);
+  }, [isLoading, session, subscribeAllThreads]);
 
   return children;
 }

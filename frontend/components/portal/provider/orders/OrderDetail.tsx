@@ -130,6 +130,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
               disabled={isUpdating}
               onClick={() => setRejectOpen(true)}
               className={toolbarBtnClass}
+              data-tour="doctor-order-reject"
             >
               Reject
             </button>
@@ -138,6 +139,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
               disabled={isUpdating}
               onClick={() => void handleApprove()}
               className={toolbarBtnPrimaryClass}
+              data-tour="doctor-order-approve"
             >
               {isUpdating ? "Approving…" : "Approve"}
             </button>

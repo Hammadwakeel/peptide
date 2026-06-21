@@ -1,6 +1,5 @@
 "use client";
 
-import { RoleOnboardingChecklist } from "@/components/onboarding/RoleOnboardingChecklist";
 import { useCallback, useState } from "react";
 import {
   FrontierBuilding2Icon,
@@ -386,8 +385,6 @@ export function AdminApprovalQueue() {
 
   return (
     <div className="space-y-5">
-      <RoleOnboardingChecklist role="admin" />
-
       <div className="flex items-center gap-4 rounded-2xl border border-deep-teal/20 bg-pure-white px-4 py-2.5 shadow-[0_2px_12px_rgba(1,26,36,0.08)] sm:px-5">
         <h1 className="shrink-0 font-sans text-xl font-light text-deep-teal sm:text-2xl">
           Approval Queue

@@ -3,7 +3,7 @@ import type { Options } from "react-joyride";
 import { BRAND_COLORS, BRAND_RGBA } from "@/lib/brand/colors";
 import { ROLE_ONBOARDING_CONFIGS } from "@/lib/onboarding/configs";
 import { navTourSelector } from "@/lib/onboarding/tour-targets";
-import type { UserRole } from "@/lib/auth/types";
+import type { OnboardingRole } from "@/lib/onboarding/types";
 
 export const JOYRIDE_TOUR_OPTIONS: Partial<Options> = {
   primaryColor: BRAND_COLORS.pacificTeal,
@@ -72,7 +72,7 @@ function scrollTourTargetIntoView(selector: string): BeforeHook {
     });
 }
 
-export function getRoleJoyrideSteps(role: UserRole, options?: JoyrideStepOptions): Step[] {
+export function getRoleJoyrideSteps(role: OnboardingRole, options?: JoyrideStepOptions): Step[] {
   const config = ROLE_ONBOARDING_CONFIGS[role];
   const checklistSteps = options?.filterStepIds
     ? config.steps.filter((step) => !options.filterStepIds!.includes(step.id))

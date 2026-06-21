@@ -21,6 +21,7 @@ import { getPatientInitials } from "@/lib/patients/types";
 import { fuseSearch } from "@/lib/search/fuse";
 import { DOCTOR_PATIENT_SEARCH_KEYS } from "@/lib/search/keys";
 import { showError, toast } from "@/lib/toast";
+import { DOCTOR_ONBOARDING_EVENTS, emitDoctorOnboardingEvent } from "@/lib/onboarding/doctor/events";
 
 type CustomerFilter = "all" | "active" | "invited";
 
@@ -86,6 +87,7 @@ export function CustomerManagement() {
     try {
       const result = await invitePatient(payload);
       toast.success(result.message || `Invite sent to ${payload.email}.`);
+      emitDoctorOnboardingEvent(DOCTOR_ONBOARDING_EVENTS.patientInvited);
       await loadPatients();
     } catch (error) {
       showError(error, "Unable to invite patient.");
@@ -119,6 +121,7 @@ export function CustomerManagement() {
             type="button"
             onClick={() => setModalOpen(true)}
             className={toolbarBtnPrimaryClass}
+            data-tour="doctor-customers-invite"
           >
             <frontierSidebarIcons.userPlus size={ICON_SIZE_SM} aria-hidden="true" />
             <span className="hidden sm:inline">Invite patient</span>
@@ -147,7 +150,7 @@ export function CustomerManagement() {
             className="w-full rounded-full border border-deep-teal/15 px-4 py-2 text-sm outline-none focus:border-pacific-teal sm:max-w-md"
           />
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" data-tour="doctor-customers-list">
           <table className="min-w-full text-left text-sm">
             <thead className="border-b border-deep-teal/10 bg-surface-muted/50 text-xs uppercase tracking-wide text-deep-teal/45">
               <tr>

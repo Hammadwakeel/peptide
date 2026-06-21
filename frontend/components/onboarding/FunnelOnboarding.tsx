@@ -24,10 +24,10 @@ import {
   typeGuideTitle,
   typeSectionLabel,
 } from "@/lib/brand/design-system";
-import type { UserRole } from "@/lib/auth/types";
+import type { OnboardingRole } from "@/lib/onboarding/types";
 
 type FunnelOnboardingProps = {
-  role: UserRole;
+  role: OnboardingRole;
   filterStepIds?: string[];
 };
 

@@ -28,6 +28,7 @@ import type {
   ClinicProfileResponse,
 } from "@/lib/doctor/clinic-types";
 import { DEFAULT_THEME_COLOR } from "@/lib/brand/colors";
+import { DOCTOR_ONBOARDING_EVENTS, emitDoctorOnboardingEvent } from "@/lib/onboarding/doctor/events";
 import { showError, toast } from "@/lib/toast";
 
 const SETTINGS_TABS = [
@@ -38,6 +39,14 @@ const SETTINGS_TABS = [
 ] as const;
 
 type SettingsTab = (typeof SETTINGS_TABS)[number];
+
+const TAB_TOUR_IDS: Record<SettingsTab, string> = {
+  "Practice Info": "doctor-settings-tab-practice",
+  "Storefront Branding": "doctor-settings-tab-branding",
+  Banking: "doctor-settings-tab-banking",
+  Notifications: "doctor-settings-tab-notifications",
+};
+
 
 function hasPermission(permissions: ClinicPermission[], permission: ClinicPermission) {
   return permissions.includes(permission);
@@ -211,6 +220,15 @@ export function ProviderSettings() {
         applyProfile(updated);
       }
       toast.success("Settings saved.");
+      if (activeTab === "Practice Info") {
+        emitDoctorOnboardingEvent(DOCTOR_ONBOARDING_EVENTS.practiceSaved);
+      } else if (activeTab === "Storefront Branding") {
+        emitDoctorOnboardingEvent(DOCTOR_ONBOARDING_EVENTS.brandingSaved);
+      } else if (activeTab === "Banking") {
+        emitDoctorOnboardingEvent(DOCTOR_ONBOARDING_EVENTS.bankingSaved);
+      } else if (activeTab === "Notifications") {
+        emitDoctorOnboardingEvent(DOCTOR_ONBOARDING_EVENTS.settingsSaved);
+      }
     } catch (error) {
       showError(error, "Unable to save settings.");
     } finally {
@@ -256,6 +274,7 @@ export function ProviderSettings() {
             onClick={() => void handleSave()}
             disabled={isSaving}
             className={toolbarBtnPrimaryClass}
+            data-tour="doctor-settings-save"
           >
             {isSaving ? "Saving…" : "Save changes"}
           </button>
@@ -267,12 +286,13 @@ export function ProviderSettings() {
         title={profile.clinic.clinic_name}
         subtitle={`${profile.clinic.email} · ${profile.membership.access_level.replace("_", " ")}`}
       >
-      <div className="flex flex-wrap gap-2 border-b border-deep-teal/10 pb-5">
+      <div className="flex flex-wrap gap-2 border-b border-deep-teal/10 pb-5" data-tour="doctor-settings-tabs">
         {SETTINGS_TABS.map((tab) => (
           <button
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
+            data-tour={TAB_TOUR_IDS[tab]}
             className={`rounded-full px-4 py-2 text-xs font-light transition-colors sm:text-sm ${
               activeTab === tab
                 ? "bg-deep-teal text-pure-white"
@@ -286,7 +306,7 @@ export function ProviderSettings() {
 
       <div className="space-y-4 pt-5">
         {activeTab === "Practice Info" ? (
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2" data-tour="doctor-settings-practice-form">
             <div>
               <label className={authLabelClassName}>Clinic name</label>
               <input

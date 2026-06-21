@@ -116,6 +116,7 @@ export function AccountingPage() {
           value={range}
           onChange={(e) => setRange(e.target.value as AccountingTimeRange)}
           className="rounded-full border border-deep-teal/25 bg-pure-white px-4 py-2 text-sm text-deep-teal outline-none focus:border-deep-teal"
+          data-tour="doctor-accounting-range"
         >
           {(Object.keys(TIME_RANGE_LABELS) as AccountingTimeRange[]).map((key) => (
             <option key={key} value={key}>
@@ -152,7 +153,7 @@ export function AccountingPage() {
         </div>
       ) : null}
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-2" data-tour="doctor-accounting-charts">
         <ProviderPageSection icon={frontierBrandIcons.pieChart} title="Revenue & profit trends">
           <RevenueProfitChart data={trendData} />
         </ProviderPageSection>

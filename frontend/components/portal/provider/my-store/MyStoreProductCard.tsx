@@ -17,6 +17,7 @@ type MyStoreProductCardProps = {
   onVisibilityChange: (isVisible: boolean) => void;
   onRemove: () => void;
   isUpdating?: boolean;
+  visibilityTourId?: string;
 };
 
 export function MyStoreProductCard({
@@ -25,6 +26,7 @@ export function MyStoreProductCard({
   onVisibilityChange,
   onRemove,
   isUpdating = false,
+  visibilityTourId,
 }: MyStoreProductCardProps) {
   const [draftPrice, setDraftPrice] = useState(String(product.retail_price));
   const [priceDirty, setPriceDirty] = useState(false);
@@ -144,6 +146,7 @@ export function MyStoreProductCard({
               checked={product.is_visible}
               disabled={isUpdating}
               onChange={(e) => onVisibilityChange(e.target.checked)}
+              data-tour={visibilityTourId}
               className="size-4 rounded border-deep-teal/25 text-deep-teal disabled:opacity-50"
             />
           </label>

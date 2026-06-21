@@ -7,10 +7,10 @@ import { ROLE_ONBOARDING_CONFIGS } from "@/lib/onboarding/configs";
 import { getRoleJoyrideSteps } from "@/lib/onboarding/joyride-steps";
 import { useShallow } from "@/lib/hooks/zustand";
 import { useOnboardingStore } from "@/stores/onboarding-store";
-import type { UserRole } from "@/lib/auth/types";
+import type { OnboardingRole } from "@/lib/onboarding/types";
 
 type RoleOnboardingJoyrideProps = {
-  role: UserRole;
+  role: OnboardingRole;
   filterStepIds?: string[];
 };
 

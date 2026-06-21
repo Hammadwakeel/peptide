@@ -19,6 +19,7 @@ import { useProviderPortal } from "@/context/ProviderPortalProvider";
 import { fuseSearch } from "@/lib/search/fuse";
 import { STORE_PRODUCT_SEARCH_KEYS } from "@/lib/search/keys";
 import { showError, toast } from "@/lib/toast";
+import { DOCTOR_ONBOARDING_EVENTS, emitDoctorOnboardingEvent } from "@/lib/onboarding/doctor/events";
 
 export function MyStorePage() {
   const [search, setSearch] = useState("");
@@ -94,6 +95,9 @@ export function MyStorePage() {
     try {
       await setStoreVisibility(storeId, isVisible);
       toast.success(isVisible ? "Product is now visible." : "Product hidden from customers.");
+      if (isVisible) {
+        emitDoctorOnboardingEvent(DOCTOR_ONBOARDING_EVENTS.storeVisibilitySet);
+      }
     } catch (error) {
       showError(error, "Unable to update visibility.");
     } finally {
@@ -126,6 +130,7 @@ export function MyStorePage() {
           type="button"
           onClick={() => setModalOpen(true)}
           className={toolbarBtnPrimaryClass}
+          data-tour="doctor-store-add-items"
         >
           <frontierBrandIcons.add size={ICON_SIZE_SM} aria-hidden="true" />
           <span className="hidden sm:inline">Add items</span>
@@ -167,12 +172,13 @@ export function MyStorePage() {
             ) : null}
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {filteredProducts.map((product) => (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" data-tour="doctor-store-product-list">
+            {filteredProducts.map((product, index) => (
               <MyStoreProductCard
                 key={product.store_id}
                 product={product}
                 isUpdating={updatingStoreId === product.store_id}
+                visibilityTourId={index === 0 ? "doctor-store-visibility-toggle" : undefined}
                 onRetailPriceChange={(price) => void handlePriceChange(product.store_id, price)}
                 onVisibilityChange={(visible) => void handleVisibilityChange(product.store_id, visible)}
                 onRemove={() => void handleRemove(product.store_id, product.name)}

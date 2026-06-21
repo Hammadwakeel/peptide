@@ -27,6 +27,7 @@ type ProductGridCardProps = {
   onToggleStore: () => void;
   view: "grid" | "list";
   isStoreUpdating?: boolean;
+  storeTourId?: string;
 };
 
 function StockBadge({ status }: { status: CatalogStockStatus }) {
@@ -56,6 +57,7 @@ export function ProductGridCard({
   onToggleStore,
   view,
   isStoreUpdating = false,
+  storeTourId,
 }: ProductGridCardProps) {
   const imageUrl = getPrimaryImage(product) ?? "/brand/product-vial-2x-blend-hero.png";
   const detailHref = `/portal/doctor/inventory/${product.slug ?? product.id}`;
@@ -86,6 +88,7 @@ export function ProductGridCard({
         checked={inMyStore}
         disabled={isStoreUpdating}
         onChange={onToggleStore}
+        data-tour={storeTourId}
         className="size-4 rounded border-deep-teal/25 text-deep-teal disabled:opacity-50"
       />
     </label>

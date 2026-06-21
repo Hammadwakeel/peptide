@@ -2,10 +2,10 @@
 
 import { useAuth } from "@/context/AuthProvider";
 import { ROLE_ONBOARDING_CONFIGS } from "@/lib/onboarding/configs";
+import type { OnboardingRole } from "@/lib/onboarding/types";
 import { EMPTY_ONBOARDING_PROGRESS, useOnboardingStore } from "@/stores/onboarding-store";
-import type { UserRole } from "@/lib/auth/types";
 
-export function useRoleOnboarding(role: UserRole, filterStepIds?: string[]) {
+export function useRoleOnboarding(role: OnboardingRole, filterStepIds?: string[]) {
   const { session } = useAuth();
   const config = ROLE_ONBOARDING_CONFIGS[role as keyof typeof ROLE_ONBOARDING_CONFIGS];
 

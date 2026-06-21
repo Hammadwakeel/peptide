@@ -14,6 +14,8 @@ import {
 } from "@/lib/products/api";
 import type { CatalogProduct, CatalogProductType, StoreProduct } from "@/lib/products/catalog-types";
 import { getPrimaryImage } from "@/lib/products/catalog-types";
+import { getClinicProfile } from "@/lib/doctor/api";
+import type { ClinicProfileResponse } from "@/lib/doctor/clinic-types";
 import { computeProviderMetrics } from "@/lib/provider/compute-metrics";
 import { useOrdersStore } from "@/stores/orders-store";
 import {
@@ -36,6 +38,11 @@ type ProviderPortalState = {
   storeRefreshInFlight: Promise<void> | null;
   fullCatalogInFlight: Promise<CatalogProduct[]> | null;
   branding: StorefrontBranding;
+  clinicProfile: ClinicProfileResponse | null;
+  providerDisplayName: string | null;
+  isProfileLoading: boolean;
+  isProfileHydrated: boolean;
+  profileRefreshInFlight: Promise<void> | null;
   catalogProducts: CatalogProduct[];
   fullCatalogProducts: CatalogProduct[];
   productIndex: Map<string, CatalogProduct>;
@@ -50,6 +57,7 @@ type ProviderPortalState = {
   setDebouncedCatalogSearch: (search: string) => void;
   getMetrics: () => ProviderMetrics;
   refreshMyStore: (options?: { force?: boolean }) => Promise<void>;
+  refreshClinicProfile: (options?: { force?: boolean }) => Promise<void>;
   loadCatalog: (force?: boolean) => Promise<CatalogProduct[]>;
   loadFullCatalog: (options?: { force?: boolean }) => Promise<CatalogProduct[]>;
   reset: () => void;
@@ -93,6 +101,23 @@ function buildStoreProductFromCatalog(
   };
 }
 
+function brandingFromProfile(profile: ClinicProfileResponse): StorefrontBranding {
+  return {
+    clinicName: profile.clinic.clinic_name?.trim() || DEFAULT_STOREFRONT_BRANDING.clinicName,
+    tagline: profile.branding.tagline?.trim() || DEFAULT_STOREFRONT_BRANDING.tagline,
+    themeColor: profile.branding.theme_color || DEFAULT_STOREFRONT_BRANDING.themeColor,
+    logoUrl: profile.branding.logo_url,
+  };
+}
+
+function displayNameFromProfile(profile: ClinicProfileResponse): string | null {
+  const name = [profile.clinic.first_name, profile.clinic.last_name]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+  return name || null;
+}
+
 function indexCatalogProducts(products: CatalogProduct[]) {
   const index = new Map<string, CatalogProduct>();
   products.forEach((product) => {
@@ -111,6 +136,11 @@ export const useProviderPortalStore = create<ProviderPortalState>((set, get) => 
   storeRefreshInFlight: null,
   fullCatalogInFlight: null,
   branding: DEFAULT_STOREFRONT_BRANDING,
+  clinicProfile: null,
+  providerDisplayName: null,
+  isProfileLoading: true,
+  isProfileHydrated: false,
+  profileRefreshInFlight: null,
   catalogProducts: [],
   fullCatalogProducts: [],
   productIndex: new Map(),
@@ -138,6 +168,11 @@ export const useProviderPortalStore = create<ProviderPortalState>((set, get) => 
       storeRefreshInFlight: null,
       fullCatalogInFlight: null,
       branding: DEFAULT_STOREFRONT_BRANDING,
+      clinicProfile: null,
+      providerDisplayName: null,
+      isProfileLoading: true,
+      isProfileHydrated: false,
+      profileRefreshInFlight: null,
       catalogProducts: [],
       fullCatalogProducts: [],
       productIndex: new Map(),
@@ -157,19 +192,70 @@ export const useProviderPortalStore = create<ProviderPortalState>((set, get) => 
       if (!get().isStoreHydrated) set({ isStoreLoading: true });
       try {
         const products = await fetchAllMyStore();
-        set((state) => ({
-          myStore: patchIfChanged(state.myStore, products),
-          isStoreHydrated: true,
-        }));
+        set((state) => {
+          const myStore = patchIfChanged(state.myStore, products);
+          if (myStore === state.myStore && state.isStoreHydrated) return state;
+          return { myStore, isStoreHydrated: true };
+        });
       } catch (error) {
         showError(error, "Unable to load My Store.");
         if (force) set({ myStore: [] });
       } finally {
-        set({ isStoreLoading: false, storeRefreshInFlight: null });
+        set((state) => {
+          const patch: Partial<ProviderPortalState> = { storeRefreshInFlight: null };
+          if (state.isStoreLoading) patch.isStoreLoading = false;
+          return patch;
+        });
       }
     })();
 
     set({ storeRefreshInFlight: promise });
+    return promise;
+  },
+
+  refreshClinicProfile: async (options = {}) => {
+    const { force = false } = options;
+    if (!force && get().isProfileHydrated) return;
+    if (get().profileRefreshInFlight) return get().profileRefreshInFlight!;
+
+    const promise = (async () => {
+      if (!get().isProfileHydrated) set({ isProfileLoading: true });
+      try {
+        const next = await getClinicProfile();
+        set((state) => {
+          const clinicProfile = patchIfChanged(state.clinicProfile, next);
+          const branding = patchIfChanged(state.branding, brandingFromProfile(next));
+          const providerDisplayName = patchIfChanged(
+            state.providerDisplayName,
+            displayNameFromProfile(next),
+          );
+          if (
+            clinicProfile === state.clinicProfile &&
+            branding === state.branding &&
+            providerDisplayName === state.providerDisplayName &&
+            state.isProfileHydrated
+          ) {
+            return state;
+          }
+          return {
+            clinicProfile,
+            branding,
+            providerDisplayName,
+            isProfileHydrated: true,
+          };
+        });
+      } catch (error) {
+        showError(error, "Unable to load clinic profile.");
+      } finally {
+        set((state) => {
+          const patch: Partial<ProviderPortalState> = { profileRefreshInFlight: null };
+          if (state.isProfileLoading) patch.isProfileLoading = false;
+          return patch;
+        });
+      }
+    })();
+
+    set({ profileRefreshInFlight: promise });
     return promise;
   },
 
